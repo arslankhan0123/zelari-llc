@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Shared brand components — colours come from CSS variables that are
+   generated from config/theme.php (see partials/theme-vars.blade.php).
+   Use these classes instead of hard-coding colours in pages.
+   ========================================================================== */
+
+/* Primary gradient button (storefront .btn-g and admin .btn-primary both alias this) */
+.btn-brand{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand-grad);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;box-shadow:0 10px 24px -10px rgba(var(--shadow-rgb),.55);transition:transform .2s,box-shadow .2s,filter .2s}
+.btn-brand:hover{background:var(--brand-grad-hover);transform:translateY(-1px);box-shadow:0 16px 30px -12px rgba(var(--shadow-rgb),.6);color:#fff}
+.btn-brand:disabled,.btn-brand[aria-disabled=true]{opacity:.6;cursor:not-allowed;transform:none}
+.btn-brand.sm{padding:9px 14px;font-size:13px;border-radius:10px}
+.btn-brand.lg{padding:15px 28px;font-size:16px;border-radius:14px}
+
+/* Solid (flat) brand button */
+.btn-brand-solid{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-brand-solid:hover{background:var(--brand-dark);color:#fff}
+
+/* Outline / ghost button */
+.btn-brand-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--brand);border:1.5px solid var(--brand);border-radius:12px;padding:11px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:.2s}
+.btn-brand-outline:hover{background:var(--brand);color:#fff}
+
+/* Soft (tinted) button — secondary actions */
+.btn-brand-soft{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand-soft);color:var(--brand);border:0;border-radius:12px;padding:11px 20px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;transition:.2s}
+.btn-brand-soft:hover{background:var(--brand);color:#fff}
+
+/* Sale / call-to-action (pink) button used in heroes */
+.btn-sale{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--sale);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;box-shadow:0 12px 24px -10px rgba(255,77,125,.7);transition:.2s}
+.btn-sale:hover{filter:brightness(1.07);transform:translateY(-1px);color:#fff}
+
+/* Utilities */
+.bg-brand{background:var(--brand)!important;color:#fff}
+.bg-brand-dark{background:var(--brand-dark)!important;color:#fff}
+.bg-brand-grad{background:var(--brand-grad)!important;color:#fff}
+.bg-brand-soft{background:var(--brand-soft)!important}
+.text-brand{color:var(--brand)!important}
+.text-brand-dark{color:var(--brand-dark)!important}
+.text-accent{color:var(--accent)!important}
+.border-brand{border-color:var(--brand)!important}
+.ring-brand{box-shadow:0 0 0 4px rgba(var(--shadow-rgb),.14)}
+.text-brand-grad{background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* Icon tile (square gradient box with a white icon) */
+.tile-brand{display:inline-flex;align-items:center;justify-content:center;background:var(--brand-grad);color:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(var(--shadow-rgb),.35)}
+
+/* Chip / badge */
+.badge-brand{display:inline-flex;align-items:center;gap:6px;background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px}
+
+/* Links */
+.link-brand{color:var(--brand);font-weight:700;text-decoration:none}
+.link-brand:hover{color:var(--brand-dark);text-decoration:underline}
