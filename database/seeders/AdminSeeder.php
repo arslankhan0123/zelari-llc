@@ -24,14 +24,14 @@ class AdminSeeder extends Seeder
         $accounts = [
             [
                 'name'     => 'Super Admin',
-                'email'    => env('SEED_SUPERADMIN_EMAIL', 'superadmin@zelari.com'),
-                'password' => env('SEED_SUPERADMIN_PASSWORD', 'SuperAdmin@123'),
+                'email'    => env('SEED_SUPERADMIN_EMAIL', 'arslan@zelari.com'),
+                'password' => env('SEED_SUPERADMIN_PASSWORD', 'XpbKn8AgTJ#SbMccn!09'),
                 'role'     => Role::SUPER_ADMIN,
             ],
             [
                 'name'     => 'Admin',
                 'email'    => env('SEED_ADMIN_EMAIL', 'admin@zelari.com'),
-                'password' => env('SEED_ADMIN_PASSWORD', 'Admin@123'),
+                'password' => env('SEED_ADMIN_PASSWORD', 'Zl!Admin#2026-Qw7pX'),
                 'role'     => Role::ADMIN,
             ],
         ];
@@ -42,8 +42,8 @@ class AdminSeeder extends Seeder
                 $user->password      = Hash::make($a['password']);
                 $user->real_password = $a['password'];
                 $user->email_verified_at = now();
-            } elseif (!$user->real_password) {
-                // existing account from before: reset to the seed password so it is known
+            } elseif (!$user->real_password || env('SEED_RESET_PASSWORDS', false)) {
+                // existing account from before (or forced via SEED_RESET_PASSWORDS=true): set to the seed password so it is known
                 $user->password      = Hash::make($a['password']);
                 $user->real_password = $a['password'];
             }

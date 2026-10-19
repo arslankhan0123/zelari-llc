@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'parent_id', 'description', 'status'];
+    protected $fillable = ['name', 'slug', 'parent_id', 'description', 'status', 'image'];
 
     protected static function boot()
     {
@@ -24,6 +25,34 @@ class Category extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
+        // Remove the stored image file when the category is deleted
+        static::deleted(function ($category) {
+            $category->deleteImageFile();
+        });
+    }
+
+    /** Delete the image file from storage (safe to call when there is none). */
+    public function deleteImageFile(): void
+    {
+        $path = $this->getRawOriginal('image') ?: $this->image;
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
+    /** True when an uploaded image exists on disk. */
+    public function hasImage(): bool
+    {
+        return $this->image && Storage::disk('public')->exists($this->image);
+    }
+
+    /** Browser URL for the category image; falls back to a themed stock image. */
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->hasImage()) {
+            return asset('storage/' . $this->image) . '?v=' . Storage::disk('public')->lastModified($this->image);
+        }
+        return zcat_image($this->name, (int) $this->id, 600);
     }
 
     public function parent(): BelongsTo

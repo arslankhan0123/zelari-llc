@@ -56,6 +56,16 @@
                     </dd>
                 </div>
                 <div class="flex gap-4">
+                    <dt class="w-36 text-sm text-gray-400 shrink-0">Image</dt>
+                    <dd class="text-sm text-gray-700">
+                        @if($category->hasImage())
+                            <a href="{{ $category->image_url }}" target="_blank" rel="noopener"><img src="{{ $category->image_url }}" alt="{{ $category->name }}" class="w-40 h-24 object-cover rounded-xl border border-gray-100"></a>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full"><i class="fa-solid fa-triangle-exclamation"></i> No image — storefront shows a stock photo</span>
+                        @endif
+                    </dd>
+                </div>
+                <div class="flex gap-4">
                     <dt class="w-36 text-sm text-gray-400 shrink-0">Description</dt>
                     <dd class="text-sm text-gray-700">
                         {{ $category->description ?: '—' }}

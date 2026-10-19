@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -51,7 +52,11 @@ class CategoryController extends Controller
             'parent_id'   => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'status'      => 'required|in:active,inactive',
+            'image'       => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        // Image → storage/app/public/categories (same disk as product images)
+        $validated['image'] = $request->file('image')->store('categories', 'public');
 
         // Always auto-generate slug from name, ensure uniqueness
         $baseSlug = Str::slug($validated['name']);
@@ -92,7 +97,20 @@ class CategoryController extends Controller
             'parent_id'   => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'status'      => 'required|in:active,inactive',
+            // required only when the category has no image yet
+            'image'       => [$category->hasImage() ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        // Replace image: store the new file first, then remove the old one
+        if ($request->hasFile('image')) {
+            $old = $category->image;
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+            if ($old && $old !== $validated['image']) {
+                Storage::disk('public')->delete($old);
+            }
+        } else {
+            unset($validated['image']);
+        }
 
         // Auto-regenerate slug only if name changed; exclude self from uniqueness check
         if ($category->name !== $validated['name']) {
@@ -116,7 +134,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->children()->update(['parent_id' => null]);
-        $category->delete();
+        $category->delete(); // model's "deleted" hook removes the image file
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category deleted successfully!');

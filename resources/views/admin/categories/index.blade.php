@@ -88,10 +88,13 @@
                     <td class="text-gray-400 font-mono text-xs">{{ ($categories->currentPage()-1)*10 + $i + 1 }}</td>
                     <td>
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-sm font-bold"
-                                 style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                            @if($cat->hasImage())
+                            <img src="{{ $cat->image_url }}" alt="" class="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-gray-100">
+                            @else
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-sm font-bold bg-brand-grad" title="No image uploaded">
                                 {{ strtoupper(substr($cat->name,0,1)) }}
                             </div>
+                            @endif
                             <div>
                                 <div class="font-semibold text-gray-800">{{ $cat->name }}</div>
                                 @if($cat->children_count ?? 0)

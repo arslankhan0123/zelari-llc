@@ -295,7 +295,7 @@
       @forelse(collect(range(1, max($reps,1)))->flatMap(fn() => $catList) as $i => $c)
         <div class="swiper-slide">
           <a href="{{ route('shop.index',['category'=>$c->slug]) }}" class="ctile">
-            <img src="{{ zcat_image($c->name, $i, 600) }}" alt="" loading="lazy">
+            <img src="{{ $c->image_url }}" alt="{{ $c->name }}" loading="lazy">
             <span class="sh"></span>
             <span class="ic"><i class="fa-solid {{ zcat_icon($c->name) }}"></i></span>
             <span class="cnt">{{ $c->total_count ?? 0 }} items</span>

@@ -29,7 +29,7 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2">
         <div class="bg-white rounded-2xl p-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
-            <form action="{{ route('admin.categories.update', $category) }}" method="POST" id="editForm">
+            <form action="{{ route('admin.categories.update', $category) }}" method="POST" id="editForm" enctype="multipart/form-data">
                 @csrf @method('PUT')
 
                 <div class="mb-5">
@@ -83,6 +83,32 @@
                         @endforeach
                     </select>
                     @error('parent_id') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+                </div>
+
+
+                <div class="mb-5" x-data="{ preview: null, current: '{{ $category->hasImage() ? $category->image_url : '' }}' }">
+                    <label class="form-label">Category Image <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal text-xs ml-1">{{ $category->hasImage() ? 'choose a new file to replace the current image' : 'no image yet — please upload one' }}</span></label>
+                    <label for="catImage" class="relative block w-full h-44 rounded-xl border-2 border-dashed cursor-pointer overflow-hidden transition-colors @error('image') border-red-400 bg-red-50 @else border-gray-200 bg-gray-50 hover:border-indigo-400 hover:bg-indigo-50/40 @enderror">
+                        <template x-if="!preview && !current">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <p class="text-sm text-gray-500">Click to upload category image</p>
+                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — max 2MB</p>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="preview || current"><img :src="preview || current" class="absolute inset-0 w-full h-full object-cover"></template>
+                        <span x-show="!preview && current" class="absolute bottom-2 right-2 text-[11px] font-semibold bg-black/55 text-white px-2 py-1 rounded-md">Click to replace</span>
+                        <span x-show="preview" class="absolute bottom-2 right-2 text-[11px] font-semibold bg-indigo-600 text-white px-2 py-1 rounded-md">New image — saved on submit</span>
+                        <input id="catImage" type="file" name="image" accept="image/jpeg,image/png,image/webp" class="hidden" {{ $category->hasImage() ? '' : 'required' }}
+                               @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
+                    </label>
+                    <template x-if="preview">
+                        <button type="button" @click="preview=null; document.getElementById('catImage').value=''" class="mt-2 text-xs text-red-500 hover:text-red-700">Keep current image</button>
+                    </template>
+                    @error('image')<p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="mb-5">
