@@ -176,7 +176,29 @@ class ShopController extends Controller
             $related = $related->concat($more);
         }
 
-        return view('shop.show', compact('product', 'related'));
+        // Reviews: only approved ones are public
+        $reviews   = $product->approvedReviews()->get();
+        $breakdown = $product->ratingBreakdown();
+        $user      = request()->user();
+
+        // Already reviewed? (matched by account or by the e-mail they used)
+        $myReview = $product->reviewBy($user);
+
+        // Logged-in customers whose account already shows the purchase skip the order form
+        $canReview = $user && !$myReview && $product->purchaseOrderFor($user) !== null;
+
+        // Guests get the order number pre-filled when they just checked out
+        $sessionOrder = null;
+        if (!$canReview && session('last_order_id')) {
+            $sessionOrder = \App\Models\Order::where('id', session('last_order_id'))
+                ->whereHas('items', fn ($q) => $q->where('product_id', $product->id))
+                ->first();
+            if ($sessionOrder && !$myReview) {
+                $myReview = $product->reviewByEmail($sessionOrder->customer_email);
+            }
+        }
+
+        return view('shop.show', compact('product', 'related', 'reviews', 'breakdown', 'myReview', 'canReview', 'sessionOrder'));
     }
 
     /** /brands — every active manufacturer, featured ones first. */

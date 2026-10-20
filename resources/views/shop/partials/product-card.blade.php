@@ -62,8 +62,8 @@
     $isNew    = $product->created_at && $product->created_at->gt(now()->subDays(14));
     $qty      = (int) $product->quantity;
     $badge    = $badge ?? ($qty <= 0 ? 'oos' : ($disc ? 'sale' : ($isNew ? 'new' : null)));
-    $reviews  = ($product->id * 7) % 60 + 12;      // deterministic decorative count
-    $starsN   = 4 + (($product->id % 3) ? 1 : 0);  // 4 or 5 stars
+    $reviews  = (int) ($product->reviews_count ?? 0);            // real approved reviews
+    $starsN   = (int) round((float) ($product->reviews_avg ?? 0)); // 0 when unrated
     $showBar  = $showBar ?? false;
 @endphp
 

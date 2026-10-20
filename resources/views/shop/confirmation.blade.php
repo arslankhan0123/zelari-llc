@@ -45,6 +45,27 @@
 .next .nx:hover{border-color:var(--line);background:#fff;box-shadow:var(--shadow);transform:translateY(-2px)}
 .next .nx i{width:44px;height:44px;border-radius:13px;background:var(--brand-grad);display:grid;place-items:center;color:#fff;font-size:17px;flex-shrink:0;box-shadow:0 10px 20px -10px rgba(var(--shadow-rgb),.7)}
 .next .nx .tx{min-width:0}
+.rvp h3 i{color:#b8860b;background:#fff4d6}
+.rvp-sub{font-size:13.5px;color:var(--muted);margin:0 0 16px;line-height:1.6;max-width:620px}
+.rvp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:760px){.rvp-grid{grid-template-columns:1fr}}
+.rvp-grid.one{grid-template-columns:1fr}
+.rvp-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff;transition:border-color .2s,box-shadow .2s,transform .2s}
+.rvp-item:hover{border-color:transparent;box-shadow:0 16px 30px -22px rgba(var(--shadow-rgb),.65);transform:translateY(-2px)}
+.rvp-img{width:52px;height:52px;border-radius:13px;overflow:hidden;flex:none;background:var(--surface);display:grid;place-items:center}
+.rvp-img img{width:100%;height:100%;object-fit:cover}
+.rvp-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rvp-tx b{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvp-stars{color:var(--star);font-size:13px;display:flex;gap:3px}
+.rvp-item:hover .rvp-stars i{animation:none}
+.rvp-btn{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:#fff;background:var(--brand-grad);padding:9px 14px;border-radius:11px;white-space:nowrap;box-shadow:0 10px 20px -12px rgba(var(--shadow-rgb),.7)}
+.rvp-item:hover .rvp-btn{filter:brightness(1.07)}
+.rvp-foot{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--muted);margin:14px 0 0;line-height:1.6}
+.rvp-foot i{color:var(--faint);margin-top:3px}
+@media(max-width:520px){
+  .rvp-item{flex-wrap:wrap}
+  .rvp-btn{width:100%;justify-content:center}
+}
 .next .nx b{font-size:14.5px;display:block;line-height:1.25;margin-bottom:4px}
 .next .nx small{display:block;color:var(--muted);font-size:13px;line-height:1.5}
 .next .nx .n{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;color:var(--faint)}
@@ -126,6 +147,30 @@
         <div class="nx"><i class="fa-solid fa-truck-fast"></i><div class="tx"><b>Delivered in {{ zship('delivery_days','2–5') }} days</b><small>Our rider calls you before arriving{{ $order->payment_method === 'cash_on_delivery' ? ' — keep '.zorder_price($order, $order->total).' ready' : '' }}.</small></div><span class="n">3</span></div>
       </div>
     </div>
+
+    {{-- Review your purchase --}}
+    @php $rvItems = $order->items->filter(fn ($i) => $i->product); @endphp
+    @if($rvItems->count())
+    <div class="card-z rvp reveal" data-delay="4">
+      <h3><i class="fa-solid fa-star"></i> Rate what you bought</h3>
+      <p class="rvp-sub">Your feedback helps other shoppers — and it only takes a minute. Reviews are checked by our team before they go live.</p>
+
+      <div class="rvp-grid {{ $rvItems->count() === 1 ? 'one' : '' }}">
+        @foreach($rvItems as $it)
+        <a class="rvp-item" href="{{ route('shop.show', $it->product->slug) }}#reviews" target="_blank" rel="noopener">
+          <span class="rvp-img"><img src="{{ $it->product->display_image ?? zcat_image(null, (int) $it->product_id, 160) }}" alt="" loading="lazy"></span>
+          <span class="rvp-tx">
+            <b>{{ $it->product_name }}</b>
+            <span class="rvp-stars" aria-hidden="true"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></span>
+          </span>
+          <span class="rvp-btn">Write a review <i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+        @endforeach
+      </div>
+
+      <p class="rvp-foot"><i class="fa-regular fa-circle-question"></i> You'll be asked for order <b>{{ $order->order_number }}</b> and this email, so we can mark your review as a verified purchase.</p>
+    </div>
+    @endif
 
     <div class="acts">
       <a href="{{ route('shop.index') }}" class="btn-g"><i class="fa-solid fa-bag-shopping"></i> Continue Shopping</a>

@@ -68,6 +68,51 @@
 .rev .av{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0}
 .rev b{font-size:14px}
 .rev p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.rv-vp{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:#0d7a52;background:#e6f7f0;padding:2px 8px;border-radius:999px;margin-left:8px}
+.rv-date{font-size:12px;color:var(--faint);margin-left:8px}
+.rv-sum{display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding:18px 20px;background:var(--surface);border-radius:var(--r-lg);margin-bottom:18px}
+.rv-score{text-align:center;min-width:120px}
+.rv-score b{display:block;font-size:38px;line-height:1;letter-spacing:-1px}
+.rv-score .stars{display:block;margin:6px 0 2px}
+.rv-score small{color:var(--muted);font-size:12.5px}
+.rv-bars{flex:1;min-width:240px;display:grid;gap:6px}
+.rv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.rv-bar>span{width:34px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-2);font-weight:700}
+.rv-bar>span i{font-size:10px;color:var(--star)}
+.rv-bar .track{flex:1;height:7px;border-radius:99px;background:var(--line);overflow:hidden;display:block}
+.rv-bar .track b{display:block;height:100%;background:var(--star);border-radius:99px}
+.rv-bar small{width:24px;text-align:right}
+.rv-write{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.rv-write h3{font-size:17px;font-weight:800;margin:0 0 4px}
+.rv-sub{font-size:13.5px;color:var(--muted);margin:0 0 14px;max-width:620px}
+.rv-form{max-width:640px;display:grid;gap:16px}
+.rv-field{display:block}
+.rv-label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.rv-label b{color:var(--sale);font-weight:700}
+.rv-label span{color:var(--faint);font-weight:500}
+.rv-input{display:block;width:100%;border:1.5px solid var(--line-2);border-radius:12px;padding:11px 14px;font:inherit;font-size:14px;outline:0;background:#fff;transition:.2s;color:var(--ink)}
+.rv-input::placeholder{color:#b3b8d0}
+.rv-input:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(var(--shadow-rgb),.12)}
+textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
+.rv-stars{display:inline-flex;flex-direction:row-reverse;gap:5px}
+.rv-stars input{position:absolute;opacity:0;width:0;height:0}
+.rv-stars label{font-size:26px;line-height:1;color:var(--line-2);cursor:pointer;transition:color .15s,transform .15s}
+.rv-stars label:hover,.rv-stars label:hover~label,.rv-stars input:checked~label{color:var(--star)}
+.rv-stars label:hover{transform:scale(1.12)}
+.rv-stars input:focus-visible+label{outline:2px solid var(--brand);outline-offset:3px;border-radius:4px}
+.rv-verify{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:16px 18px;display:grid;gap:14px}
+.rv-vtitle{margin:0;font-size:13px;font-weight:800;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.rv-vtitle i{color:var(--brand)}
+.rv-vhint{margin:0;font-size:12px;color:var(--muted);line-height:1.55}
+.rv-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.rv-err{color:var(--sale);font-size:12.5px;font-weight:600;margin-top:6px}
+.rv-note{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 15px;font-size:13.5px;margin-bottom:16px;line-height:1.5;max-width:640px}
+.rv-note.ok{background:#e6f9f2;border:1px solid #bdeedb;color:#0d6a4f}
+.rv-note.bad{background:#fdecef;border:1px solid #ffc7d4;color:#b4124b}
+.rv-note.info{background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.rv-link{color:var(--brand);font-weight:700;text-decoration:underline}
+.rv-hint{font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:center}
+.rv-hint i{color:var(--faint)}
 .related{margin-top:50px}
 .pslider{overflow:visible}.pslider .swiper-slide{height:auto}.pslider .swiper-wrapper{padding:6px 0 30px}
 .slider-clip{overflow:hidden;margin:-6px -12px 0;padding:6px 12px 0}
@@ -90,8 +135,8 @@
   $realImg = $gallery->count() > 0;
   if (!$realImg) { $gallery = collect([$product->display_image]); }
   $qty     = (int) $product->quantity;
-  $starsN  = 4 + (($product->id % 3) ? 1 : 0);
-  $reviews = ($product->id * 7) % 60 + 12;
+  $starsN  = $product->stars;                       // real average, 0 when unrated
+  $revCount = (int) $product->reviews_count;
 @endphp
 <section class="pd wrap">
   <nav class="crumb">
@@ -129,7 +174,7 @@
       <h1>{{ $product->name }}</h1>
       <div class="pd-rate">
         <span class="stars">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$starsN?'off':'' }}"></i>@endfor</span>
-        <span>{{ $starsN }}.0 ({{ $reviews }} reviews)</span><span class="sep"></span>
+        <span>@if($revCount){{ number_format((float) $product->reviews_avg, 1) }} ({{ $revCount }} {{ Str::plural('review', $revCount) }})@else<a href="#reviews" style="color:inherit">No reviews yet</a>@endif</span><span class="sep"></span>
         <span><i class="fa-solid fa-fire" style="color:var(--sale)"></i> {{ ($product->id*3)%40+8 }} sold this week</span>
       </div>
 
@@ -187,11 +232,11 @@
   </div>
 
   {{-- Tabs --}}
-  <div class="tabs reveal">
+  <div class="tabs reveal" id="reviews">
     <div class="tabs-nav">
       <button class="on" onclick="tab(this,'t1')">Description</button>
       <button onclick="tab(this,'t2')">Details</button>
-      <button onclick="tab(this,'t3')">Reviews ({{ $reviews }})</button>
+      <button id="tabReviews" onclick="tab(this,'t3')">Reviews ({{ $revCount }})</button>
     </div>
     <div class="tab-pane on" id="t1">
       {!! $product->description ? nl2br(e($product->description)) : '<span style="color:var(--faint)">No description provided for this product yet.</span>' !!}
@@ -207,10 +252,143 @@
       </table>
     </div>
     <div class="tab-pane" id="t3">
-      @foreach([['A','Ayesha K.','Great quality, exactly as pictured. Delivery was quick and the packaging was solid.',5],['H','Hamza R.','Good value for the price. Would buy again.',4],['S','Sara M.','Customer support was helpful when I had a question about my order.',5]] as [$in,$nm,$tx,$st])
-      <div class="rev"><div class="av">{{ $in }}</div><div><b>{{ $nm }}</b> <span class="stars" style="margin-left:6px">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$st?'off':'' }}"></i>@endfor</span><p>{{ $tx }}</p></div></div>
-      @endforeach
-      <p style="margin:16px 0 0;font-size:13px;color:var(--faint)">Verified purchase reviews.</p>
+      @if(session('review_success'))
+        <div class="rv-note ok"><i class="fa-solid fa-circle-check"></i> {{ session('review_success') }}</div>
+      @endif
+      @if(session('review_error'))
+        <div class="rv-note bad"><i class="fa-solid fa-circle-exclamation"></i> {{ session('review_error') }}</div>
+      @endif
+
+      @if($revCount)
+      {{-- Summary --}}
+      <div class="rv-sum">
+        <div class="rv-score">
+          <b>{{ number_format((float) $product->reviews_avg, 1) }}</b>
+          <span class="stars">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$starsN?'off':'' }}"></i>@endfor</span>
+          <small>{{ $revCount }} {{ Str::plural('review', $revCount) }}</small>
+        </div>
+        <div class="rv-bars">
+          @foreach($breakdown as $star => $n)
+          <div class="rv-bar">
+            <span>{{ $star }}<i class="fa-solid fa-star"></i></span>
+            <i class="track"><b style="width:{{ $revCount ? round($n / $revCount * 100) : 0 }}%"></b></i>
+            <small>{{ $n }}</small>
+          </div>
+          @endforeach
+        </div>
+      </div>
+      @endif
+
+      {{-- The reviews themselves --}}
+      @forelse($reviews as $r)
+        <div class="rev">
+          <div class="av">{{ $r->initial }}</div>
+          <div style="flex:1">
+            <b>{{ $r->author_name }}</b>
+            <span class="stars" style="margin-left:6px">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$r->rating?'off':'' }}"></i>@endfor</span>
+            @if($r->verified_purchase)<span class="rv-vp"><i class="fa-solid fa-circle-check"></i> Verified purchase</span>@endif
+            <span class="rv-date">{{ $r->created_at->format('d M Y') }}</span>
+            @if($r->title)<p style="color:var(--ink);font-weight:700;margin-top:6px">{{ $r->title }}</p>@endif
+            <p>{{ $r->body }}</p>
+          </div>
+        </div>
+      @empty
+        <p style="margin:6px 0 0;font-size:14px;color:var(--muted)">No reviews yet — be the first to review this product after your order arrives.</p>
+      @endempty
+
+      {{-- Write a review --}}
+      <div class="rv-write">
+        @if($myReview)
+          <div class="rv-note {{ $myReview->isApproved() ? 'ok' : 'info' }}">
+            <i class="fa-solid fa-{{ $myReview->isApproved() ? 'circle-check' : 'clock' }}"></i>
+            <span>{{ $myReview->isApproved()
+                ? 'Your review is published — thank you!'
+                : ($myReview->status === 'rejected'
+                    ? 'Your review was not published. Please contact us if you think this is a mistake.'
+                    : 'Your review has been submitted and is waiting for approval. It appears here once our team checks it.') }}</span>
+          </div>
+        @else
+          <h3>Write a review</h3>
+          <p class="rv-sub">
+            @if($canReview)
+              You bought this product, so your review is marked as a verified purchase. It appears here once our team approves it.
+            @else
+              Reviews are open to customers who bought this product. Enter your order number and the email you ordered with — both are in your confirmation email.
+            @endif
+          </p>
+
+          <form method="POST" action="{{ route('reviews.store', $product->slug) }}" class="rv-form">
+            @csrf
+
+            {{-- 1 · rating --}}
+            <div class="rv-field">
+              <label class="rv-label">Your rating <b>*</b></label>
+              <div class="rv-stars" id="rvStars">
+                @for($i = 5; $i >= 1; $i--)
+                  <input type="radio" name="rating" id="rvs{{ $i }}" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
+                  <label for="rvs{{ $i }}" title="{{ $i }} star{{ $i > 1 ? 's' : '' }}"><i class="fa-solid fa-star"></i></label>
+                @endfor
+              </div>
+              @error('rating')<div class="rv-err">{{ $message }}</div>@enderror
+            </div>
+
+            {{-- 2 · the review itself --}}
+            <div class="rv-field">
+              <label class="rv-label" for="rvTitle">Headline <span>(optional)</span></label>
+              <input id="rvTitle" type="text" name="title" maxlength="120" value="{{ old('title') }}"
+                     class="rv-input" placeholder="Sum it up in a few words">
+              @error('title')<div class="rv-err">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="rv-field">
+              <label class="rv-label" for="rvBody">Your review <b>*</b></label>
+              <textarea id="rvBody" name="body" rows="5" maxlength="2000" required class="rv-input"
+                        placeholder="What did you like or dislike? How was the quality and the delivery?">{{ old('body') }}</textarea>
+              @error('body')<div class="rv-err">{{ $message }}</div>@enderror
+            </div>
+
+            {{-- 3 · proof of purchase --}}
+            @unless($canReview)
+            <div class="rv-verify">
+              <p class="rv-vtitle"><i class="fa-solid fa-shield-halved"></i> Verify your purchase</p>
+
+              @guest
+              <div class="rv-field">
+                <label class="rv-label" for="rvName">Your name <b>*</b></label>
+                <input id="rvName" type="text" name="name" maxlength="80" required class="rv-input"
+                       value="{{ old('name', $sessionOrder->shipping_name ?? '') }}" placeholder="Shown next to your review">
+                @error('name')<div class="rv-err">{{ $message }}</div>@enderror
+              </div>
+              @endguest
+
+              <div class="rv-field">
+                <label class="rv-label" for="rvOrder">Order number <b>*</b></label>
+                <input id="rvOrder" type="text" name="order_number" maxlength="40" required class="rv-input"
+                       value="{{ old('order_number', $sessionOrder->order_number ?? '') }}" placeholder="ORD-XXXXXXXX">
+                @error('order_number')<div class="rv-err">{{ $message }}</div>@enderror
+              </div>
+
+              <div class="rv-field">
+                <label class="rv-label" for="rvEmail">Email used on the order <b>*</b></label>
+                <input id="rvEmail" type="email" name="email" maxlength="150" required class="rv-input"
+                       value="{{ old('email', $sessionOrder->customer_email ?? (auth()->user()->email ?? '')) }}" placeholder="you@example.com">
+                @error('email')<div class="rv-err">{{ $message }}</div>@enderror
+              </div>
+
+              <p class="rv-vhint">Both are in your order confirmation email. We only use them to confirm you bought this product.</p>
+            </div>
+            @endunless
+
+            {{-- 4 · submit --}}
+            <div class="rv-actions">
+              <button type="submit" class="btn-brand"><i class="fa-regular fa-paper-plane"></i> Submit review</button>
+              @guest
+                <span class="rv-hint"><i class="fa-regular fa-circle-question"></i> Have an account? <a href="{{ route('login') }}" class="rv-link">Log in</a> and we'll find your orders automatically.</span>
+              @endguest
+            </div>
+          </form>
+        @endif
+      </div>
     </div>
   </div>
 
@@ -243,6 +421,26 @@
 function chg(d){const i=document.getElementById('qtyIn');const max=parseInt(i.max)||100;i.value=Math.min(max,Math.max(1,(parseInt(i.value)||1)+d));}
 function setImg(u,t){const m=document.getElementById('mainImg'); if(!m) return; m.style.opacity=0; setTimeout(()=>{m.src=u;m.style.opacity=1;},150); document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('on')); t.classList.add('on');}
 function tab(b,id){document.querySelectorAll('.tabs-nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+/* Arriving at #reviews (from the order confirmation, an email or the rating line):
+   open the Reviews tab first — the pane is hidden, so the browser cannot scroll to it on its own. */
+function zOpenReviews(smooth){
+  const btn = document.getElementById('tabReviews');
+  if (!btn) return;
+  tab(btn, 't3');
+  const box = document.getElementById('reviews');
+  if (!box) return;
+  // clear the sticky header
+  const head = document.querySelector('.header');
+  const off  = (head ? head.getBoundingClientRect().height : 0) + 18;
+  requestAnimationFrame(() => {
+    const y = box.getBoundingClientRect().top + window.pageYOffset - off;
+    window.scrollTo({ top: y, behavior: smooth ? 'smooth' : 'auto' });
+  });
+}
+if (location.hash === '#reviews') { window.addEventListener('load', () => zOpenReviews(false)); }
+window.addEventListener('hashchange', () => { if (location.hash === '#reviews') zOpenReviews(true); });
+document.querySelectorAll('a[href="#reviews"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); zOpenReviews(true); }));
 async function buyNow(){
   const f=document.getElementById('atcForm');
   try{ const r=await fetch(f.action,{method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'Accept':'application/json'},body:new FormData(f)}); if(r.ok){location.href='{{ route('checkout.index') }}';return;} const j=await r.json(); zToast(Object.values(j.errors||{}).flat()[0]||j.message||'Could not add','err'); }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ManufacturerController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ImportExportController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Shop\CheckoutController;
 use App\Http\Controllers\Shop\LocationController;
 use App\Http\Controllers\Shop\StripeWebhookController;
 use App\Http\Controllers\Shop\AccountController;
+use App\Http\Controllers\Shop\ReviewController as ShopReviewController;
 use Illuminate\Support\Facades\Route;
 
 // ── Storefront ──────────────────────────────────────────────────────────────
@@ -24,6 +26,7 @@ Route::get('/', [ShopController::class, 'home'])->name('home');
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
+Route::post('/product/{slug}/review', [ShopReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
 Route::get('/about', [ShopController::class, 'about'])->name('about');
 Route::match(['get','post'], '/contact', [ShopController::class, 'contact'])->name('contact');
 Route::post('/location', [LocationController::class, 'set'])->name('location.set');
@@ -75,6 +78,14 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::patch('/{category}', [CategoryController::class, 'update'])->name('patch');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        Route::get('/', [ReviewController::class, 'index'])->name('index');
+        Route::post('/{review}/approve', [ReviewController::class, 'approve'])->name('approve');
+        Route::post('/{review}/reject', [ReviewController::class, 'reject'])->name('reject');
+        Route::post('/{review}/unpublish', [ReviewController::class, 'unpublish'])->name('unpublish');
+        Route::delete('/{review}', [ReviewController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('manufacturers')->name('manufacturers.')->group(function () {

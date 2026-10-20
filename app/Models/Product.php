@@ -41,6 +41,88 @@ class Product extends Model
         return $this->belongsTo(Manufacturer::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /** Only the reviews customers are allowed to see. */
+    public function approvedReviews(): HasMany
+    {
+        return $this->reviews()->where('status', Review::APPROVED)->latest();
+    }
+
+    /** Average rating rounded to the nearest whole star (0 when there are none). */
+    public function getStarsAttribute(): int
+    {
+        return (int) round((float) $this->reviews_avg);
+    }
+
+    /** How many approved reviews gave each star, e.g. [5 => 3, 4 => 1, ...]. */
+    public function ratingBreakdown(): array
+    {
+        $rows = $this->reviews()->where('status', Review::APPROVED)
+            ->selectRaw('rating, COUNT(*) as c')->groupBy('rating')->pluck('c', 'rating')->all();
+
+        return collect(range(5, 1))->mapWithKeys(fn ($s) => [$s => (int) ($rows[$s] ?? 0)])->all();
+    }
+
+    /**
+     * The order that entitles this user to review the product — they must have
+     * bought it on an order that was not cancelled. Null when they may not review.
+     */
+    public function purchaseOrderFor(?User $user): ?Order
+    {
+        if (!$user) {
+            return null;
+        }
+
+        return Order::where('status', '!=', 'cancelled')
+            ->where(fn ($q) => $q->where('user_id', $user->id)
+                ->orWhereRaw('LOWER(customer_email) = ?', [mb_strtolower($user->email)]))
+            ->whereHas('items', fn ($q) => $q->where('product_id', $this->id))
+            ->latest()
+            ->first();
+    }
+
+    /** The order with this number that contains the product and belongs to that email. */
+    public function purchaseOrderForEmail(?string $orderNumber, ?string $email): ?Order
+    {
+        $orderNumber = trim((string) $orderNumber);
+        $email       = mb_strtolower(trim((string) $email));
+        if ($orderNumber === '' || $email === '') {
+            return null;
+        }
+
+        return Order::where('status', '!=', 'cancelled')
+            ->whereRaw('LOWER(order_number) = ?', [mb_strtolower($orderNumber)])
+            ->whereRaw('LOWER(customer_email) = ?', [$email])
+            ->whereHas('items', fn ($q) => $q->where('product_id', $this->id))
+            ->first();
+    }
+
+    /** The review left for this product from that email address, if any. */
+    public function reviewByEmail(?string $email): ?Review
+    {
+        $email = mb_strtolower(trim((string) $email));
+        if ($email === '') {
+            return null;
+        }
+        return $this->reviews()->whereRaw('LOWER(author_email) = ?', [$email])->first();
+    }
+
+    /** The review this user already left for the product, if any. */
+    public function reviewBy(?User $user): ?Review
+    {
+        if (!$user) {
+            return null;
+        }
+        return $this->reviews()
+            ->where(fn ($q) => $q->where('user_id', $user->id)
+                ->orWhereRaw('LOWER(author_email) = ?', [mb_strtolower($user->email)]))
+            ->first();
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
