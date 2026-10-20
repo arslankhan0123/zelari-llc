@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -20,7 +23,32 @@ class AccountController extends Controller
             ->latest()
             ->paginate(10, ['*'], 'orders_page');
 
-        return view('shop.account', compact('user', 'orders'));
+        $email = mb_strtolower($user->email);
+
+        // Reviews this customer has written (matched by account or by the e-mail they used)
+        $myReviews = Review::with('product')
+            ->where(fn ($q) => $q->where('user_id', $user->id)->orWhereRaw('LOWER(author_email) = ?', [$email]))
+            ->latest()
+            ->get();
+
+        // Products they bought but have not reviewed yet
+        $orderIds = Order::where('status', '!=', 'cancelled')
+            ->where(fn ($q) => $q->where('user_id', $user->id)->orWhereRaw('LOWER(customer_email) = ?', [$email]))
+            ->pluck('id');
+
+        $boughtIds = OrderItem::whereIn('order_id', $orderIds)
+            ->whereNotNull('product_id')
+            ->distinct()
+            ->pluck('product_id');
+
+        $toReview = Product::where('status', 'active')
+            ->whereIn('id', $boughtIds)
+            ->whereNotIn('id', $myReviews->pluck('product_id')->filter()->all() ?: [0])
+            ->latest()
+            ->take(12)
+            ->get();
+
+        return view('shop.account', compact('user', 'orders', 'myReviews', 'toReview'));
     }
 
     public function updateProfile(Request $request)

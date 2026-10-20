@@ -40,6 +40,32 @@
 .pw-wrap{position:relative}
 .pw-wrap .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--faint);cursor:pointer}
 @media(max-width:700px){.orders thead{display:none}.orders td{display:block;padding:6px 10px;border:0}.orders tr{display:block;border-bottom:1px solid var(--line);padding:10px 0}}
+
+/* My reviews */
+.ac-count{margin-left:auto;font-size:11px;font-weight:800;background:var(--p-soft);color:var(--p);padding:2px 7px;border-radius:999px}
+.rv-todo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:18px}
+.rv-todo-h{margin:0 0 10px;font-size:12.5px;font-weight:800;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.rv-todo-h i{color:var(--p)}
+.rv-todo-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(max-width:780px){.rv-todo-list{grid-template-columns:1fr}}
+.rv-todo-item{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:8px 11px;transition:.2s}
+.rv-todo-item:hover{border-color:transparent;box-shadow:0 12px 24px -20px rgba(var(--shadow-rgb),.6)}
+.rv-todo-item img{width:34px;height:34px;border-radius:9px;object-fit:cover;background:var(--surface);flex:none}
+.rv-todo-item .nm{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-todo-item .go{font-size:12px;font-weight:800;color:var(--p);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.rv-mine{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--line)}
+.rv-mine:last-child{border-bottom:0;padding-bottom:0}
+.rv-mine-img{width:46px;height:46px;border-radius:12px;overflow:hidden;background:var(--surface);flex:none;display:grid;place-items:center}
+.rv-mine-img img{width:100%;height:100%;object-fit:cover}
+.rv-mine-body{flex:1;min-width:0}
+.rv-mine-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rv-mine-nm{font-size:13.5px;font-weight:800;color:var(--ink)}
+.rv-mine-nm:hover{color:var(--p)}
+.rv-mine-head .stars{font-size:11.5px;color:var(--star)}
+.rv-mine-head .stars .off{color:var(--line-2)}
+.rv-mine-date{font-size:11.5px;color:var(--faint)}
+.rv-mine-title{margin:6px 0 0;font-size:13.5px;font-weight:700;color:var(--ink)}
+.rv-mine-text{margin:3px 0 0;font-size:13.5px;color:var(--muted);line-height:1.55}
 </style>
 @endpush
 
@@ -61,6 +87,7 @@
         <nav class="ac-nav">
           <a href="{{ route('account.index', ['tab' => 'orders']) }}#orders" class="{{ $tab === 'orders' ? 'on' : '' }}"><i class="fa-solid fa-box"></i> My orders</a>
           <a href="{{ route('account.index', ['tab' => 'profile']) }}#profile" class="{{ $tab === 'profile' ? 'on' : '' }}"><i class="fa-regular fa-id-badge"></i> Profile details</a>
+          <a href="{{ route('account.index', ['tab' => 'reviews']) }}#reviews" class="{{ $tab === 'reviews' ? 'on' : '' }}"><i class="fa-solid fa-star"></i> My reviews @if($myReviews->count())<span class="ac-count">{{ $myReviews->count() }}</span>@endif</a>
           <a href="{{ route('account.index', ['tab' => 'password']) }}#password" class="{{ $tab === 'password' ? 'on' : '' }}"><i class="fa-solid fa-key"></i> Password</a>
           <a href="{{ route('cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> My cart</a>
           @if(method_exists($user, 'isAdmin') && $user->isAdmin())<a href="{{ route('dashboard') }}"><i class="fa-solid fa-user-gear"></i> Admin panel</a>@endif
@@ -105,6 +132,60 @@
           @else
           <div class="empty"><i class="fa-solid fa-bag-shopping"></i><b>No orders yet</b><br><span style="font-size:13.5px">When you place an order with this email it will show up here.</span><br><a href="{{ route('shop.index') }}" class="btn-brand" style="margin-top:16px">Start shopping</a></div>
           @endif
+        </div>
+
+        {{-- Reviews --}}
+        <div class="card-z reveal" id="reviews">
+          <h3><i class="fa-solid fa-star"></i> My reviews</h3>
+          <p class="sub">Reviews you have written. New ones appear on the product page once our team approves them.</p>
+
+          @if($toReview->count())
+          <div class="rv-todo">
+            <p class="rv-todo-h"><i class="fa-regular fa-pen-to-square"></i> Waiting for your review</p>
+            <div class="rv-todo-list">
+              @foreach($toReview as $p)
+              <a class="rv-todo-item" href="{{ route('shop.show', $p->slug) }}#reviews">
+                <img src="{{ $p->display_image ?? zcat_image(null, (int) $p->id, 120) }}" alt="" loading="lazy">
+                <span class="nm">{{ $p->name }}</span>
+                <span class="go">Rate <i class="fa-solid fa-arrow-right"></i></span>
+              </a>
+              @endforeach
+            </div>
+          </div>
+          @endif
+
+          @forelse($myReviews as $r)
+          <div class="rv-mine">
+            @if($r->product)
+              <a href="{{ route('shop.show', $r->product->slug) }}#reviews" class="rv-mine-img">
+                <img src="{{ $r->product->display_image ?? zcat_image(null, (int) $r->product_id, 120) }}" alt="" loading="lazy">
+              </a>
+            @else
+              <span class="rv-mine-img"><i class="fa-solid fa-box" style="color:var(--faint)"></i></span>
+            @endif
+
+            <div class="rv-mine-body">
+              <div class="rv-mine-head">
+                @if($r->product)
+                  <a href="{{ route('shop.show', $r->product->slug) }}#reviews" class="rv-mine-nm">{{ $r->product->name }}</a>
+                @else
+                  <span class="rv-mine-nm">Product removed</span>
+                @endif
+                <span class="stars">@for($i = 1; $i <= 5; $i++)<i class="fa-solid fa-star {{ $i > $r->rating ? 'off' : '' }}"></i>@endfor</span>
+                <span class="pill {{ ['pending' => 'y', 'approved' => 'g', 'rejected' => 'gr'][$r->status] }}">
+                  {{ ['pending' => 'Awaiting approval', 'approved' => 'Published', 'rejected' => 'Not published'][$r->status] }}
+                </span>
+                <span class="rv-mine-date">{{ $r->created_at->format('d M Y') }}</span>
+              </div>
+              @if($r->title)<p class="rv-mine-title">{{ $r->title }}</p>@endif
+              <p class="rv-mine-text">{{ $r->body }}</p>
+            </div>
+          </div>
+          @empty
+            @unless($toReview->count())
+            <div class="empty"><i class="fa-regular fa-star"></i><b>No reviews yet</b><br><span style="font-size:13.5px">Once an order is placed you can rate what you bought — it only takes a minute.</span><br><a href="{{ route('shop.index') }}" class="btn-brand" style="margin-top:16px">Browse products</a></div>
+            @endunless
+          @endforelse
         </div>
 
         {{-- Profile --}}
