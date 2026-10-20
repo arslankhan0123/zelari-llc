@@ -65,15 +65,19 @@
                 </div>
 
                 <p class="text-sm text-gray-500">
-                    Exports every product with its category info, pricing, quantity and status.
-                    Use this file as a reference or edit it and re-import.
+                    Exports every product with all of its details, image links and full category
+                    info — parent and sub-category, each with its description and image link.
                 </p>
 
                 <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-500 font-mono space-y-1">
                     <p class="font-semibold text-gray-600 mb-1">Columns in export:</p>
-                    <p>name · sku · short_description</p>
-                    <p>purchase_price · sale_price · quantity · status</p>
-                    <p>parent_category · sub_category</p>
+                    <p>id · name · sku · slug · status</p>
+                    <p>purchase_price · sale_price · discount_percent · quantity</p>
+                    <p>short_description · description</p>
+                    <p>feature_image · gallery_images</p>
+                    <p>parent_category · parent_category_description · parent_category_image</p>
+                    <p>sub_category · sub_category_description · sub_category_image</p>
+                    <p>created_at · updated_at</p>
                 </div>
 
                 <a href="{{ route('admin.products.export') }}"
