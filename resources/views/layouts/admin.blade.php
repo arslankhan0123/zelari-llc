@@ -566,6 +566,7 @@
         profileOpen: false,
         notifOpen: false,
         catOpen: @yield('cat_open', 'false'),
+        manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
         custOpen: @yield('cust_open', 'false')
@@ -644,6 +645,34 @@
                     </a>
                     <a href="{{ route('admin.categories.create') }}"
                         class="sub-item {{ request()->routeIs('admin.categories.create') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Add New
+                    </a>
+                </div>
+            </div>
+
+            <!-- Manufacturers -->
+            <div>
+                <button @click="manuOpen = !manuOpen"
+                    class="nav-item w-full {{ request()->routeIs('admin.manufacturers.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span class="nav-label flex-1 text-left">Manufacturers</span>
+                    <svg :class="{ 'rotate-180': manuOpen }" class="nav-label w-4 h-4 transition-transform" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div class="submenu" :style="manuOpen ? 'max-height:200px' : 'max-height:0'">
+                    <a href="{{ route('admin.manufacturers.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.manufacturers.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        All Manufacturers
+                    </a>
+                    <a href="{{ route('admin.manufacturers.create') }}"
+                        class="sub-item {{ request()->routeIs('admin.manufacturers.create') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         Add New
                     </a>

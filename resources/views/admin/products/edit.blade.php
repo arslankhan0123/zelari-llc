@@ -85,6 +85,17 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <!-- Manufacturer -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Manufacturer / Brand</label>
+                        <select name="manufacturer_id" class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">— No Brand —</option>
+                            @foreach(($manufacturers ?? collect()) as $brand)
+                            <option value="{{ $brand->id }}" {{ (string) old('manufacturer_id', $product->manufacturer_id) === (string) $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Pricing & Stock -->

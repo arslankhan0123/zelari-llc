@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ManufacturerController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ImportExportController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [ShopController::class, 'home'])->name('home');
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('shop.show');
+Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
 Route::get('/about', [ShopController::class, 'about'])->name('about');
 Route::match(['get','post'], '/contact', [ShopController::class, 'contact'])->name('contact');
 Route::post('/location', [LocationController::class, 'set'])->name('location.set');
@@ -73,6 +75,15 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::patch('/{category}', [CategoryController::class, 'update'])->name('patch');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('manufacturers')->name('manufacturers.')->group(function () {
+        Route::get('/', [ManufacturerController::class, 'index'])->name('index');
+        Route::get('/create', [ManufacturerController::class, 'create'])->name('create');
+        Route::post('/', [ManufacturerController::class, 'store'])->name('store');
+        Route::get('/{manufacturer}/edit', [ManufacturerController::class, 'edit'])->name('edit');
+        Route::put('/{manufacturer}', [ManufacturerController::class, 'update'])->name('update');
+        Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('products')->name('products.')->group(function () {

@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Manufacturer;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -87,6 +88,14 @@ class ShopController extends Controller
             $query->whereRaw('COALESCE(sale_price, purchase_price) <= ?', [(float) $request->max_price / $rate]);
         }
 
+        // Brand filter (used by the Brands page links)
+        $selectedBrand = $request->filled('brand')
+            ? Manufacturer::where('slug', $request->brand)->first()
+            : null;
+        if ($selectedBrand) {
+            $query->where('manufacturer_id', $selectedBrand->id);
+        }
+
         // In stock only
         if ($request->boolean('in_stock')) {
             $query->where('quantity', '>', 0);
@@ -168,6 +177,17 @@ class ShopController extends Controller
         }
 
         return view('shop.show', compact('product', 'related'));
+    }
+
+    /** /brands — every active manufacturer, featured ones first. */
+    public function brands()
+    {
+        $brands = Manufacturer::active()
+            ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
+            ->ordered()
+            ->get();
+
+        return view('shop.brands', compact('brands'));
     }
 
     public function about()

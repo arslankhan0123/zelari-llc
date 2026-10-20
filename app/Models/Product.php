@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class Product extends Model
 {
     protected $fillable = [
-        'category_id', 'name', 'slug', 'sku',
+        'category_id', 'manufacturer_id', 'name', 'slug', 'sku',
         'feature_image', 'purchase_price', 'sale_price',
         'quantity', 'short_description', 'description', 'status',
     ];
@@ -34,6 +34,11 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function manufacturer(): BelongsTo
+    {
+        return $this->belongsTo(Manufacturer::class);
     }
 
     public function images(): HasMany

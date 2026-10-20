@@ -35,8 +35,9 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
-        return view('admin.products.create', compact('categories'));
+        $categories    = Category::where('status', 'active')->orderBy('name')->get();
+        $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
+        return view('admin.products.create', compact('categories', 'manufacturers'));
     }
 
     public function store(Request $request)
@@ -45,6 +46,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
             'category_id' => 'nullable|exists:categories,id',
+            'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku|max:100',
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
@@ -98,8 +100,9 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load('images');
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
-        return view('admin.products.edit', compact('product', 'categories'));
+        $categories    = Category::where('status', 'active')->orderBy('name')->get();
+        $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
+        return view('admin.products.edit', compact('product', 'categories', 'manufacturers'));
     }
 
     public function update(Request $request, Product $product)
@@ -108,6 +111,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
             'category_id' => 'nullable|exists:categories,id',
+            'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku,' . $product->id . '|max:100',
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
