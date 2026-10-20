@@ -729,6 +729,10 @@
             </div>
 
             <!-- Orders -->
+            @php
+                try { $pendingOrders = \App\Models\Order::where('status', 'pending')->count(); }
+                catch (\Throwable $e) { $pendingOrders = 0; }
+            @endphp
             <div>
                 <button @click="orderOpen = !orderOpen"
                     class="nav-item w-full {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
@@ -737,6 +741,9 @@
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     <span class="nav-label flex-1 text-left">Orders</span>
+                    @if($pendingOrders)
+                        <span x-show="!orderOpen" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="{{ $pendingOrders }} pending orders">{{ $pendingOrders }}</span>
+                    @endif
                     <svg :class="{ 'rotate-180': orderOpen }" class="nav-label w-4 h-4 transition-transform" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -746,7 +753,10 @@
                     <a href="{{ route('admin.orders.index') }}"
                         class="sub-item {{ request()->routeIs('admin.orders.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
-                        All Orders
+                        <span class="flex-1">All Orders</span>
+                        @if($pendingOrders)
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="{{ $pendingOrders }} pending orders">{{ $pendingOrders }}</span>
+                        @endif
                     </a>
                     <a href="{{ route('admin.orders.create') }}"
                         class="sub-item {{ request()->routeIs('admin.orders.create') ? 'active' : '' }}">
