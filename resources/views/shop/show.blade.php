@@ -64,24 +64,28 @@
 .tabs-nav button.on::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad)}
 .tab-pane{display:none;padding:26px;font-size:15px;color:var(--ink-2);line-height:1.8}
 .tab-pane.on{display:block;animation:popIn .3s ease}
-.rev{display:flex;gap:14px;padding:14px 0;border-bottom:1px dashed var(--line)}
-.rev .av{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0}
-.rev b{font-size:14px}
-.rev p{margin:4px 0 0;font-size:14px;color:var(--muted)}
-.rv-vp{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:#0d7a52;background:#e6f7f0;padding:2px 8px;border-radius:999px;margin-left:8px}
-.rv-date{font-size:12px;color:var(--faint);margin-left:8px}
-.rv-sum{display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding:18px 20px;background:var(--surface);border-radius:var(--r-lg);margin-bottom:18px}
-.rv-score{text-align:center;min-width:120px}
-.rv-score b{display:block;font-size:38px;line-height:1;letter-spacing:-1px}
-.rv-score .stars{display:block;margin:6px 0 2px}
-.rv-score small{color:var(--muted);font-size:12.5px}
-.rv-bars{flex:1;min-width:240px;display:grid;gap:6px}
-.rv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
-.rv-bar>span{width:34px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-2);font-weight:700}
-.rv-bar>span i{font-size:10px;color:var(--star)}
-.rv-bar .track{flex:1;height:7px;border-radius:99px;background:var(--line);overflow:hidden;display:block}
+.rev{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rev:last-of-type{border-bottom:0}
+.rev .av{width:34px;height:34px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+.rev-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1}
+.rev b{font-size:13.5px}
+.rev .stars{font-size:11.5px}
+.rev p{margin:5px 0 0;font-size:13.5px;color:var(--muted);line-height:1.55}
+.rev .rev-title{color:var(--ink);font-weight:700;margin-top:4px;font-size:13.5px}
+.rv-vp{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:#0d7a52;background:#e6f7f0;padding:2px 7px;border-radius:999px}
+.rv-date{font-size:11.5px;color:var(--faint)}
+.rv-sum{display:flex;gap:22px;align-items:center;flex-wrap:wrap;padding:14px 18px;background:var(--surface);border-radius:14px;margin-bottom:6px}
+.rv-score{display:flex;align-items:center;gap:10px}
+.rv-score b{font-size:28px;line-height:1;letter-spacing:-.5px}
+.rv-score .stars{font-size:12px;display:block}
+.rv-score small{color:var(--muted);font-size:12px;display:block;margin-top:3px}
+.rv-bars{display:grid;gap:4px;min-width:200px;max-width:320px;flex:1}
+.rv-bar{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
+.rv-bar>span{width:26px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-2);font-weight:700}
+.rv-bar>span i{font-size:9px;color:var(--star)}
+.rv-bar .track{flex:1;height:5px;border-radius:99px;background:var(--line-2);overflow:hidden;display:block}
 .rv-bar .track b{display:block;height:100%;background:var(--star);border-radius:99px}
-.rv-bar small{width:24px;text-align:right}
+.rv-bar small{width:16px;text-align:right}
 .rv-write{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
 .rv-write h3{font-size:17px;font-weight:800;margin:0 0 4px}
 .rv-sub{font-size:13.5px;color:var(--muted);margin:0 0 14px;max-width:620px}
@@ -184,7 +188,7 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       </div>
       <div class="pd-tax">Inclusive of all taxes · {{ zfree_over() > 0 ? 'Free delivery over '.zprice(zfree_over()) : 'Free delivery' }}</div>
 
-      @if($product->short_description)<div class="pd-short">{{ $product->short_description }}</div>@endif
+      @if($product->short_description)<div class="pd-short">{{ trim(html_entity_decode(strip_tags($product->short_description), ENT_QUOTES, 'UTF-8')) }}</div>@endif
 
       @if($qty<=0)<span class="stock out"><span class="d"></span> Out of stock</span>
       @elseif($qty<=5)<span class="stock low"><span class="d"></span> Hurry! Only {{ $qty }} left</span>
@@ -239,7 +243,12 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       <button id="tabReviews" onclick="tab(this,'t3')">Reviews ({{ $revCount }})</button>
     </div>
     <div class="tab-pane on" id="t1">
-      {!! $product->description ? nl2br(e($product->description)) : '<span style="color:var(--faint)">No description provided for this product yet.</span>' !!}
+      @php
+        // Descriptions can arrive with HTML (from the import or a rich editor).
+        // Strip the markup and show clean text, keeping paragraph breaks.
+        $zdesc = trim(preg_replace("/\n{3,}/", "\n\n", html_entity_decode(strip_tags(preg_replace('#<(br|/p|/div|/li)[^>]*>#i', "\n", (string) $product->description)), ENT_QUOTES, 'UTF-8')));
+      @endphp
+      {!! $zdesc !== '' ? nl2br(e($zdesc)) : '<span style="color:var(--faint)">No description provided for this product yet.</span>' !!}
     </div>
     <div class="tab-pane" id="t2">
       <table class="table" style="max-width:560px;font-size:14px">
@@ -283,12 +292,14 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       @forelse($reviews as $r)
         <div class="rev">
           <div class="av">{{ $r->initial }}</div>
-          <div style="flex:1">
-            <b>{{ $r->author_name }}</b>
-            <span class="stars" style="margin-left:6px">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$r->rating?'off':'' }}"></i>@endfor</span>
-            @if($r->verified_purchase)<span class="rv-vp"><i class="fa-solid fa-circle-check"></i> Verified purchase</span>@endif
-            <span class="rv-date">{{ $r->created_at->format('d M Y') }}</span>
-            @if($r->title)<p style="color:var(--ink);font-weight:700;margin-top:6px">{{ $r->title }}</p>@endif
+          <div style="flex:1;min-width:0">
+            <div class="rev-head">
+              <b>{{ $r->author_name }}</b>
+              <span class="stars">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$r->rating?'off':'' }}"></i>@endfor</span>
+              @if($r->verified_purchase)<span class="rv-vp"><i class="fa-solid fa-circle-check"></i> Verified</span>@endif
+              <span class="rv-date">{{ $r->created_at->format('d M Y') }}</span>
+            </div>
+            @if($r->title)<p class="rev-title">{{ $r->title }}</p>@endif
             <p>{{ $r->body }}</p>
           </div>
         </div>

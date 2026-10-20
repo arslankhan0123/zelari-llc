@@ -67,113 +67,150 @@
 </form>
 
 <!-- List -->
-<div class="space-y-4">
-    @forelse($reviews as $r)
-    <div class="bg-white rounded-2xl p-5" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="flex items-start gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-brand-grad text-white flex items-center justify-center font-bold flex-shrink-0">
-                    {{ strtoupper(substr($r->author_name, 0, 1)) }}
-                </div>
-                <div class="min-w-0">
-                    <div class="flex items-center flex-wrap gap-2">
-                        <span class="font-semibold text-gray-800">{{ $r->author_name }}</span>
-                        @if($r->verified_purchase)
-                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">VERIFIED PURCHASE</span>
+<div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+    @if($reviews->count())
+    <div class="overflow-x-auto">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:210px">Customer</th>
+                    <th style="width:90px">Rating</th>
+                    <th>Review</th>
+                    <th style="width:150px">Product</th>
+                    <th style="width:120px">Order</th>
+                    <th style="width:100px">Status</th>
+                    <th style="width:150px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($reviews as $r)
+                <tr>
+                    {{-- Customer --}}
+                    <td>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-brand-grad text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {{ strtoupper(substr($r->author_name, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-semibold text-gray-800 text-sm truncate flex items-center gap-1.5">
+                                    {{ $r->author_name }}
+                                    @if($r->verified_purchase)
+                                        <i class="fa-solid fa-circle-check text-green-500 text-[11px]" title="Verified purchase"></i>
+                                    @endif
+                                </div>
+                                <div class="text-xs text-gray-400 truncate" title="{{ $r->author_email }}">{{ $r->author_email }}</div>
+                            </div>
+                        </div>
+                    </td>
+
+                    {{-- Rating --}}
+                    <td>
+                        <div class="text-amber-400 text-xs whitespace-nowrap">
+                            @for($i = 1; $i <= 5; $i++)<i class="fa-solid fa-star {{ $i > $r->rating ? 'text-gray-200' : '' }}"></i>@endfor
+                        </div>
+                        <div class="text-[11px] text-gray-400 mt-1">{{ $r->created_at->format('d M Y') }}</div>
+                    </td>
+
+                    {{-- Review text --}}
+                    <td>
+                        @if($r->title)<p class="font-semibold text-gray-800 text-sm">{{ $r->title }}</p>@endif
+                        <p class="text-sm text-gray-600 leading-snug">{{ Str::limit($r->body, 150) }}</p>
+                        @if(mb_strlen($r->body) > 150)
+                            <details class="mt-1">
+                                <summary class="text-xs text-indigo-600 cursor-pointer hover:underline">Read full review</summary>
+                                <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ $r->body }}</p>
+                            </details>
                         @endif
-                        <span class="text-xs {{ ['pending' => 'text-amber-600 bg-amber-50', 'approved' => 'text-green-600 bg-green-50', 'rejected' => 'text-red-500 bg-red-50'][$r->status] }} font-semibold px-2 py-0.5 rounded-full">
+                        @if($r->admin_note)<p class="text-xs text-gray-400 mt-1"><b>Note:</b> {{ $r->admin_note }}</p>@endif
+                    </td>
+
+                    {{-- Product --}}
+                    <td>
+                        @if($r->product)
+                            <a href="{{ route('admin.products.edit', $r->product) }}" class="text-sm text-gray-700 hover:text-indigo-600">{{ Str::limit($r->product->name, 22) }}</a>
+                        @else
+                            <span class="text-xs text-gray-400">deleted</span>
+                        @endif
+                    </td>
+
+                    {{-- Order --}}
+                    <td>
+                        @if($r->order)
+                            <a href="{{ route('admin.orders.show', $r->order) }}" class="font-mono text-xs text-indigo-600 hover:underline">{{ $r->order->order_number }}</a>
+                        @else
+                            <span class="text-xs text-gray-300">—</span>
+                        @endif
+                    </td>
+
+                    {{-- Status --}}
+                    <td>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap {{ ['pending' => 'text-amber-600 bg-amber-50', 'approved' => 'text-green-600 bg-green-50', 'rejected' => 'text-red-500 bg-red-50'][$r->status] }}">
                             {{ ucfirst($r->status) }}
                         </span>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-0.5">
-                        {{ $r->author_email }} · {{ $r->created_at->format('d M Y, g:i A') }}
-                        @if($r->order) · <a href="{{ route('admin.orders.show', $r->order) }}" class="text-indigo-600 hover:underline">{{ $r->order->order_number }}</a>@endif
-                    </p>
-                </div>
-            </div>
+                    </td>
 
-            <div class="text-right">
-                <div class="text-amber-400 text-sm">
-                    @for($i = 1; $i <= 5; $i++)<i class="fa-solid fa-star {{ $i > $r->rating ? 'text-gray-200' : '' }}"></i>@endfor
-                </div>
-                @if($r->product)
-                    <a href="{{ route('admin.products.edit', $r->product) }}" class="text-xs text-gray-500 hover:text-indigo-600">{{ Str::limit($r->product->name, 34) }}</a>
-                @else
-                    <span class="text-xs text-gray-400">product deleted</span>
-                @endif
-            </div>
-        </div>
+                    {{-- Actions --}}
+                    <td>
+                        <div class="flex items-center gap-2">
+                            @if($r->status !== 'approved')
+                            <form method="POST" action="{{ route('admin.reviews.approve', $r) }}">
+                                @csrf
+                                <button class="w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 flex items-center justify-center text-green-600 transition" title="Approve &amp; publish">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            </form>
+                            @else
+                            <form method="POST" action="{{ route('admin.reviews.unpublish', $r) }}">
+                                @csrf
+                                <button class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition" title="Unpublish (back to pending)">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029M9.88 9.88a3 3 0 104.24 4.24M3 3l18 18"/></svg>
+                                </button>
+                            </form>
+                            @endif
 
-        <div class="mt-3 pl-0 sm:pl-13">
-            @if($r->title)<p class="font-semibold text-gray-800 text-sm mb-1">{{ $r->title }}</p>@endif
-            <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{{ $r->body }}</p>
-            @if($r->admin_note)
-                <p class="text-xs text-gray-400 mt-2"><b>Staff note:</b> {{ $r->admin_note }}</p>
-            @endif
-        </div>
+                            @if($r->status !== 'rejected')
+                            <form method="POST" action="{{ route('admin.reviews.reject', $r) }}" onsubmit="return confirm('Reject this review? It stays hidden from the website.')">
+                                @csrf
+                                <button class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition" title="Reject">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </form>
+                            @endif
 
-        <div class="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
-            @if($r->status !== 'approved')
-            <form method="POST" action="{{ route('admin.reviews.approve', $r) }}">
-                @csrf
-                <button class="text-xs font-semibold px-3 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    Approve &amp; publish
-                </button>
-            </form>
-            @endif
+                            @if($r->product)
+                            <a href="{{ route('shop.show', $r->product->slug) }}#reviews" target="_blank" rel="noopener"
+                               class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition" title="View on site">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </a>
+                            @endif
 
-            @if($r->status !== 'rejected')
-            <form method="POST" action="{{ route('admin.reviews.reject', $r) }}" onsubmit="return confirm('Reject this review? It stays hidden from the website.')">
-                @csrf
-                <button class="text-xs font-semibold px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                    Reject
-                </button>
-            </form>
-            @endif
-
-            @if($r->status === 'approved')
-            <form method="POST" action="{{ route('admin.reviews.unpublish', $r) }}">
-                @csrf
-                <button class="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/></svg>
-                    Unpublish
-                </button>
-            </form>
-            @endif
-
-            @if($r->product)
-            <a href="{{ route('shop.show', $r->product->slug) }}#reviews" target="_blank" rel="noopener"
-               class="text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                View on site
-            </a>
-            @endif
-
-            <form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" class="ml-auto"
-                  onsubmit="return confirm('Delete this review permanently?')">
-                @csrf @method('DELETE')
-                <button class="text-xs font-semibold px-3 py-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    Delete
-                </button>
-            </form>
-        </div>
+                            <form method="POST" action="{{ route('admin.reviews.destroy', $r) }}" onsubmit="return confirm('Delete this review permanently?')">
+                                @csrf @method('DELETE')
+                                <button class="w-8 h-8 rounded-lg bg-gray-50 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-    @empty
-    <div class="bg-white rounded-2xl text-center py-16 px-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+
+    @if($reviews->hasPages())
+    <div class="px-6 py-4 border-t border-gray-100">{{ $reviews->withQueryString()->links() }}</div>
+    @endif
+
+    @else
+    <div class="text-center py-16 px-6">
         <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.9 9.9 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
         </div>
         <h3 class="font-semibold text-gray-700 mb-1">No reviews{{ request()->hasAny(['search','status','rating']) ? ' match these filters' : ' yet' }}</h3>
         <p class="text-sm text-gray-400">Customers can review a product once they have ordered it. New reviews land here for approval.</p>
     </div>
-    @endforelse
+    @endif
 </div>
-
-@if($reviews->hasPages())
-<div class="mt-5">{{ $reviews->withQueryString()->links() }}</div>
-@endif
 
 @endsection
