@@ -10,17 +10,16 @@
      * $placeholder  text for the empty choice
      * $triggerClass classes for the closed control so it matches surrounding inputs
      * $rules        false for a flat list with no group dividers (e.g. brands)
-     * $searchable   force the search box on/off; null = whenever there is more than one item
+     * $searchable   false hides the search box (shown by default)
      */
     $name         = $name        ?? 'category_id';
     $placeholder  = $placeholder ?? '— No Category —';
     $selected     = (string) ($selected ?? '');
     $triggerClass = $triggerClass ?? 'form-input';
     $rules        = $rules       ?? true;          // group dividers (off for flat lists)
-    $searchable   = $searchable  ?? null;          // auto: only when the list is long
+    $searchable   = (bool) ($searchable ?? true);  // pass false to hide the search box
 
     $list = collect($items)->values();
-    $searchable = $searchable === null ? $list->count() > 1 : (bool) $searchable;
     $opts = [];
     foreach ($list as $i => $row) {
         $opts[] = [
