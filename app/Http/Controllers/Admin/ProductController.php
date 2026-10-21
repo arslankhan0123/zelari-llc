@@ -35,7 +35,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories    = Category::where('status', 'active')->orderBy('name')->get();
+        $categories    = Category::treeOrdered();
         $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
         return view('admin.products.create', compact('categories', 'manufacturers'));
     }
@@ -100,7 +100,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load('images');
-        $categories    = Category::where('status', 'active')->orderBy('name')->get();
+        $categories    = Category::treeOrdered();
         $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
         return view('admin.products.edit', compact('product', 'categories', 'manufacturers'));
     }

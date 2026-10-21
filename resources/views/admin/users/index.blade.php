@@ -33,6 +33,7 @@
     </form>
 
     <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+        <div class="table-scroll">
         <table class="data-table">
             <thead><tr><th>User</th><th>Role</th><th>Password</th><th>Created</th><th class="text-center">Actions</th></tr></thead>
             <tbody>
@@ -86,6 +87,7 @@
             @endforelse
             </tbody>
         </table>
+        </div>
         @if($users->hasPages())<div class="px-6 py-4 border-t border-gray-100">{{ $users->links() }}</div>@endif
     </div>
 

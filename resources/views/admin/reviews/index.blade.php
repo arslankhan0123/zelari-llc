@@ -69,7 +69,7 @@
 <!-- List -->
 <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
     @if($reviews->count())
-    <div class="overflow-x-auto">
+    <div class="table-scroll">
         <table class="data-table">
             <thead>
                 <tr>

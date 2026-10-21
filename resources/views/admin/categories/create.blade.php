@@ -76,14 +76,13 @@
                     <label class="form-label">Parent Category
                         <span class="text-gray-400 font-normal text-xs ml-1">(optional)</span>
                     </label>
-                    <select name="parent_id" class="form-input @error('parent_id') border-red-400 @enderror">
-                        <option value="">— None (Top-level category) —</option>
-                        @foreach($parents as $parent)
-                            <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
-                                {{ $parent->parent_id ? '— ' . $parent->parent->name . ' › ' . $parent->name : $parent->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @include('admin.partials.category-select', [
+                        'items' => $parents,
+                        'name' => 'parent_id',
+                        'selected' => old('parent_id'),
+                        'placeholder' => '— None (Top-level category) —',
+                        'triggerClass' => 'form-input ' . ($errors->has('parent_id') ? 'border-red-400' : ''),
+                    ])
                     @error('parent_id')
                         <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                     @enderror

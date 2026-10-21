@@ -122,14 +122,14 @@
                     <h3 class="font-semibold text-gray-700">Order <a href="{{ route('admin.orders.show', $o) }}" class="font-mono text-indigo-600 hover:underline">{{ $o->order_number }}</a></h3>
                     <span class="badge-{{ $o->status_color }}">{{ ucfirst($o->status) }}</span>
                 </div>
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                     <thead><tr><th>Product</th><th class="text-center">Qty</th><th class="text-right">Subtotal</th></tr></thead>
                     <tbody>
                         @foreach($o->items as $it)
                         <tr><td class="text-sm text-gray-800">{{ $it->product_name }}</td><td class="text-center text-sm">{{ $it->quantity }}</td><td class="text-right text-sm font-semibold">{{ $o->money($it->subtotal) }}</td></tr>
                         @endforeach
                     </tbody>
-                </table>
+                </table></div>
                 <div class="px-6 py-4 border-t border-gray-100 flex justify-between font-bold text-gray-800"><span>Order total</span><span>{{ $o->money($o->total) }}</span></div>
             </div>
             @endif

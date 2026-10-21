@@ -132,6 +132,13 @@
             transition: max-height .3s ease;
         }
 
+        @media (max-width: 640px) {
+            main { padding: 14px !important; }
+            .data-table th { padding: 11px 12px; font-size: 11px; }
+            .data-table td { padding: 11px 12px; font-size: 13px; }
+            .page-header { flex-direction: column; align-items: stretch; gap: 12px; }
+        }
+
         .sub-item {
             display: flex;
             align-items: center;
@@ -159,8 +166,94 @@
         /* Sidebar user bottom */
         .sidebar-user {
             border-top: 1px solid rgba(255, 255, 255, .07);
-            padding: 14px 16px;
+            padding: 10px 12px;
+            position: relative;
         }
+
+        .brand-text { min-width: 0; }
+
+        .brand-text > div,
+        .user-info > span {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [x-cloak] { display: none !important; }
+
+        .acct-trigger {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 8px 10px;
+            border: 0;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background .18s;
+        }
+
+        .acct-trigger:hover,
+        .acct-trigger.is-open { background: rgba(255, 255, 255, .08); }
+
+        .acct-menu {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: calc(100% - 4px);
+            background: #161a33;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 14px;
+            padding: 6px;
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, .65);
+            z-index: 60;
+        }
+
+        .acct-head {
+            margin: 4px 10px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .3);
+        }
+
+        .acct-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            width: 100%;
+            padding: 9px 10px;
+            border: 0;
+            border-radius: 9px;
+            background: none;
+            color: rgba(255, 255, 255, .72);
+            font-size: 13.5px;
+            font-weight: 600;
+            font-family: inherit;
+            text-align: left;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+
+        .acct-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+        .acct-item:hover { background: rgba(255, 255, 255, .09); color: #fff; }
+        .acct-item.on { background: rgba(255, 255, 255, .13); color: #fff; }
+        .acct-item.danger { color: #ff8095; }
+        .acct-item.danger:hover { background: rgba(255, 80, 110, .14); color: #ff9aab; }
+
+        .acct-sep { height: 1px; margin: 5px 8px; background: rgba(255, 255, 255, .09); }
+
+        /* the sidebar clips its content, so let it show the menu while it is open */
+        #sidebar.acct-open { overflow: visible; }
+
+        /* collapsed rail: float the menu out to a readable width */
+        #sidebar.collapsed .acct-menu { left: 8px; right: auto; width: 230px; }
+        #sidebar.collapsed .acct-trigger { justify-content: center; padding: 8px; }
 
         /* ── Main area ───────────────────────── */
         #main-wrap {
@@ -269,6 +362,29 @@
             border-spacing: 0;
             width: 100%;
         }
+
+        /* Tables scroll sideways instead of being cut off on small screens */
+        /* divider after each top-level category group in the category picker */
+        .cat-rule { height: 7px; background: #EFF6FF; }
+
+        .table-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+
+        .table-scroll .data-table,
+        .table-scroll table { min-width: 820px; }
+
+        .table-scroll::-webkit-scrollbar { height: 8px; }
+        .table-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 99px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+        .table-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Nothing inside the page may push the layout wider than the screen */
+        #main-wrap, #topbar, main { max-width: 100%; min-width: 0; }
+        main { overflow-x: hidden; }
 
         .data-table th {
             background: #f8fafc;
@@ -524,10 +640,23 @@
                 width: var(--sidebar-w) !important;
             }
 
-            #sidebar.mobile-open .nav-label,
+            #sidebar.mobile-open .nav-label {
+                display: inline !important;
+            }
+
+            /* These two stack a title over a subtitle — flex would sit them side by side */
             #sidebar.mobile-open .brand-text,
             #sidebar.mobile-open .user-info {
-                display: flex !important;
+                display: block !important;
+                min-width: 0;
+            }
+
+            #sidebar.mobile-open .brand-text > div,
+            #sidebar.mobile-open .user-info > span {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             #sidebar.mobile-open .nav-item {
@@ -565,6 +694,7 @@
         sidebarMobile: false,
         profileOpen: false,
         notifOpen: false,
+        acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
@@ -576,7 +706,7 @@
     <div class="mobile-overlay" :class="{ 'block': sidebarMobile }" @click="sidebarMobile=false"></div>
 
     <!-- ════════ SIDEBAR ════════ -->
-    <aside id="sidebar" :class="{ 'collapsed': !sidebarOpen && window.innerWidth > 768, 'mobile-open': sidebarMobile }">
+    <aside id="sidebar" :class="{ 'collapsed': !sidebarOpen && window.innerWidth > 768, 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
 
         <!-- Aurora blobs -->
         <div class="sb-blob sb-blob-1"></div>
@@ -820,50 +950,70 @@
                 <span class="nav-label">All Payments</span>
             </a>
 
-            <!-- Settings -->
-            <div class="nav-label px-5 mb-1 mt-4">
-                <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Account</span>
-            </div>
-            <a href="{{ route('profile.edit') }}"
-                class="nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span class="nav-label">My Profile</span>
-            </a>
-            @if(auth()->user()?->isSuperAdmin())
-            <a href="{{ route('admin.users.index') }}"
-                class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span class="nav-label">Users &amp; Roles</span>
-            </a>
-            @endif
-            <a href="{{ route('admin.settings.index') }}"
-                class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span class="nav-label">Settings</span>
-            </a>
         </nav>
 
-        <!-- Sidebar bottom user -->
-        <div class="sidebar-user">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm bg-brand-grad">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
-                </div>
-                <div class="user-info min-w-0">
-                    <div class="text-white text-sm font-semibold truncate">{{ Auth::user()->name ?? 'Admin' }}</div>
-                    <div class="text-white/40 text-xs truncate">{{ Auth::user()->email ?? '' }}</div>
-                </div>
+        <!-- Sidebar bottom user + account menu -->
+        <div class="sidebar-user" @keydown.escape.window="acctOpen = false">
+
+            <!-- Menu (opens above the trigger) -->
+            <div x-show="acctOpen" x-cloak
+                 @click.outside="acctOpen = false"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0 translate-y-1"
+                 class="acct-menu">
+
+                <p class="acct-head">Account</p>
+
+                <a href="{{ route('profile.edit') }}" class="acct-item {{ request()->routeIs('profile.edit') ? 'on' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    My Profile
+                </a>
+
+                @if(auth()->user()?->isSuperAdmin())
+                <a href="{{ route('admin.users.index') }}" class="acct-item {{ request()->routeIs('admin.users.*') ? 'on' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    Users &amp; Roles
+                </a>
+                @endif
+
+                <a href="{{ route('admin.settings.index') }}" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Settings
+                </a>
+
+                <a href="{{ route('home') }}" target="_blank" rel="noopener" class="acct-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
+                    View storefront
+                </a>
+
+                <div class="acct-sep"></div>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="acct-item danger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Log out
+                    </button>
+                </form>
             </div>
+
+            <!-- Trigger -->
+            <button type="button" class="acct-trigger" :class="{ 'is-open': acctOpen }" @click="acctOpen = !acctOpen">
+                <span class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm bg-brand-grad">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                </span>
+                <span class="user-info min-w-0 flex-1 text-left">
+                    <span class="block text-white text-sm font-semibold truncate">{{ Auth::user()->name ?? 'Admin' }}</span>
+                    <span class="block text-white/40 text-xs truncate">{{ Auth::user()->email ?? '' }}</span>
+                </span>
+                <svg class="user-info w-4 h-4 text-white/40 transition-transform flex-shrink-0" :class="{ 'rotate-180': acctOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                </svg>
+            </button>
         </div>
     </aside>
 

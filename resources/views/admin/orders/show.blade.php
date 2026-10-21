@@ -66,7 +66,7 @@
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h3 class="font-semibold text-gray-700">Order Items</h3>
                 </div>
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                     <thead><tr><th>Product</th><th class="text-center">Qty</th><th class="text-right">Unit Price</th><th class="text-right">Subtotal</th></tr></thead>
                     <tbody>
                         @foreach($order->items as $item)
@@ -81,7 +81,7 @@
                         </tr>
                         @endforeach
                     </tbody>
-                </table>
+                </table></div>
                 <div class="px-6 py-4 space-y-2 border-t border-gray-100">
                     <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>{{ $order->money($order->subtotal) }}</span></div>
                     @if($order->discount > 0)<div class="flex justify-between text-sm text-emerald-600"><span>Discount</span><span>− {{ $order->money($order->discount) }}</span></div>@endif

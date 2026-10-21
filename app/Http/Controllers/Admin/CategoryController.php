@@ -37,10 +37,7 @@ class CategoryController extends Controller
 
     public function create()
     {
-        $parents = Category::where('status', 'active')
-            ->orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')
-            ->with('parent')
-            ->get();
+        $parents = Category::treeOrdered();
         return view('admin.categories.create', compact('parents'));
     }
 
@@ -81,11 +78,7 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        $parents = Category::where('status', 'active')
-            ->where('id', '!=', $category->id)
-            ->orderByRaw('COALESCE(parent_id, id), parent_id IS NOT NULL, name')
-            ->with('parent')
-            ->get();
+        $parents = Category::treeOrdered(true, $category->id);
         return view('admin.categories.edit', compact('category', 'parents'));
     }
 

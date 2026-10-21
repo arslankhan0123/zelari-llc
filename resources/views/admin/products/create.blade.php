@@ -76,23 +76,26 @@
                     <!-- Category -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
-                        <select name="category_id" class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">— No Category —</option>
-                            @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                            @endforeach
-                        </select>
+                        @include('admin.partials.category-select', [
+                            'items' => $categories,
+                            'name' => 'category_id',
+                            'selected' => old('category_id'),
+                            'placeholder' => '— No Category —',
+                            'triggerClass' => 'w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                        ])
                     </div>
 
                     <!-- Manufacturer -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Manufacturer / Brand</label>
-                        <select name="manufacturer_id" class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">— No Brand —</option>
-                            @foreach(($manufacturers ?? collect()) as $brand)
-                            <option value="{{ $brand->id }}" {{ (string) old('manufacturer_id', '') === (string) $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
-                            @endforeach
-                        </select>
+                        @include('admin.partials.category-select', [
+                            'items' => $manufacturers ?? collect(),
+                            'name' => 'manufacturer_id',
+                            'selected' => old('manufacturer_id', ''),
+                            'placeholder' => '— No Brand —',
+                            'rules' => false,
+                            'triggerClass' => 'w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                        ])
                     </div>
                 </div>
 

@@ -120,6 +120,85 @@ class Category extends Model
         return $total;
     }
 
+    /**
+     * Every category flattened into parent → child → grandchild order, each with a
+     * "depth" attribute, so dropdowns can show the real hierarchy:
+     *
+     *   Cosmetics
+     *   — Shampoo
+     *   —— Sunsilk
+     *   Electronics
+     *
+     * @param  bool      $activeOnly  skip inactive categories
+     * @param  int|null  $excludeId   drop this category and everything under it
+     *                                (used by the category form so a branch can't
+     *                                be made its own parent)
+     */
+    public static function treeOrdered(bool $activeOnly = true, ?int $excludeId = null): \Illuminate\Support\Collection
+    {
+        $all = static::query()
+            ->when($activeOnly, fn ($q) => $q->where('status', 'active'))
+            ->orderBy('name')
+            ->get();
+
+        if ($excludeId) {
+            $all = $all->where('id', '!=', $excludeId);
+        }
+
+        $byParent = $all->groupBy(fn ($c) => (int) ($c->parent_id ?? 0));
+        $out      = collect();
+        $seen     = [];
+
+        $walk = function (int $parentId, int $depth) use (&$walk, $byParent, $out, &$seen, $excludeId) {
+            if ($depth > 10) {               // guard against a bad parent loop
+                return;
+            }
+            foreach ($byParent->get($parentId, collect()) as $cat) {
+                if (isset($seen[$cat->id]) || $cat->id === $excludeId) {
+                    continue;
+                }
+                $seen[$cat->id] = true;
+                $cat->setAttribute('depth', $depth);
+                $out->push($cat);
+                $walk((int) $cat->id, $depth + 1);
+            }
+        };
+
+        // Walk one top-level category at a time so we know where each group ends
+        foreach ($byParent->get(0, collect()) as $root) {
+            if (isset($seen[$root->id]) || $root->id === $excludeId) {
+                continue;
+            }
+            $seen[$root->id] = true;
+            $root->setAttribute('depth', 0);
+            $out->push($root);
+
+            $walk((int) $root->id, 1);
+
+            // Close every top-level group with a rule — whether or not it has children
+            $out->last()->setAttribute('group_end', true);
+        }
+
+        // Children whose parent is hidden or missing would vanish — list them as roots
+        foreach ($all as $cat) {
+            if (!isset($seen[$cat->id])) {
+                $seen[$cat->id] = true;
+                $cat->setAttribute('depth', 0);
+                $cat->setAttribute('group_end', true);
+                $out->push($cat);
+            }
+        }
+
+        return $out;
+    }
+
+    /** The dashes shown before the name in a dropdown: ——— per level. */
+    public function getTreePrefixAttribute(): string
+    {
+        $depth = (int) ($this->depth ?? 0);
+        return $depth ? str_repeat('—', $depth * 3) . ' ' : '';
+    }
+
     /** Map of active product counts keyed by category_id. */
     public static function productCountMap(): array
     {

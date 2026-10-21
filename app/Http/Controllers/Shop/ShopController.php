@@ -209,7 +209,14 @@ class ShopController extends Controller
             ->ordered()
             ->get();
 
-        return view('shop.brands', compact('brands'));
+        $stats = [
+            'brands'    => $brands->count(),
+            'products'  => (int) $brands->sum('products_count'),
+            'countries' => $brands->pluck('country')->filter()->map(fn ($c) => trim($c))->unique()->count(),
+            'oldest'    => $brands->pluck('established_year')->filter()->min(),
+        ];
+
+        return view('shop.brands', compact('brands', 'stats'));
     }
 
     public function about()

@@ -66,7 +66,7 @@
                     <span class="text-xs text-gray-400">{{ $customer->orders->count() }} orders</span>
                 </div>
                 @if($customer->orders->count())
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                     <thead>
                         <tr>
                             <th>Order #</th>
@@ -91,7 +91,7 @@
                         </tr>
                         @endforeach
                     </tbody>
-                </table>
+                </table></div>
                 @else
                 <div class="py-10 text-center text-gray-400 text-sm">No orders yet</div>
                 @endif

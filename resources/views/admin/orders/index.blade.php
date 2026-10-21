@@ -58,7 +58,7 @@
     {{-- Table --}}
     <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
         @if($orders->count())
-        <div style="overflow-x:clip">
+        <div class="table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
