@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ManufacturerController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\SourcingRequestController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ImportExportController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Shop\CartController;
 use App\Http\Controllers\Shop\CheckoutController;
 use App\Http\Controllers\Shop\LocationController;
 use App\Http\Controllers\Shop\StripeWebhookController;
+use App\Http\Controllers\Shop\SourcingController;
 use App\Http\Controllers\Shop\AccountController;
 use App\Http\Controllers\Shop\ReviewController as ShopReviewController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,8 @@ Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
 Route::post('/product/{slug}/review', [ShopReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
 Route::get('/about', [ShopController::class, 'about'])->name('about');
 Route::match(['get','post'], '/contact', [ShopController::class, 'contact'])->name('contact');
+Route::get('/sourcing', [SourcingController::class, 'create'])->name('sourcing');
+Route::post('/sourcing', [SourcingController::class, 'store'])->middleware('throttle:10,1')->name('sourcing.store');
 Route::post('/location', [LocationController::class, 'set'])->name('location.set');
 
 // ── Cart ────────────────────────────────────────────────────────────────────
@@ -79,6 +83,13 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::patch('/{category}', [CategoryController::class, 'update'])->name('patch');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('sourcing')->name('sourcing.')->group(function () {
+        Route::get('/', [SourcingRequestController::class, 'index'])->name('index');
+        Route::post('/{sourcing}/status', [SourcingRequestController::class, 'status'])->name('status');
+        Route::post('/{sourcing}/note', [SourcingRequestController::class, 'note'])->name('note');
+        Route::delete('/{sourcing}', [SourcingRequestController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('messages')->name('messages.')->group(function () {

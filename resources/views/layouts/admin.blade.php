@@ -839,6 +839,21 @@
 
             <!-- Reviews -->
             @php
+                try { $newSourcing = \App\Models\SourcingRequest::where('status', 'new')->count(); }
+                catch (\Throwable $e) { $newSourcing = 0; }
+            @endphp
+            <a href="{{ route('admin.sourcing.index') }}" class="nav-item {{ request()->routeIs('admin.sourcing.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span class="nav-label flex-1 text-left">Sourcing</span>
+                @if($newSourcing)
+                    <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $newSourcing }}</span>
+                @endif
+            </a>
+
+            @php
                 try { $unreadMessages = \App\Models\ContactMessage::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $unreadMessages = 0; }
             @endphp

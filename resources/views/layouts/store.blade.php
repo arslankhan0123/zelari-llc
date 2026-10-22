@@ -552,6 +552,7 @@ body.drawer-open .drawer{transform:none}
         </li>
         --}}
         <li class="nav-item"><a href="{{ route('brands') }}" class="{{ request()->routeIs('brands')?'active':'' }}">Brands</a></li>
+        <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}">Sourcing</a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
       </ul>
@@ -579,6 +580,7 @@ body.drawer-open .drawer{transform:none}
     <a href="{{ route('shop.index') }}"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
     <a href="{{ route('shop.index',['on_sale'=>1]) }}"><i class="fa-solid fa-bolt"></i> Deal Today</a>
     <a href="{{ route('brands') }}"><i class="fa-solid fa-award"></i> Brands</a>
+    <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> Sourcing</a>
     <a href="{{ route('about') }}"><i class="fa-solid fa-circle-info"></i> About</a>
     <a href="{{ route('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
     <a href="{{ route('cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Cart ({{ $cartCount ?? 0 }})</a>
@@ -656,6 +658,7 @@ body.drawer-open .drawer{transform:none}
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('shop.index') }}">Shop</a>
         <a href="{{ route('about') }}">About Us</a>
+        <a href="{{ route('sourcing') }}">Product Sourcing</a>
         <a href="{{ route('contact') }}">Contact Us</a>
         <a href="{{ route('cart.index') }}">Cart</a>
       </div>
