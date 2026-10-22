@@ -36,6 +36,8 @@ class ContactMessageReceived extends Mailable
     {
         return new Content(
             view: 'emails.contact-message',
+            // A plain-text part alongside the HTML: spam filters score HTML-only mail higher.
+            text: 'emails.contact-message-text',
             with: [
                 'contact' => $this->contact,
                 'store'   => [
