@@ -273,9 +273,10 @@ button,input,select,textarea{font-family:inherit}
 .nav-item>a.active{color:var(--p)}
 .nav-item>a.active::after{content:"";position:absolute;left:16px;right:16px;bottom:4px;height:3px;border-radius:3px;background:var(--grad)}
 /* Brands + Sourcing: the two tabs we want people to notice — gradient drifts, text breathes */
-.nav-flow{display:inline-block;background:linear-gradient(90deg,var(--p) 0%,var(--brand-light) 22%,var(--p2) 45%,var(--brand-light) 68%,var(--p) 100%);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:navFlow 6s linear infinite,navBreathe 3s ease-in-out infinite;will-change:background-position,transform}
-@keyframes navFlow{from{background-position:0 0}to{background-position:-240% 0}}
-@keyframes navBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+/* --nav-vivid is the violet from theme grad_hover; change it there and here together */
+.nav-flow{--nav-vivid:#4c2fd9;display:inline-block;font-weight:800;background:linear-gradient(90deg,var(--nav-vivid) 0%,var(--p2) 25%,var(--nav-vivid) 50%,var(--p) 75%,var(--nav-vivid) 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:navFlow 5s linear infinite,navBreathe 3s ease-in-out infinite;will-change:background-position,transform}
+@keyframes navFlow{from{background-position:0 0}to{background-position:-260% 0}}
+@keyframes navBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
 @media(prefers-reduced-motion:reduce){.nav-flow{animation:none}}
 .mega{width:720px;padding:22px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 24px;left:-60px}
 .mega .col h6{font-size:13.5px;font-weight:800;margin:0 0 10px;display:flex;align-items:center;gap:8px;color:var(--ink)}
