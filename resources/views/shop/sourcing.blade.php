@@ -63,73 +63,22 @@
     margin-top: 0
   }
 
-  /* product rows */
-  .prow {
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px 16px 4px;
-    margin-bottom: 12px;
-    background: #EFF6FF;
-    position: relative
-  }
-
-  .prow .pnum {
-    position: absolute;
-    top: -9px;
-    left: 14px;
-    background: var(--p);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 2px 9px;
-    border-radius: 999px
-  }
-
-  .prow .pdel {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 28px;
-    height: 28px;
-    border: 0;
-    border-radius: 9px;
-    background: #fff;
-    color: #b91c1c;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition: .2s
-  }
-
-  .prow .pdel:hover {
-    background: #fee2e2
-  }
-
-  .prow:only-of-type .pdel {
-    display: none
-  }
-
-  .addmore {
-    width: 100%;
-    border: 1.5px dashed var(--line);
-    background: #fff;
-    color: var(--p);
-    font-weight: 800;
-    font-size: 14px;
-    padding: 12px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: .2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px
-  }
-
-  .addmore:hover {
-    border-color: var(--p);
-    background: #EFF6FF
-  }
+  /* product rows — a compact table so a long list stays readable */
+  .pwrap{border:1px solid var(--line);border-radius:14px;overflow:auto;margin-bottom:10px}
+  .ptable{width:100%;min-width:880px;border-collapse:collapse;font-size:13px}
+  .ptable th{background:#EFF6FF;color:var(--ink-2);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;text-align:left;padding:9px 10px;white-space:nowrap;border-bottom:1px solid var(--line)}
+  .ptable th b{color:#e11d48}
+  .ptable td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .ptable tr:last-child td{border-bottom:0}
+  .ptable .pnum{width:34px;text-align:center;color:var(--faint);font-weight:800;padding-top:15px}
+  .ptable .inp{padding:8px 10px;font-size:13px;border-radius:9px;width:100%}
+  .ptable .ferr{font-size:11px;margin-top:3px}
+  .ptable .tdel{width:40px}
+  .pdel{width:28px;height:28px;border:0;border-radius:8px;background:#f6f7fb;color:#b91c1c;cursor:pointer;display:grid;place-items:center;transition:.2s;margin-top:4px}
+  .pdel:hover{background:#fee2e2}
+  .prow:only-of-type .pdel{visibility:hidden}
+  .addmore{width:100%;border:1.5px dashed var(--line);background:#fff;color:var(--p);font-weight:800;font-size:13.5px;padding:10px;border-radius:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .addmore:hover{border-color:var(--p);background:#EFF6FF}
 
   #srBtn[disabled] {
     opacity: .65;
@@ -296,31 +245,33 @@
         </div>
 
         <div class="sr-step">What you need</div>
-        <div id="srItems">
-          <div class="prow">
-            <span class="pnum">1</span>
-            <button type="button" class="pdel" title="Remove"><i class="fa-solid fa-xmark"></i></button>
-            <div class="row g-3">
-              <div class="col-sm-7 fld"><label>Product name <b>*</b></label>
-                <input class="inp" name="items[0][name]" required placeholder="e.g. Wireless earbuds">
-              </div>
-              <div class="col-6 col-sm-3 fld"><label>Quantity <b>*</b></label>
-                <input class="inp" type="number" min="1" name="items[0][quantity]" value="1" required>
-              </div>
-              <div class="col-6 col-sm-2 fld"><label>Unit</label>
-                <input class="inp" name="items[0][unit]" placeholder="pcs">
-              </div>
-              <div class="col-sm-5 fld"><label>Target price</label>
-                <input class="inp" name="items[0][target_price]" placeholder="e.g. $4 / piece">
-              </div>
-              <div class="col-sm-7 fld"><label>Reference link</label>
-                <input class="inp" type="url" name="items[0][reference_url]" placeholder="https://… a similar product">
-              </div>
-              <div class="col-12 fld"><label>Specs</label>
-                <input class="inp" name="items[0][specs]" placeholder="Colour, size, material, packaging…">
-              </div>
-            </div>
-          </div>
+        <div class="pwrap">
+          <table class="ptable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Product name <b>*</b></th>
+                <th style="width:90px">Qty <b>*</b></th>
+                <th style="width:80px">Unit</th>
+                <th style="width:120px">Target price</th>
+                <th style="width:175px">Reference link</th>
+                <th style="width:195px">Specs</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="srItems">
+              <tr class="prow">
+                <td class="pnum">1</td>
+                <td><input class="inp" name="items[0][name]" required placeholder="e.g. Wireless earbuds"></td>
+                <td><input class="inp" type="number" min="1" name="items[0][quantity]" value="1" required></td>
+                <td><input class="inp" name="items[0][unit]" placeholder="pcs"></td>
+                <td><input class="inp" name="items[0][target_price]" placeholder="$4 / pc"></td>
+                <td><input class="inp" type="url" name="items[0][reference_url]" placeholder="https://…"></td>
+                <td><input class="inp" name="items[0][specs]" placeholder="Colour, size, material…"></td>
+                <td class="tdel"><button type="button" class="pdel" title="Remove"><i class="fa-solid fa-xmark"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <button type="button" id="srAdd" class="addmore"><i class="fa-solid fa-plus"></i> Add another product</button>
@@ -427,10 +378,6 @@
       list.appendChild(row);
       renumber();
       row.querySelector('input').focus();
-      row.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
     });
 
     list.addEventListener('click', function(e) {

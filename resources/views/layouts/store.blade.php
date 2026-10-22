@@ -272,6 +272,11 @@ button,input,select,textarea{font-family:inherit}
 .nav-item:hover>a i{transform:rotate(180deg)}
 .nav-item>a.active{color:var(--p)}
 .nav-item>a.active::after{content:"";position:absolute;left:16px;right:16px;bottom:4px;height:3px;border-radius:3px;background:var(--grad)}
+/* Brands + Sourcing: the two tabs we want people to notice — gradient drifts, text breathes */
+.nav-flow{display:inline-block;background:linear-gradient(90deg,var(--p) 0%,var(--brand-light) 22%,var(--p2) 45%,var(--brand-light) 68%,var(--p) 100%);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:navFlow 6s linear infinite,navBreathe 3s ease-in-out infinite;will-change:background-position,transform}
+@keyframes navFlow{from{background-position:0 0}to{background-position:-240% 0}}
+@keyframes navBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@media(prefers-reduced-motion:reduce){.nav-flow{animation:none}}
 .mega{width:720px;padding:22px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 24px;left:-60px}
 .mega .col h6{font-size:13.5px;font-weight:800;margin:0 0 10px;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .mega .col h6 i{color:var(--p);font-size:13px}
@@ -551,8 +556,8 @@ body.drawer-open .drawer{transform:none}
           </div>
         </li>
         --}}
-        <li class="nav-item"><a href="{{ route('brands') }}" class="{{ request()->routeIs('brands')?'active':'' }}">Brands</a></li>
-        <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}">Sourcing</a></li>
+        <li class="nav-item"><a href="{{ route('brands') }}" class="{{ request()->routeIs('brands')?'active':'' }}"><span class="nav-flow">Brands</span></a></li>
+        <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
       </ul>
@@ -579,8 +584,8 @@ body.drawer-open .drawer{transform:none}
     <a href="{{ route('home') }}"><i class="fa-solid fa-house"></i> Home</a>
     <a href="{{ route('shop.index') }}"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
     <a href="{{ route('shop.index',['on_sale'=>1]) }}"><i class="fa-solid fa-bolt"></i> Deal Today</a>
-    <a href="{{ route('brands') }}"><i class="fa-solid fa-award"></i> Brands</a>
-    <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> Sourcing</a>
+    <a href="{{ route('brands') }}"><i class="fa-solid fa-award"></i> <span class="nav-flow">Brands</span></a>
+    <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> <span class="nav-flow">Sourcing</span></a>
     <a href="{{ route('about') }}"><i class="fa-solid fa-circle-info"></i> About</a>
     <a href="{{ route('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
     <a href="{{ route('cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Cart ({{ $cartCount ?? 0 }})</a>
