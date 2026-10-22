@@ -839,6 +839,21 @@
 
             <!-- Reviews -->
             @php
+                try { $unreadMessages = \App\Models\ContactMessage::where('status', 'new')->count(); }
+                catch (\Throwable $e) { $unreadMessages = 0; }
+            @endphp
+            <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span class="nav-label flex-1 text-left">Messages</span>
+                @if($unreadMessages)
+                    <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $unreadMessages }}</span>
+                @endif
+            </a>
+
+            @php
                 try { $pendingReviews = \App\Models\Review::where('status', 'pending')->count(); }
                 catch (\Throwable $e) { $pendingReviews = 0; }
             @endphp

@@ -227,20 +227,58 @@ class ShopController extends Controller
     public function contact(Request $request)
     {
         if ($request->isMethod('post')) {
-            $request->validate([
+            $data = $request->validate([
                 'name'    => 'required|string|max:100',
                 'email'   => 'required|email|max:150',
                 'subject' => 'nullable|string|max:200',
                 'message' => 'required|string|min:10',
             ]);
 
-            // Log the contact message (no mail credentials configured by default)
-            \Illuminate\Support\Facades\Log::info('Contact form submission', $request->only('name', 'email', 'subject', 'message'));
+            // Saved first, so a message is never lost when SMTP is down or unconfigured.
+            $contact = \App\Models\ContactMessage::create($data + [
+                'ip'         => $request->ip(),
+                'user_agent' => mb_substr((string) $request->userAgent(), 0, 255),
+            ]);
 
-            return back()->with('success', 'Thank you! Your message has been received. We\'ll get back to you soon.');
+            $this->notifyAdminOfContact($contact);
+
+            $done = 'Thank you! Your message has been received. We\'ll get back to you soon.';
+
+            // The form posts over fetch(); a validation failure already returns 422 JSON on its own.
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $done]);
+            }
+
+            return back()->with('success', $done);
         }
 
         return view('shop.contact');
+    }
+
+    /** Email the contact message to the admin over the SMTP saved in Settings. Never breaks the form. */
+    private function notifyAdminOfContact(\App\Models\ContactMessage $contact): void
+    {
+        $to = trim((string) \App\Models\Setting::get('mail_admin_address'));
+
+        try {
+            if ($to === '') {
+                $contact->update(['email_error' => 'No admin notification email set in Settings.']);
+                return;
+            }
+            if (!\App\Models\Setting::applyMailConfig()) {
+                $contact->update(['email_error' => 'SMTP is not configured in Settings.']);
+                return;
+            }
+
+            \Illuminate\Support\Facades\Mail::to($to)->send(new \App\Mail\ContactMessageReceived($contact));
+
+            $contact->update(['emailed' => true, 'email_error' => null]);
+            \App\Models\Setting::recordMailResult(null);
+        } catch (\Throwable $e) {
+            report($e);
+            $contact->update(['email_error' => mb_substr($e->getMessage(), 0, 255)]);
+            \App\Models\Setting::recordMailResult('Contact message #' . $contact->id . ': ' . $e->getMessage());
+        }
     }
 
 }

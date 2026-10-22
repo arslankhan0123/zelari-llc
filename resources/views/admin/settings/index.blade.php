@@ -175,7 +175,7 @@
                     <div class="md:col-span-2">
                         <label class="form-label">Admin notification email</label>
                         <input type="email" name="mail_admin_address" value="{{ old('mail_admin_address', $s['mail_admin_address'] ?? '') }}" placeholder="owner@zelari.com" class="form-input @error('mail_admin_address') border-red-400 @enderror">
-                        <p class="text-gray-400 text-xs mt-1.5">Receives a copy of every new order. Leave blank to disable.</p>
+                        <p class="text-gray-400 text-xs mt-1.5">Receives a copy of every new order and every contact-form message. Leave blank to disable.</p>
                     </div>
                 </div>
 

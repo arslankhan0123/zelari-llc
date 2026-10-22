@@ -40,6 +40,10 @@
 .faq summary::-webkit-details-marker{display:none}
 .faq summary i{color:var(--p);transition:transform .3s}
 .faq details[open] summary i{transform:rotate(45deg)}
+/* contact form submit state */
+#ctBtn[disabled]{opacity:.65;cursor:not-allowed}
+#ctBtn .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:ctspin .7s linear infinite;vertical-align:-2px}
+@keyframes ctspin{to{transform:rotate(360deg)}}
 .faq details p{color:var(--muted);font-size:14px;margin:0 0 16px;line-height:1.7}
 </style>
 @endpush
@@ -56,14 +60,14 @@
       @if(session('success'))<div class="ok-box"><i class="fa-solid fa-circle-check" style="font-size:18px"></i><div><b>Message sent!</b><br>{{ session('success') }}</div></div>@endif
       <h2>Send us a message</h2>
       <p>Fill in the form and our team will get back to you shortly.</p>
-      <form action="{{ route('contact') }}" method="POST">
+      <form id="ctForm" action="{{ route('contact') }}" method="POST">
         @csrf
         <div class="row g-3">
           <div class="col-sm-6 fld"><label>Your name <b>*</b></label><input class="inp {{ $errors->has('name')?'err':'' }}" name="name" value="{{ old('name') }}" required placeholder="Full name">@error('name')<div class="ferr">{{ $message }}</div>@enderror</div>
           <div class="col-sm-6 fld"><label>Email <b>*</b></label><input class="inp {{ $errors->has('email')?'err':'' }}" type="email" name="email" value="{{ old('email') }}" required placeholder="you@example.com">@error('email')<div class="ferr">{{ $message }}</div>@enderror</div>
           <div class="col-12 fld"><label>Subject</label><input class="inp {{ $errors->has('subject')?'err':'' }}" name="subject" value="{{ old('subject') }}" placeholder="How can we help?">@error('subject')<div class="ferr">{{ $message }}</div>@enderror</div>
           <div class="col-12 fld"><label>Message <b>*</b></label><textarea class="inp {{ $errors->has('message')?'err':'' }}" name="message" rows="6" required placeholder="Write your message here…">{{ old('message') }}</textarea>@error('message')<div class="ferr">{{ $message }}</div>@enderror</div>
-          <div class="col-12"><button type="submit" class="btn-g" style="padding:13px 26px;font-size:15px"><i class="fa-solid fa-paper-plane"></i> Send message</button></div>
+          <div class="col-12"><button type="submit" id="ctBtn" class="btn-g" style="padding:13px 26px;font-size:15px"><i class="fa-solid fa-paper-plane" id="ctIcon"></i> <span id="ctLabel">Send message</span></button></div>
         </div>
       </form>
     </div>
@@ -98,3 +102,98 @@
   </div>
 </section>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+<script>
+(function () {
+  const form  = document.getElementById('ctForm');
+  if (!form) return;
+  const btn   = document.getElementById('ctBtn');
+  const icon  = document.getElementById('ctIcon');
+  const label = document.getElementById('ctLabel');
+  const idle  = icon.className;
+
+  const brand = getComputedStyle(document.documentElement).getPropertyValue('--p').trim() || '#4f46e5';
+
+  function busy(on) {
+    btn.disabled = on;
+    icon.className = on ? 'spin' : idle;
+    label.textContent = on ? 'Sending…' : 'Send message';
+  }
+
+  // Clear a field's error as soon as the person starts fixing it.
+  function clearErrors() {
+    form.querySelectorAll('.ferr').forEach(e => e.remove());
+    form.querySelectorAll('.inp.err').forEach(e => e.classList.remove('err'));
+  }
+
+  function showFieldErrors(errors) {
+    Object.entries(errors).forEach(([field, messages]) => {
+      const input = form.querySelector('[name="' + field + '"]');
+      if (!input) return;
+      input.classList.add('err');
+      const note = document.createElement('div');
+      note.className = 'ferr';
+      note.textContent = messages[0];
+      input.insertAdjacentElement('afterend', note);
+    });
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (btn.disabled) return;
+
+    clearErrors();
+    busy(true);
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: new FormData(form),
+      });
+
+      let data = {};
+      try { data = await res.json(); } catch (_) {}
+
+      if (res.ok) {
+        form.reset();
+        Swal.fire({
+          icon: 'success',
+          title: 'Message sent',
+          text: data.message || "Thank you! We'll get back to you soon.",
+          confirmButtonColor: brand,
+        });
+      } else if (res.status === 422) {
+        showFieldErrors(data.errors || {});
+        Swal.fire({
+          icon: 'error',
+          title: 'Please check the form',
+          text: data.message || 'Some fields need your attention.',
+          confirmButtonColor: brand,
+        });
+      } else {
+        throw new Error(data.message || ('Request failed (' + res.status + ')'));
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: "Couldn't send your message",
+        text: err.message || 'Please check your connection and try again.',
+        confirmButtonColor: brand,
+      });
+    } finally {
+      busy(false);
+    }
+  });
+
+  form.addEventListener('input', function (e) {
+    if (!e.target.classList.contains('err')) return;
+    e.target.classList.remove('err');
+    const note = e.target.nextElementSibling;
+    if (note && note.classList.contains('ferr')) note.remove();
+  });
+})();
+</script>
+@endpush

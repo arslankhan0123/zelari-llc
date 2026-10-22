@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ManufacturerController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ImportExportController;
@@ -78,6 +79,14 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::patch('/{category}', [CategoryController::class, 'update'])->name('patch');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('messages')->name('messages.')->group(function () {
+        Route::get('/', [ContactMessageController::class, 'index'])->name('index');
+        Route::get('/{message}', [ContactMessageController::class, 'show'])->name('show');
+        Route::post('/{message}/status', [ContactMessageController::class, 'status'])->name('status');
+        Route::post('/{message}/note', [ContactMessageController::class, 'note'])->name('note');
+        Route::delete('/{message}', [ContactMessageController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('reviews')->name('reviews.')->group(function () {
