@@ -79,6 +79,27 @@
   .prow:only-of-type .pdel{visibility:hidden}
   .addmore{width:100%;border:1.5px dashed var(--line);background:#fff;color:var(--p);font-weight:800;font-size:13.5px;padding:10px;border-radius:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
   .addmore:hover{border-color:var(--p);background:#EFF6FF}
+  /* Phones: a row that scrolls sideways is unusable, so each product becomes its own block */
+  @media(max-width:760px){
+    .pwrap{border:0;border-radius:0;overflow:visible;margin-bottom:12px}
+    .ptable{min-width:0;display:block;font-size:14px}
+    .ptable thead{display:none}
+    .ptable tbody{display:block}
+    .ptable .prow{display:grid;grid-template-columns:1fr 1fr;gap:10px 10px;position:relative;border:1px solid var(--line);border-radius:12px;background:#EFF6FF;padding:30px 12px 12px;margin-bottom:10px}
+    .ptable td{display:block;border:0;padding:0}
+    .ptable td[data-l]::before{content:attr(data-l);display:block;font-size:11px;font-weight:700;color:var(--ink-2);margin-bottom:4px}
+    .ptable .c-name,.ptable .c-price,.ptable .c-ref,.ptable .c-specs{grid-column:1/-1}
+    .ptable .inp{background:#fff}
+    .ptable td.pnum{position:absolute;top:9px;left:12px;width:auto;padding:0;font-size:11px;font-weight:800;color:var(--p)}
+    .ptable td.pnum::before{content:"Product "}
+    .ptable td.tdel{position:absolute;top:5px;right:8px;width:auto;padding:0}
+    .ptable td.tdel .pdel{margin-top:0;background:#fff}
+  }
+  @media(max-width:600px){
+    .sr{padding:34px 0 10px}
+    .sr-card{padding:20px 16px}
+    .sr-card h2{font-size:19px}
+  }
 
   #srBtn[disabled] {
     opacity: .65;
@@ -262,12 +283,12 @@
             <tbody id="srItems">
               <tr class="prow">
                 <td class="pnum">1</td>
-                <td><input class="inp" name="items[0][name]" required placeholder="e.g. Wireless earbuds"></td>
-                <td><input class="inp" type="number" min="1" name="items[0][quantity]" value="1" required></td>
-                <td><input class="inp" name="items[0][unit]" placeholder="pcs"></td>
-                <td><input class="inp" name="items[0][target_price]" placeholder="$4 / pc"></td>
-                <td><input class="inp" type="url" name="items[0][reference_url]" placeholder="https://…"></td>
-                <td><input class="inp" name="items[0][specs]" placeholder="Colour, size, material…"></td>
+                <td class="c-name" data-l="Product name"><input class="inp" name="items[0][name]" required placeholder="e.g. Wireless earbuds"></td>
+                <td class="c-qty" data-l="Quantity"><input class="inp" type="number" min="1" name="items[0][quantity]" value="1" required></td>
+                <td class="c-unit" data-l="Unit"><input class="inp" name="items[0][unit]" placeholder="pcs"></td>
+                <td class="c-price" data-l="Target price"><input class="inp" name="items[0][target_price]" placeholder="$4 / pc"></td>
+                <td class="c-ref" data-l="Reference link"><input class="inp" type="url" name="items[0][reference_url]" placeholder="https://…"></td>
+                <td class="c-specs" data-l="Specs"><input class="inp" name="items[0][specs]" placeholder="Colour, size, material…"></td>
                 <td class="tdel"><button type="button" class="pdel" title="Remove"><i class="fa-solid fa-xmark"></i></button></td>
               </tr>
             </tbody>
