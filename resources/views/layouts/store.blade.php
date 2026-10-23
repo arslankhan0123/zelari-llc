@@ -45,7 +45,7 @@ window.zmoney=function(n){var c=window.ZCUR,v=(Number(n)||0)*c.rate,s=v.toLocale
   --head-h:74px;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overflow-x:hidden;overflow-x:clip}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);background:#fff;margin:0;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 a:hover{color:var(--p)}
