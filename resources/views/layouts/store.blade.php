@@ -8,7 +8,7 @@
 <script>window.ZCUR={code:@json($zc['code']),symbol:@json($zc['symbol']),rate:{{ (float) $zc['rate'] }},decimals:{{ (int) $zc['decimals'] }}};
 window.zmoney=function(n){var c=window.ZCUR,v=(Number(n)||0)*c.rate,s=v.toLocaleString('en-US',{minimumFractionDigits:c.decimals,maximumFractionDigits:c.decimals});return (c.symbol.length<=2&&!/^[A-Za-z]+$/.test(c.symbol))?c.symbol+s:c.symbol+' '+s};</script>
 <title>@yield('title', 'Shop') · {{ zstore('name','Zelari') }}</title>
-<meta name="description" content="@yield('meta_description', zstore('name','Zelari').' — '.zstore('tagline','a smarter way to shop').'. Curated products, honest prices, fast delivery across Pakistan.')">
+<meta name="description" content="@yield('meta_description', zstore('name','Zelari').' — '.zstore('tagline','a smarter way to shop').'. Curated products, honest prices, fast nationwide delivery.')">
 
 @if(zbrand_custom('icon'))
 <link rel="icon" href="{{ zbrand('icon') }}">
@@ -655,7 +655,7 @@ body.drawer-open .drawer{transform:none}
     <div class="f-main">
       <div class="f-brand">
         <a href="{{ route('home') }}" class="logo lg">@if(zbrand_custom('logo'))<img src="{{ zbrand('logo') }}" alt="{{ zstore('name','Zelari') }}">@else{!! zlogo('logo-tagline.svg') !!}@endif</a>
-        <p>{{ zstore('tagline') ? zstore('tagline').'. ' : '' }}We curate quality products, keep prices honest, and deliver fast across Pakistan — with cash on delivery everywhere.</p>
+        <p>{{ zstore('tagline') ? zstore('tagline').'. ' : '' }}We curate quality products, keep prices honest, and deliver fast nationwide — with cash on delivery available everywhere.</p>
         @if(zstore('address'))<div class="fl"><i class="fa-solid fa-location-dot"></i> {{ zstore('address') }}</div>@endif
         @if(zstore('email'))<div class="fl"><i class="fa-solid fa-envelope"></i> <a href="mailto:{{ zstore('email') }}">{{ zstore('email') }}</a></div>@endif
       </div>
@@ -708,6 +708,8 @@ body.drawer-open .drawer{transform:none}
   <a href="{{ route('cart.index') }}" class="{{ request()->routeIs('cart.*')?'active':'' }}"><i class="fa-solid fa-cart-shopping"></i>Cart<b class="cnt js-cart-count">{{ $cartCount ?? 0 }}</b></a>
   <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}"><i class="fa-regular fa-comment-dots"></i>Help</a>
 </nav>
+
+@include('shop.partials.chatbot')
 
 <button class="totop" id="toTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
 

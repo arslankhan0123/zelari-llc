@@ -854,6 +854,20 @@
             </a>
 
             @php
+                try { \App\Models\ChatMessage::ensureTable(); $unreadChats = \App\Models\ChatMessage::where('sender', 'user')->where('read_by_agent', false)->count(); }
+                catch (\Throwable $e) { $unreadChats = 0; }
+            @endphp
+            <a href="{{ route('admin.chats.index') }}" class="nav-item {{ request()->routeIs('admin.chats.*') ? 'active' : '' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span class="nav-label flex-1 text-left">Live Chat</span>
+                @if($unreadChats)
+                    <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $unreadChats }}</span>
+                @endif
+            </a>
+
+            @php
                 try { $unreadMessages = \App\Models\ContactMessage::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $unreadMessages = 0; }
             @endphp

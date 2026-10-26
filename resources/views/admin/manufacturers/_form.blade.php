@@ -63,7 +63,7 @@
             <div>
                 <label class="form-label">Country <span class="text-gray-400 font-normal text-xs ml-1">(optional)</span></label>
                 <input type="text" name="country" value="{{ old('country', $m->country ?? '') }}" maxlength="80"
-                       class="form-input" placeholder="e.g. Pakistan">
+                       class="form-input" placeholder="e.g. United States">
             </div>
             <div>
                 <label class="form-label">Contact Email <span class="text-gray-400 font-normal text-xs ml-1">(optional)</span></label>
