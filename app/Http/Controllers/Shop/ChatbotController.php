@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\ChatMessage;
 use App\Models\Manufacturer;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ class ChatbotController extends Controller
     {
         $raw = mb_substr(trim((string) $request->input('message', '')), 0, 300);
         $msg = mb_strtolower($raw);
+
+        if ($request->boolean('agent_mode')) {
+            return $this->agentMessage($request, $raw);
+        }
 
         if ($msg === '') {
             return response()->json($this->greeting());
@@ -74,6 +79,11 @@ class ChatbotController extends Controller
             $reply = $bits ? 'Here\'s how to reach us:<br>' . implode('<br>', $bits) : 'Visit our <a href="' . route('contact') . '">contact page</a> to get in touch.';
             $reply .= '<br>Or use the <a href="' . route('contact') . '">contact form</a>.';
             return response()->json(['reply' => $reply, 'chips' => ['Delivery time?', 'Return policy']]);
+        }
+
+        // ── Live agent ──
+        if ($has(['agent', 'human', 'representative', 'real person', 'live chat', 'talk to', 'speak to', 'customer support', 'support team', 'complaint', 'shikayat'])) {
+            return response()->json($this->agentIntro());
         }
 
         // ── Order tracking ──
@@ -164,7 +174,7 @@ class ChatbotController extends Controller
         // ── Fallback ──
         return response()->json([
             'reply' => 'Sorry, I couldn\'t find that. Try a product name (e.g. “watch”), or <a href="' . route('shop.index') . '"><b>browse the shop →</b></a>. For anything else our team is one tap away on the <a href="' . route('contact') . '">contact page</a>.',
-            'chips' => ['Browse categories', "Today's deals", 'Contact info'],
+            'chips' => ['Browse categories', "Today's deals", 'Talk to a live agent'],
         ]);
     }
 
@@ -180,11 +190,125 @@ class ChatbotController extends Controller
         ];
     }
 
+    /** Live agent hours — configured in Admin → Live Chat. */
+    public static function agentHours(): array
+    {
+        $tz    = \App\Models\Setting::get('chat_tz', 'America/New_York') ?: 'America/New_York';
+        $start = \App\Models\Setting::get('chat_start', '08:00') ?: '08:00';
+        $end   = \App\Models\Setting::get('chat_end', '20:00') ?: '20:00';
+        $now   = now($tz)->format('H:i');
+        $open  = $start <= $end ? ($now >= $start && $now < $end) : ($now >= $start || $now < $end);
+        $fmt   = fn ($t) => \Carbon\Carbon::createFromFormat('H:i', $t)->format('g:i A');
+        $label = [
+            'America/New_York' => 'US Eastern', 'America/Chicago' => 'US Central',
+            'America/Denver' => 'US Mountain', 'America/Los_Angeles' => 'US Pacific',
+            'UTC' => 'UTC', 'Europe/London' => 'UK', 'Asia/Karachi' => 'Pakistan',
+        ][$tz] ?? str_replace('_', ' ', $tz);
+        return ['open' => $open, 'text' => $fmt($start) . '–' . $fmt($end) . ' ' . $label . ' time', 'tz' => $tz, 'start' => $start, 'end' => $end];
+    }
+
+    private function agentOpen(): bool
+    {
+        return static::agentHours()['open'];
+    }
+
+    private function agentIntro(): array
+    {
+        $open = $this->agentOpen();
+        $user = auth()->user();
+        $hours = static::agentHours();
+        $reply = $open
+            ? 'Our live support team is <b>online now</b> 🟢 (available ' . e($hours['text']) . ').'
+            : 'Our live agents are <b>offline right now</b> — they\'re available <b>' . e($hours['text']) . '</b>. You can still leave a message and the team will reply as soon as they\'re back.';
+        $reply .= $user
+            ? ' Type your message below — it goes straight to our team.'
+            : ' First, share your name and email so the team can get back to you.';
+        return [
+            'reply'        => $reply,
+            'agent_prompt' => true,
+            'open'         => $open,
+            'need_contact' => !$user,
+            'contact'      => $user ? ['name' => $user->name, 'email' => $user->email] : null,
+            'chips'        => [],
+        ];
+    }
+
+    private function agentMessage(Request $request, string $raw)
+    {
+        $name  = mb_substr(trim((string) ($request->input('name') ?: optional(auth()->user())->name)), 0, 100);
+        $email = mb_substr(trim((string) ($request->input('email') ?: optional(auth()->user())->email)), 0, 150);
+
+        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'reply'        => 'Please share a valid name and email first so our team can reach you.',
+                'agent_prompt' => true,
+                'open'         => $this->agentOpen(),
+                'need_contact' => true,
+            ]);
+        }
+        if ($raw === '') {
+            return response()->json(['reply' => 'Please type a message for our team.', 'agent' => true]);
+        }
+
+        $token = preg_replace('/[^A-Za-z0-9\-_]/', '', (string) $request->input('token', ''));
+        if ($token === '' || mb_strlen($token) > 64) {
+            return response()->json(['reply' => 'Chat session error — please refresh the page and try again.', 'agent' => true]);
+        }
+
+        $open = $this->agentOpen();
+        ChatMessage::ensureTable();
+        ChatMessage::create([
+            'thread_token'  => $token,
+            'name'          => $name,
+            'email'         => $email,
+            'user_id'       => auth()->id(),
+            'sender'        => 'user',
+            'message'       => $raw,
+            'read_by_agent' => false,
+            'read_by_user'  => true,
+        ]);
+
+        return response()->json([
+            'reply' => $open
+                ? '✓ Delivered — an agent will reply right here shortly.'
+                : '✓ Message saved. Our agents are back at <b>' . e(\Carbon\Carbon::createFromFormat('H:i', static::agentHours()['start'])->format('g:i A')) . '</b> — their reply will appear right here, and we\'ll also have your email (<b>' . e($email) . '</b>).',
+            'agent' => true,
+        ]);
+    }
+
+    /** Widget polls this for new agent replies in the visitor's thread. */
+    public function poll(Request $request)
+    {
+        $token = preg_replace('/[^A-Za-z0-9\-_]/', '', (string) $request->query('token', ''));
+        $after = (int) $request->query('after', 0);
+        if ($token === '' || mb_strlen($token) > 64) {
+            return response()->json(['messages' => []]);
+        }
+
+        ChatMessage::ensureTable();
+        $msgs = ChatMessage::where('thread_token', $token)
+            ->where('sender', 'agent')
+            ->where('id', '>', $after)
+            ->orderBy('id')->limit(50)->get();
+
+        if ($msgs->isNotEmpty()) {
+            ChatMessage::whereIn('id', $msgs->pluck('id'))->update(['read_by_user' => true]);
+        }
+
+        return response()->json([
+            'messages' => $msgs->map(fn ($m) => [
+                'id'      => $m->id,
+                'message' => $m->message,
+                'name'    => $m->name ?: 'Support',
+            ])->values(),
+        ]);
+    }
+
     private function greeting(): array
     {
         return [
             'reply' => 'Hi there! 👋 Welcome to <b>' . e(zstore('name', 'Zelari')) . '</b>. I can help you find products, check prices and stock, and answer questions about delivery, payment and returns. What are you looking for?',
-            'chips' => ['Delivery time?', 'Cash on delivery?', "Today's deals", 'Browse categories', 'Return policy'],
+            'chips' => ['Delivery time?', 'Cash on delivery?', "Today's deals", 'Browse categories', 'Talk to a live agent'],
         ];
     }
 }
