@@ -37,7 +37,7 @@ class ManufacturerSeeder extends Seeder
             [
                 'slug'             => 'verdela',
                 'name'             => 'Verdela',
-                'country'          => 'Pakistan',
+                'country'          => 'United States',
                 'established_year' => 2019,
                 'website'          => 'https://www.verdela.example',
                 'email'            => 'care@verdela.example',
@@ -61,7 +61,7 @@ class ManufacturerSeeder extends Seeder
             [
                 'slug'             => 'noor-thread',
                 'name'             => 'Noor & Thread',
-                'country'          => 'Pakistan',
+                'country'          => 'United States',
                 'established_year' => 2011,
                 'website'          => 'https://www.noorandthread.example',
                 'email'            => 'orders@noorandthread.example',
@@ -109,7 +109,7 @@ class ManufacturerSeeder extends Seeder
             [
                 'slug'             => 'zafran-house',
                 'name'             => 'Zafran House',
-                'country'          => 'Pakistan',
+                'country'          => 'United States',
                 'established_year' => 1986,
                 'website'          => 'https://www.zafranhouse.example',
                 'email'            => 'sales@zafranhouse.example',

@@ -60,7 +60,7 @@ class Setting extends Model
             'promo_enabled'          => '1',
             'promo_title'            => 'Everything you love,',
             'promo_title_accent'     => 'delivered to your door',
-            'promo_text'             => 'Thousands of products, honest prices and cash on delivery across Pakistan. Pay when it arrives — no risk, no hassle.',
+            'promo_text'             => 'Thousands of products, honest prices and cash on delivery across the world. Pay when it arrives — no risk, no hassle.',
             'promo_btn1_label'       => 'Start shopping',
             'promo_btn1_link'        => '',
             'promo_btn2_label'       => "Today's deals",

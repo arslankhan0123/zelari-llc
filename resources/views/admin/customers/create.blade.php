@@ -49,7 +49,7 @@
                         </div>
                         <div>
                             <label class="form-label">Country</label>
-                            <input type="text" name="country" value="{{ old('country','Pakistan') }}" class="form-input">
+                            <input type="text" name="country" value="{{ old('country','United States') }}" class="form-input">
                         </div>
                     </div>
                     <div>
