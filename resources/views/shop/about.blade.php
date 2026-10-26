@@ -68,7 +68,7 @@
   <div class="ab-grid">
     <div class="reveal">
       <span class="ab-eyebrow"><i class="fa-solid fa-sparkles"></i> Our story</span>
-      <h2>A smarter way to shop, <span>built in Pakistan</span></h2>
+      <h2>A smarter way to shop, <span>built for you</span></h2>
       <p>{{ zstore('name','Zelari') }} started with a simple frustration: buying good things online shouldn't mean guessing about quality, prices or delivery. So we built a store that gets the basics right — curated products, transparent pricing and delivery you can count on.</p>
       <p>Today we ship across the country with cash on delivery, {{ zship('return_days','7') }}-day returns and a support team that actually replies. We're just getting started.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
