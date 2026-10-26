@@ -59,9 +59,15 @@ class ShopController extends Controller
         $recentlyAdded = $newArrivals->take(4);
         $topRated      = $base()->inRandomOrder()->take(4)->get();
 
+        // Brands marquee on the home page
+        $homeBrands = Manufacturer::active()
+            ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
+            ->ordered()
+            ->get();
+
         return view('shop.home', compact(
             'parentCategories', 'heroProducts', 'categorySections', 'newArrivals',
-            'deals', 'topSelling', 'trending', 'recentlyAdded', 'topRated'
+            'deals', 'topSelling', 'trending', 'recentlyAdded', 'topRated', 'homeBrands'
         ));
     }
 

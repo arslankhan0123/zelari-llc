@@ -85,6 +85,16 @@
 
 /* ═══════════ CATEGORIES ═══════════ */
 .cat-swiper{overflow:hidden;padding:4px 2px 10px}
+.brand-swiper{overflow:hidden;padding:4px 2px 10px}
+.brand-swiper .swiper-wrapper{transition-timing-function:linear!important}
+.brand-swiper .swiper-slide{height:auto}
+.btile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:150px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;transition:transform .25s,box-shadow .25s,border-color .25s;box-shadow:0 10px 26px -18px rgba(var(--shadow-rgb),.4)}
+.btile:hover{border-color:var(--p);transform:translateY(-4px);box-shadow:0 18px 34px -16px rgba(var(--shadow-rgb),.5)}
+.btile .blogo{height:58px;display:grid;place-items:center}
+.btile .blogo img{max-height:58px;max-width:130px;object-fit:contain}
+.btile .bmono{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--brand-grad);color:#fff;font-weight:800;font-size:17px}
+.btile b{font-size:13.5px;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.btile small{font-size:11px;color:var(--muted);font-weight:700}
 .cat-swiper .swiper-wrapper{transition-timing-function:linear!important}
 .cat-swiper .swiper-slide{height:auto}
 .ctile{position:relative;display:block;height:150px;border-radius:16px;overflow:hidden;color:#fff;box-shadow:0 10px 26px -14px rgba(11,14,40,.45);isolation:isolate}
@@ -309,6 +319,36 @@
   </div>
 </section>
 
+{{-- ═══════════ BRANDS MARQUEE ═══════════ --}}
+@if(($homeBrands ?? collect())->count())
+<section class="sec wrap" style="padding-top:0">
+  <div class="sec-head reveal">
+    <div><h2 class="sec-title tt-none">Shop By Brands</h2><div class="sec-deco"><i></i><b></b></div><p class="sec-sub">Authorised brands we stand behind</p></div>
+    <div style="display:flex;align-items:center;gap:14px"><a href="{{ route('brands') }}" class="sec-link">All brands <i class="fa-solid fa-arrow-right"></i></a><div class="sl-nav"><button id="brandPrev"><i class="fa-solid fa-chevron-left"></i></button><button id="brandNext"><i class="fa-solid fa-chevron-right"></i></button></div></div>
+  </div>
+  <div class="swiper brand-swiper reveal" id="brandSwiper">
+    <div class="swiper-wrapper">
+      @php $bList = $homeBrands->values(); $breps = $bList->count() ? max(1, (int) ceil(14 / $bList->count())) : 0; @endphp
+      @foreach(collect(range(1, max($breps,1)))->flatMap(fn() => $bList) as $b)
+        <div class="swiper-slide">
+          <a href="{{ route('shop.index',['brand'=>$b->slug]) }}" class="btile">
+            <span class="blogo">
+              @if($b->hasLogo())
+                <img src="{{ $b->logo_url }}" alt="{{ $b->name }}" loading="lazy">
+              @else
+                <span class="bmono">{{ $b->initials }}</span>
+              @endif
+            </span>
+            <b>{{ $b->name }}</b>
+            <small>{{ $b->products_count }} {{ Str::plural('product', $b->products_count) }}</small>
+          </a>
+        </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
 {{-- ═══════════ PROMO BANNER (Admin → Website Content) ═══════════ --}}
 @if(\App\Models\Setting::get('promo_enabled', '1') === '1')
 <section class="wrap">
@@ -496,6 +536,7 @@ const pOpts = (prev,next)=>({slidesPerView:1.3,spaceBetween:16,speed:600,grabCur
 new Swiper('#dealsSwiper',pOpts('#dealsPrev','#dealsNext'));
 new Swiper('#catSwiper',{slidesPerView:1.6,spaceBetween:14,loop:true,speed:5000,autoplay:{delay:0,disableOnInteraction:false,pauseOnMouseEnter:true},freeMode:{enabled:true,momentum:false},grabCursor:true,navigation:{prevEl:'#catPrev',nextEl:'#catNext'},breakpoints:{480:{slidesPerView:2.4},768:{slidesPerView:3.4},1024:{slidesPerView:5},1300:{slidesPerView:6},1600:{slidesPerView:7}}});
 new Swiper('#newSwiper',pOpts('#newPrev','#newNext'));
+if(document.getElementById('brandSwiper')) new Swiper('#brandSwiper',{slidesPerView:1.6,spaceBetween:14,loop:true,speed:5000,autoplay:{delay:0,disableOnInteraction:false,pauseOnMouseEnter:true},freeMode:{enabled:true,momentum:false},grabCursor:true,navigation:{prevEl:'#brandPrev',nextEl:'#brandNext'},breakpoints:{480:{slidesPerView:2.4},768:{slidesPerView:3.4},1024:{slidesPerView:5},1300:{slidesPerView:6},1600:{slidesPerView:7}}});
 
 /* Hero 3D parallax: tilt the scene toward the cursor */
 if(matchMedia('(hover:hover) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
