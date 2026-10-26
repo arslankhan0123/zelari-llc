@@ -85,18 +85,29 @@
 
 /* ═══════════ CATEGORIES ═══════════ */
 .cat-swiper{overflow:hidden;padding:4px 2px 10px}
+.brand-swiper{overflow:hidden;padding:4px 2px 10px}
+.brand-swiper .swiper-wrapper{transition-timing-function:linear!important}
+.brand-swiper .swiper-slide{height:auto}
+.btile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:150px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;transition:transform .25s,box-shadow .25s,border-color .25s;box-shadow:0 10px 26px -18px rgba(var(--shadow-rgb),.4)}
+.btile:hover{border-color:var(--p);transform:translateY(-4px);box-shadow:0 18px 34px -16px rgba(var(--shadow-rgb),.5)}
+.btile .blogo{height:58px;display:grid;place-items:center}
+.btile .blogo img{max-height:58px;max-width:130px;object-fit:contain}
+.btile .bmono{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--brand-grad);color:#fff;font-weight:800;font-size:17px}
+.btile b{font-size:13.5px;font-weight:800;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.btile small{font-size:11px;color:var(--muted);font-weight:700}
 .cat-swiper .swiper-wrapper{transition-timing-function:linear!important}
 .cat-swiper .swiper-slide{height:auto}
-.ctile{position:relative;display:block;height:150px;border-radius:16px;overflow:hidden;color:#fff;box-shadow:0 10px 26px -14px rgba(11,14,40,.45);isolation:isolate}
+.ctile{position:relative;display:block;height:180px;border-radius:18px;overflow:hidden;color:#fff;box-shadow:0 12px 28px -16px rgba(11,14,40,.5);isolation:isolate;border:1px solid rgba(255,255,255,.06);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.ctile:hover{transform:translateY(-5px);box-shadow:0 24px 44px -18px rgba(11,14,40,.6)}
 .ctile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1);z-index:0}
 .ctile:hover img{transform:scale(1.1)}
-.ctile .sh{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(11,14,40,.08) 0%,rgba(11,14,40,.35) 45%,rgba(11,14,40,.88) 100%)}
+.ctile .sh{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(11,14,40,.02) 0%,rgba(11,14,40,.18) 48%,rgba(11,14,40,.94) 100%)}
 .ctile .ic{position:absolute;top:12px;left:12px;z-index:2;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.92);color:var(--p);display:grid;place-items:center;font-size:14px;box-shadow:var(--shadow);transition:.3s}
 .ctile:hover .ic{background:var(--grad);color:#fff;transform:rotate(-8deg) scale(1.08)}
-.ctile .cnt{position:absolute;top:12px;right:12px;z-index:2;background:var(--sale);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;box-shadow:0 6px 14px -6px rgba(249,115,22,.9)}
+.ctile .cnt{position:absolute;top:12px;right:12px;z-index:2;background:rgba(11,14,40,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
 .ctile .txt{position:absolute;left:14px;right:14px;bottom:12px;z-index:2}
-.ctile b{display:block;font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ctile small{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.9);margin-top:3px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.ctile b{display:block;font-size:16.5px;font-weight:800;letter-spacing:-.3px;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctile small{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--accent);margin-top:4px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .ctile small i{font-size:10px;transition:transform .2s}
 .ctile:hover small i{transform:translateX(4px)}
 .ctile:hover{color:#fff}
@@ -295,7 +306,7 @@
       @forelse(collect(range(1, max($reps,1)))->flatMap(fn() => $catList) as $i => $c)
         <div class="swiper-slide">
           <a href="{{ route('shop.index',['category'=>$c->slug]) }}" class="ctile">
-            <img src="{{ $c->image_url }}" alt="{{ $c->name }}" loading="lazy">
+            <img src="{{ $c->tile_image ?? $c->image_url }}" alt="{{ $c->name }}" loading="lazy">
             <span class="sh"></span>
             <span class="ic"><i class="fa-solid {{ zcat_icon($c->name) }}"></i></span>
             <span class="cnt">{{ $c->total_count ?? 0 }} items</span>
@@ -308,6 +319,36 @@
     </div>
   </div>
 </section>
+
+{{-- ═══════════ BRANDS MARQUEE ═══════════ --}}
+@if(($homeBrands ?? collect())->count())
+<section class="sec wrap" style="padding-top:0">
+  <div class="sec-head reveal">
+    <div><h2 class="sec-title tt-none">Shop By Brands</h2><div class="sec-deco"><i></i><b></b></div><p class="sec-sub">Authorised brands we stand behind</p></div>
+    <div style="display:flex;align-items:center;gap:14px"><a href="{{ route('brands') }}" class="sec-link">All brands <i class="fa-solid fa-arrow-right"></i></a><div class="sl-nav"><button id="brandPrev"><i class="fa-solid fa-chevron-left"></i></button><button id="brandNext"><i class="fa-solid fa-chevron-right"></i></button></div></div>
+  </div>
+  <div class="swiper brand-swiper reveal" id="brandSwiper">
+    <div class="swiper-wrapper">
+      @php $bList = $homeBrands->values(); $breps = $bList->count() ? max(1, (int) ceil(14 / $bList->count())) : 0; @endphp
+      @foreach(collect(range(1, max($breps,1)))->flatMap(fn() => $bList) as $b)
+        <div class="swiper-slide">
+          <a href="{{ route('shop.index',['brand'=>$b->slug]) }}" class="btile">
+            <span class="blogo">
+              @if($b->hasLogo())
+                <img src="{{ $b->logo_url }}" alt="{{ $b->name }}" loading="lazy">
+              @else
+                <span class="bmono">{{ $b->initials }}</span>
+              @endif
+            </span>
+            <b>{{ $b->name }}</b>
+            <small>{{ $b->products_count }} {{ Str::plural('product', $b->products_count) }}</small>
+          </a>
+        </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
 
 {{-- ═══════════ PROMO BANNER (Admin → Website Content) ═══════════ --}}
 @if(\App\Models\Setting::get('promo_enabled', '1') === '1')
@@ -496,6 +537,7 @@ const pOpts = (prev,next)=>({slidesPerView:1.3,spaceBetween:16,speed:600,grabCur
 new Swiper('#dealsSwiper',pOpts('#dealsPrev','#dealsNext'));
 new Swiper('#catSwiper',{slidesPerView:1.6,spaceBetween:14,loop:true,speed:5000,autoplay:{delay:0,disableOnInteraction:false,pauseOnMouseEnter:true},freeMode:{enabled:true,momentum:false},grabCursor:true,navigation:{prevEl:'#catPrev',nextEl:'#catNext'},breakpoints:{480:{slidesPerView:2.4},768:{slidesPerView:3.4},1024:{slidesPerView:5},1300:{slidesPerView:6},1600:{slidesPerView:7}}});
 new Swiper('#newSwiper',pOpts('#newPrev','#newNext'));
+if(document.getElementById('brandSwiper')) new Swiper('#brandSwiper',{slidesPerView:1.6,spaceBetween:14,loop:true,speed:5000,autoplay:{delay:0,disableOnInteraction:false,pauseOnMouseEnter:true},freeMode:{enabled:true,momentum:false},grabCursor:true,navigation:{prevEl:'#brandPrev',nextEl:'#brandNext'},breakpoints:{480:{slidesPerView:2.4},768:{slidesPerView:3.4},1024:{slidesPerView:5},1300:{slidesPerView:6},1600:{slidesPerView:7}}});
 
 /* Hero 3D parallax: tilt the scene toward the cursor */
 if(matchMedia('(hover:hover) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
