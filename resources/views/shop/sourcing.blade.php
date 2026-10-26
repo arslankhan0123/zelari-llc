@@ -74,7 +74,7 @@
   .ptable .inp{padding:8px 10px;font-size:13px;border-radius:9px;width:100%}
   .ptable .ferr{font-size:11px;margin-top:3px}
   .ptable .tdel{width:40px}
-  .pdel{width:28px;height:28px;border:0;border-radius:8px;background:#f6f7fb;color:#b91c1c;cursor:pointer;display:grid;place-items:center;transition:.2s;margin-top:4px}
+  .pdel{width:28px;height:28px;border:0;border-radius:8px;background:#f6f7fb;color:#dc2626;cursor:pointer;display:grid;place-items:center;transition:.2s;margin-top:4px}
   .pdel:hover{background:#fee2e2}
   .prow:only-of-type .pdel{visibility:hidden}
   .addmore{width:100%;border:1.5px dashed var(--line);background:#fff;color:var(--p);font-weight:800;font-size:13.5px;padding:10px;border-radius:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}

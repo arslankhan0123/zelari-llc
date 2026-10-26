@@ -35,7 +35,7 @@
             <div class="bg-white rounded-2xl p-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
                 <div class="flex items-center gap-4 mb-5">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0"
-                         style="background: {{ ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'][crc32($customer->name) % 6] }}">
+                         style="background: {{ ['#6366f1','#3b3680','#f59e0b','#f97316','#f97316','#06b6d4'][crc32($customer->name) % 6] }}">
                         {{ $customer->initial }}
                     </div>
                     <div>

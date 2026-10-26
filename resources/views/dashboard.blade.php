@@ -116,7 +116,7 @@
                 </p>
             </div>
             <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                 style="background:linear-gradient(135deg,#10b981,#059669);">
+                 style="background:linear-gradient(135deg,#3b3680,#059669);">
                 <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
@@ -125,7 +125,7 @@
         <div class="flex items-end gap-1 h-8">
             @foreach($bars($spark['customers']) as $i => $h)
                 <div class="flex-1 rounded-sm opacity-30 hover:opacity-60 transition-opacity" title="{{ now()->subMonths(11 - $i)->format('M Y') }}: {{ (int) $spark['customers'][$i] }} new"
-                     style="height:{{ $h }}%; background:linear-gradient(to top,#10b981,#059669);"></div>
+                     style="height:{{ $h }}%; background:linear-gradient(to top,#3b3680,#059669);"></div>
             @endforeach
         </div>
     </div>
@@ -247,7 +247,7 @@
                 <a href="{{ route('profile.edit') }}"
                    class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-green-50 transition text-center group">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition"
-                         style="background:linear-gradient(135deg,#10b981,#059669);">
+                         style="background:linear-gradient(135deg,#3b3680,#059669);">
                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </div>
                     <span class="text-xs font-medium text-gray-600">My Profile</span>
@@ -272,8 +272,8 @@
         $tiles = [
             ['Sales Today', zprice($salesToday), $salesDelta === null ? ($salesToday > 0 ? 'First sales of the day' : 'No sales yet today') : ($salesDelta > 0 ? '↑ ' : ($salesDelta < 0 ? '↓ ' : '')) . abs($salesDelta) . '% vs yesterday', 'var(--brand-grad)', route('admin.orders.index')],
             ['Pending Orders', $pendingOrders, $pendingOrders ? '⚡ ' . $unpaidOrders . ' awaiting payment' : 'All caught up', 'linear-gradient(135deg,#f59e0b,#d97706)', route('admin.orders.index', ['status' => 'pending'])],
-            ['Low Stock Items', $lowStock, $lowStock ? '⚠ ' . $outOfStock . ' out of stock' : 'Stock levels healthy', 'linear-gradient(135deg,#ef4444,#dc2626)', route('admin.products.index')],
-            ['Paid Today', zprice($paidToday), $paidTodayCount . ' ' . Str::plural('payment', $paidTodayCount) . ' received', 'linear-gradient(135deg,#10b981,#059669)', route('admin.payments.index', ['status' => 'paid'])],
+            ['Low Stock Items', $lowStock, $lowStock ? '⚠ ' . $outOfStock . ' out of stock' : 'Stock levels healthy', 'linear-gradient(135deg,#f97316,#dc2626)', route('admin.products.index')],
+            ['Paid Today', zprice($paidToday), $paidTodayCount . ' ' . Str::plural('payment', $paidTodayCount) . ' received', 'linear-gradient(135deg,#3b3680,#059669)', route('admin.payments.index', ['status' => 'paid'])],
         ];
     @endphp
     @foreach($tiles as [$title,$val,$sub,$grad,$href])

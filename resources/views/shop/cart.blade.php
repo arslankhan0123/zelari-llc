@@ -9,7 +9,7 @@
 .steps{display:flex;align-items:center;gap:10px;margin-bottom:26px;flex-wrap:wrap}
 .step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--faint)}
 .step i{width:30px;height:30px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:12px;font-style:normal}
-.step.on{color:var(--p)}.step.on i{background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(106,61,245,.9)}
+.step.on{color:var(--p)}.step.on i{background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(249,115,22,.9)}
 .step.done{color:var(--ok)}.step.done i{background:var(--ok);color:#fff}
 .step-line{flex:1;max-width:70px;height:2px;background:var(--line)}
 .ctable{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
@@ -59,7 +59,7 @@
 .sum .btn-g{width:100%;height:52px;font-size:15px;margin-top:16px;border-radius:14px}
 .secure{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--faint)}
 .empty{text-align:center;padding:70px 20px;background:var(--surface);border-radius:var(--r-lg)}
-.empty .e{font-size:84px;display:inline-block;animation:floatY 5s ease-in-out infinite;filter:drop-shadow(0 20px 20px rgba(39,30,92,.2))}
+.empty .e{font-size:84px;display:inline-block;animation:floatY 5s ease-in-out infinite;filter:drop-shadow(0 20px 20px rgba(11,14,40,.2))}
 .empty h2{font-weight:800;margin:14px 0 6px}
 .empty p{color:var(--muted);margin-bottom:22px}
 </style>

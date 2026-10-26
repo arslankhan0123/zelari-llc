@@ -68,7 +68,7 @@
     <div id="deal" class="bg-white rounded-2xl p-6 scroll-mt-24" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
         <div class="flex items-start justify-between gap-4 mb-6">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#ff4d7d,#ff8a5b);box-shadow:0 8px 24px rgba(255,77,125,.35)">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#f97316,#ff8a5b);box-shadow:0 8px 24px rgba(249,115,22,.35)">
                     <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <div>
@@ -97,7 +97,7 @@
                     <div><label class="form-label">Button link</label><input type="url" name="deal_link" value="{{ old('deal_link', $s['deal_link'] ?? '') }}" placeholder="{{ route('shop.index', ['on_sale' => 1]) }}" class="form-input @error('deal_link') border-red-400 @enderror"><p class="text-gray-400 text-xs mt-1.5">Blank = all products on sale.</p></div>
                     <div><label class="form-label">Countdown ends at</label><input type="datetime-local" name="deal_ends_at" value="{{ old('deal_ends_at', !empty($s['deal_ends_at']) ? str_replace(' ', 'T', $s['deal_ends_at']) : '') }}" class="form-input"><p class="text-gray-400 text-xs mt-1.5">Blank or in the past = end of the current week (resets automatically).</p></div>
                 </div>
-            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#ff4d7d,#ff8a5b);box-shadow:0 8px 24px rgba(255,77,125,.3)">
+            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#f97316,#ff8a5b);box-shadow:0 8px 24px rgba(249,115,22,.3)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Save banner
             </button>
@@ -108,7 +108,7 @@
     <div id="promo" class="bg-white rounded-2xl p-6 scroll-mt-24" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
         <div class="flex items-start justify-between gap-4 mb-6">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#6366f1,#22d3ee);box-shadow:0 8px 24px rgba(99,102,241,.35)">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#6366f1,#f59e0b);box-shadow:0 8px 24px rgba(99,102,241,.35)">
                     <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                 </div>
                 <div>
@@ -153,7 +153,7 @@
                 </div>
                 @endfor
             </div>
-            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#6366f1,#22d3ee);box-shadow:0 8px 24px rgba(99,102,241,.3)">
+            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#6366f1,#f59e0b);box-shadow:0 8px 24px rgba(99,102,241,.3)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Save promo banner
             </button>
@@ -163,7 +163,7 @@
     {{-- ───────────── FAQs ───────────── --}}
     <div id="faqs" class="bg-white rounded-2xl p-6 scroll-mt-24" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
         <div class="flex items-center gap-4 mb-6">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#0ea5e9,#22d3ee);box-shadow:0 8px 24px rgba(14,165,233,.35)">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#f97316,#f59e0b);box-shadow:0 8px 24px rgba(249,115,22,.35)">
                 <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
@@ -183,7 +183,7 @@
                     @endforeach
                 </div>
             </details>
-            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#0ea5e9,#22d3ee);box-shadow:0 8px 24px rgba(14,165,233,.3)">
+            <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#f97316,#f59e0b);box-shadow:0 8px 24px rgba(249,115,22,.3)">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Save FAQs
             </button>

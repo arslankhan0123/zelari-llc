@@ -9,7 +9,7 @@
 .steps{display:flex;align-items:center;gap:10px;margin-bottom:26px;flex-wrap:wrap}
 .step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--faint)}
 .step i{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;font-style:normal}
-.step.on{color:var(--p)}.step.on i{background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(106,61,245,.9)}
+.step.on{color:var(--p)}.step.on i{background:var(--grad);color:#fff;box-shadow:0 8px 18px -8px rgba(249,115,22,.9)}
 .step.done{color:var(--ok)}.step.done i{background:var(--ok);color:#fff}
 .step-line{flex:1;max-width:70px;height:2px;background:var(--line-2)}
 .card-z{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:26px;margin-bottom:18px}

@@ -293,7 +293,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #ef4444;
+            background: #f97316;
             border: 2px solid white;
             animation: notif-ping 1.5s ease-in-out infinite;
         }
@@ -498,7 +498,7 @@
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #f97316, #dc2626);
             color: white;
             border: none;
             cursor: pointer;
@@ -560,7 +560,7 @@
 
         .alert-error {
             background: #fef2f2;
-            border-left: 4px solid #ef4444;
+            border-left: 4px solid #f97316;
             color: #dc2626;
             padding: 14px 18px;
             border-radius: 10px;

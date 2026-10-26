@@ -85,7 +85,7 @@
                 <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
                     <div class="flex items-center gap-3">
                         <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                             style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+                             style="background:linear-gradient(135deg,#6366f1,#f97316)">
                             {{ strtoupper(substr($child->name,0,1)) }}
                         </div>
                         <div>

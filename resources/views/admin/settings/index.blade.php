@@ -13,7 +13,7 @@
         <div class="bg-white rounded-2xl p-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white"
-                     style="background:linear-gradient(135deg,#ec4899,#8b5cf6);box-shadow:0 8px 24px rgba(236,72,153,.35);">
+                     style="background:linear-gradient(135deg,#f59e0b,#b45309);box-shadow:0 8px 24px rgba(249,115,22,.35);">
                     <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                 </div>
                 <div>
@@ -52,7 +52,7 @@
                     </div>
                     @endforeach
                 </div>
-                <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);box-shadow:0 8px 24px rgba(236,72,153,.3)">
+                <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#f59e0b,#b45309);box-shadow:0 8px 24px rgba(249,115,22,.3)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     Save branding
                 </button>
@@ -239,7 +239,7 @@
             <div class="flex items-start justify-between gap-4 mb-6">
                 <div class="flex items-center gap-4">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white"
-                         style="background:linear-gradient(135deg,#0ea5e9,#6366f1);box-shadow:0 8px 24px rgba(14,165,233,.35);">
+                         style="background:linear-gradient(135deg,#f59e0b,#b45309);box-shadow:0 8px 24px rgba(249,115,22,.35);">
                         <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                     </div>
                     <div>
@@ -364,7 +364,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);box-shadow:0 8px 24px rgba(14,165,233,.3)">
+                <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm" style="background:linear-gradient(135deg,#f59e0b,#b45309);box-shadow:0 8px 24px rgba(249,115,22,.3)">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     Save payment settings
                 </button>

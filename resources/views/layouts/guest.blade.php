@@ -28,7 +28,7 @@ a{color:inherit;text-decoration:none}
 .auth-logo img,.auth-logo svg{height:44px;width:auto;display:block}
 .auth-logo img{background:#fff;border-radius:12px;padding:6px 10px}
 .auth-copy h1{font-size:clamp(30px,3.4vw,44px);line-height:1.08;letter-spacing:-1.2px;margin:0 0 14px;font-weight:800}
-.auth-copy h1 span{background:linear-gradient(90deg,#c4b5fd,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.auth-copy h1 span{background:linear-gradient(90deg,#c7d2fe,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
 .auth-copy p{font-size:16px;line-height:1.6;color:rgba(255,255,255,.78);max-width:460px;margin:0 0 28px}
 .perks{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:520px}
 .perk{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:13px 14px;backdrop-filter:blur(8px)}
