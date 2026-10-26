@@ -19,7 +19,7 @@
 .gal-main img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-lg);transform:translateZ(20px);transition:transform .4s,opacity .2s;display:block}
 .gal-main .ph{font-size:120px;color:#c8cce3;transform:translateZ(40px)}
 .gal-main .orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:.5;animation:orb 14s ease-in-out infinite}
-.gal-badge{position:absolute;top:16px;left:16px;z-index:3;background:var(--sale);color:#fff;font-weight:800;font-size:13px;padding:6px 12px;border-radius:10px;box-shadow:0 8px 20px -8px rgba(255,77,125,.9)}
+.gal-badge{position:absolute;top:16px;left:16px;z-index:3;background:var(--sale);color:#fff;font-weight:800;font-size:13px;padding:6px 12px;border-radius:10px;box-shadow:0 8px 20px -8px rgba(249,115,22,.9)}
 .gal-zoom{position:absolute;right:16px;bottom:16px;z-index:3;width:40px;height:40px;border-radius:12px;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center;color:var(--ink-2);font-size:14px}
 .thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .thumb{width:78px;height:78px;border-radius:14px;border:2px solid var(--line);overflow:hidden;cursor:pointer;background:#fff;transition:.2s;display:grid;place-items:center}
@@ -125,7 +125,7 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
 .sl-nav button:hover{background:var(--grad);color:#fff;border-color:transparent}
 .sl-nav button.swiper-button-disabled{opacity:.35;pointer-events:none}
 /* sticky mobile buy bar */
-.buybar{display:none;position:fixed;left:0;right:0;bottom:64px;background:#fff;border-top:1px solid var(--line);padding:10px 16px;z-index:890;gap:12px;align-items:center;box-shadow:0 -8px 30px -14px rgba(39,30,92,.3)}
+.buybar{display:none;position:fixed;left:0;right:0;bottom:64px;background:#fff;border-top:1px solid var(--line);padding:10px 16px;z-index:890;gap:12px;align-items:center;box-shadow:0 -8px 30px -14px rgba(11,14,40,.3)}
 @media(max-width:768px){.buybar{display:flex}}
 .buybar b{font-size:18px;font-weight:800}
 </style>
@@ -156,7 +156,7 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
     <div class="gal">
       <div class="gal-main" id="galMain">
         <span class="orb" style="width:240px;height:240px;background:var(--brand-light);left:-60px;top:-60px"></span>
-        <span class="orb" style="width:200px;height:200px;background:#22d3ee;right:-40px;bottom:-60px;animation-delay:-6s"></span>
+        <span class="orb" style="width:200px;height:200px;background:#f59e0b;right:-40px;bottom:-60px;animation-delay:-6s"></span>
         @if($product->discount_percent)<span class="gal-badge">-{{ $product->discount_percent }}% OFF</span>@endif
         <div class="stage">
           <img src="{{ $gallery->first() }}" alt="{{ $product->name }}" id="mainImg" class="{{ $realImg ? '' : 'cover' }}">

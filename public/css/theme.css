@@ -24,7 +24,7 @@
 .btn-brand-soft:hover{background:var(--brand);color:#fff}
 
 /* Sale / call-to-action (pink) button used in heroes */
-.btn-sale{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--sale);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;box-shadow:0 12px 24px -10px rgba(255,77,125,.7);transition:.2s}
+.btn-sale{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--sale);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:700;font-size:14px;line-height:1;cursor:pointer;text-decoration:none;box-shadow:0 12px 24px -10px rgba(249,115,22,.7);transition:.2s}
 .btn-sale:hover{filter:brightness(1.07);transform:translateY(-1px);color:#fff}
 
 /* Utilities */

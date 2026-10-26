@@ -73,7 +73,7 @@
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0"
-                                     style="background: {{ ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'][crc32($c->name) % 6] }}">
+                                     style="background: {{ ['#6366f1','#3b3680','#f59e0b','#f97316','#f97316','#06b6d4'][crc32($c->name) % 6] }}">
                                     {{ $c->initial }}
                                 </div>
                                 <div>

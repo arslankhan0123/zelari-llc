@@ -13,7 +13,7 @@
         <div class="bg-white rounded-2xl p-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold"
-                     style="background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 8px 24px rgba(99,102,241,.4);">
+                     style="background:linear-gradient(135deg,#6366f1,#f97316);box-shadow:0 8px 24px rgba(99,102,241,.4);">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
                 <div>
@@ -152,7 +152,7 @@
         <!-- Avatar / quick info -->
         <div class="bg-white rounded-2xl p-5 text-center" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
             <div class="w-20 h-20 rounded-2xl mx-auto mb-3 flex items-center justify-center text-white text-3xl font-bold"
-                 style="background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 8px 24px rgba(99,102,241,.4);">
+                 style="background:linear-gradient(135deg,#6366f1,#f97316);box-shadow:0 8px 24px rgba(99,102,241,.4);">
                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
             </div>
             <h3 class="font-bold text-gray-800">{{ Auth::user()->name }}</h3>
@@ -161,7 +161,7 @@
         </div>
 
         <!-- Security tips -->
-        <div class="rounded-2xl p-5" style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(139,92,246,.06));border:1px solid rgba(99,102,241,.15)">
+        <div class="rounded-2xl p-5" style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(249,115,22,.06));border:1px solid rgba(99,102,241,.15)">
             <div class="flex items-center gap-2 mb-3">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 <h3 class="font-semibold text-indigo-700">Security Tips</h3>

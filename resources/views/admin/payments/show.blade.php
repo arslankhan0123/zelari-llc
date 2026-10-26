@@ -37,7 +37,7 @@
                 @if($payment->card_last4)
                 <div class="grid md:grid-cols-[260px_1fr] gap-6 items-start">
                     {{-- visual card --}}
-                    <div class="rounded-2xl p-5 text-white relative overflow-hidden" style="aspect-ratio:1.586;background:linear-gradient(135deg,#1b1740,#2b1e6b 55%,#0c3b5c);box-shadow:0 18px 40px -16px rgba(39,30,92,.6)">
+                    <div class="rounded-2xl p-5 text-white relative overflow-hidden" style="aspect-ratio:1.586;background:linear-gradient(135deg,#14173a,#1e1b4b 55%,#2a2460);box-shadow:0 18px 40px -16px rgba(11,14,40,.6)">
                         <div class="flex items-center justify-between">
                             <span class="w-9 h-7 rounded-md" style="background:linear-gradient(135deg,#f6d365,#fda085)"></span>
                             <span class="text-xs font-extrabold uppercase tracking-widest opacity-90">{{ $payment->card_brand }}</span>

@@ -134,7 +134,7 @@
                 @foreach($category->children as $child)
                 <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
                     <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">{{ strtoupper(substr($child->name,0,1)) }}</div>
+                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:linear-gradient(135deg,#6366f1,#f97316);">{{ strtoupper(substr($child->name,0,1)) }}</div>
                         <div>
                             <div class="text-sm font-medium text-gray-700">{{ $child->name }}</div>
                             <code class="text-xs text-gray-400">{{ $child->slug }}</code>
@@ -164,7 +164,7 @@
             </div>
         </div>
 
-        <div class="rounded-2xl p-5" style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(139,92,246,.06));border:1px solid rgba(99,102,241,.15)">
+        <div class="rounded-2xl p-5" style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(249,115,22,.06));border:1px solid rgba(99,102,241,.15)">
             <div class="flex items-center gap-2 mb-3">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <h3 class="font-semibold text-indigo-700">Note</h3>

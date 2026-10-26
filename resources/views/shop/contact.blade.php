@@ -30,7 +30,7 @@
 .map{margin-top:28px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);height:300px;position:relative;background:radial-gradient(600px 300px at 30% 50%,#efeaff,transparent),radial-gradient(500px 300px at 80% 50%,#e4fbff,transparent),var(--surface)}
 .map .grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:40px 40px;opacity:.7}
 .map .pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);text-align:center}
-.map .pin i{font-size:46px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 14px 16px rgba(106,61,245,.4));animation:floatY2 3s ease-in-out infinite;display:block}
+.map .pin i{font-size:46px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 14px 16px rgba(249,115,22,.4));animation:floatY2 3s ease-in-out infinite;display:block}
 .map .pin span{display:inline-block;margin-top:8px;background:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;box-shadow:var(--shadow)}
 .map .ring{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:var(--p);animation:pulseGlow 2s infinite}
 .faq{margin-top:40px}

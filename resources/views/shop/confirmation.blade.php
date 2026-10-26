@@ -6,8 +6,8 @@
 .ok-page{padding:50px 0 70px;background:radial-gradient(800px 400px at 50% 0%,#efeaff 0%,transparent 60%),var(--surface);min-height:70vh}
 .ok-inner{max-width:860px;margin:0 auto}
 .ok-hero{text-align:center;margin-bottom:34px;position:relative}
-.ok-ring{width:110px;height:110px;margin:0 auto 20px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:46px;box-shadow:0 30px 60px -20px rgba(106,61,245,.8);animation:popIn .6s cubic-bezier(.34,1.56,.64,1);position:relative;transform-style:preserve-3d}
-.ok-ring::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px dashed rgba(106,61,245,.4);animation:spinSlow 16s linear infinite}
+.ok-ring{width:110px;height:110px;margin:0 auto 20px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:46px;box-shadow:0 30px 60px -20px rgba(249,115,22,.8);animation:popIn .6s cubic-bezier(.34,1.56,.64,1);position:relative;transform-style:preserve-3d}
+.ok-ring::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px dashed rgba(249,115,22,.4);animation:spinSlow 16s linear infinite}
 .ok-hero h1{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-1px;margin:0 0 8px}
 .ok-hero p{color:var(--muted);font-size:16px;margin:0}
 .confetti{position:absolute;width:10px;height:10px;border-radius:2px;top:40px;opacity:0;animation:conf 1.6s ease-out forwards}
@@ -80,7 +80,7 @@
 <section class="ok-page">
   <div class="wrap ok-inner">
     <div class="ok-hero">
-      @for($i=0;$i<18;$i++)<span class="confetti" style="left:{{ 50 + (($i*37)%40 - 20) }}%;background:{{ [ztheme('brand'),ztheme('accent'),'#ff4d7d','#ffd36b','#14b88a'][$i%5] }};--dx:{{ (($i*53)%240)-120 }}px;--dy:{{ (($i*29)%160)-200 }}px;animation-delay:{{ ($i%6)*.08 }}s"></span>@endfor
+      @for($i=0;$i<18;$i++)<span class="confetti" style="left:{{ 50 + (($i*37)%40 - 20) }}%;background:{{ [ztheme('brand'),ztheme('accent'),'#f97316','#ffd36b','#14b88a'][$i%5] }};--dx:{{ (($i*53)%240)-120 }}px;--dy:{{ (($i*29)%160)-200 }}px;animation-delay:{{ ($i%6)*.08 }}s"></span>@endfor
       <div class="ok-ring"><i class="fa-solid fa-check"></i></div>
       <h1>Order confirmed 🎉</h1>
       <p>Thanks, <b>{{ $order->shipping_name ?? $order->customer?->name ?? 'friend' }}</b>. We've received your order and emailed a confirmation with your PDF invoice to <b>{{ $order->customer_email ?? $order->customer?->email }}</b>.</p>
