@@ -22,6 +22,15 @@ class ShopController extends Controller
 
         $base = fn() => Product::where('status', 'active')->with(['category', 'images']);
 
+        // Category tiles: when a category has no image of its own, show one of its live product photos
+        $parentCategories->each(function ($cat) use ($base) {
+            $cat->tile_image = null;
+            if (!$cat->hasImage()) {
+                $p = $base()->whereIn('category_id', $cat->descendantIds())->whereNotNull('feature_image')->latest()->first();
+                $cat->tile_image = $p?->display_image;
+            }
+        });
+
         // Hero: products that have an image, for the 3D floating visuals
         $heroProducts = $base()->whereNotNull('feature_image')->latest()->take(3)->get();
         if ($heroProducts->isEmpty()) {
