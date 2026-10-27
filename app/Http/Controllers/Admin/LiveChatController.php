@@ -95,6 +95,79 @@ class LiveChatController extends Controller
         ]);
     }
 
+    /** Full notifications page: everything recent, with filters, deep-linked. */
+    public function notifications()
+    {
+        ChatMessage::ensureTable();
+        $items = collect();
+
+        rescue(function () use ($items) {
+            foreach (ChatMessage::where('sender', 'user')->latest('id')->take(40)->get() as $m) {
+                $items->push(['type' => 'chat', 'icon' => '💬', 'title' => ($m->name ?: 'Visitor') . ' — Live chat', 'sub' => mb_substr($m->message, 0, 90), 'at' => $m->created_at, 'unread' => !$m->read_by_agent, 'url' => route('admin.chats.index', ['open' => $m->thread_token])]);
+            }
+        }, null, false);
+        rescue(function () use ($items) {
+            foreach (\App\Models\ContactMessage::latest('id')->take(30)->get() as $m) {
+                $items->push(['type' => 'message', 'icon' => '✉️', 'title' => $m->name . ' — ' . ($m->subject ?: 'Contact message'), 'sub' => mb_substr($m->message, 0, 90), 'at' => $m->created_at, 'unread' => $m->status === 'new', 'url' => route('admin.messages.show', $m)]);
+            }
+        }, null, false);
+        rescue(function () use ($items) {
+            foreach (\App\Models\Order::latest('id')->take(30)->get() as $o) {
+                $items->push(['type' => 'order', 'icon' => '🛒', 'title' => 'Order ' . ($o->order_number ?: '#' . $o->id), 'sub' => trim(($o->customer_email ?: '') . ' · ' . ucfirst((string) $o->status), ' ·'), 'at' => $o->created_at, 'unread' => $o->status === 'pending', 'url' => route('admin.orders.show', $o)]);
+            }
+        }, null, false);
+        rescue(function () use ($items) {
+            foreach (\App\Models\SourcingRequest::latest('id')->take(30)->get() as $r) {
+                $items->push(['type' => 'sourcing', 'icon' => '📦', 'title' => 'Sourcing ' . ($r->reference ?: '#' . $r->id), 'sub' => $r->name . ' · ' . $r->items()->count() . ' item(s)', 'at' => $r->created_at, 'unread' => $r->status === 'new', 'url' => route('admin.sourcing.show', $r)]);
+            }
+        }, null, false);
+
+        $items = $items->filter(fn ($i) => $i['at'])->sortByDesc('at')->take(100)->values()->map(function ($i) {
+            $i['time'] = $i['at']->diffForHumans();
+            $i['date'] = $i['at']->format('d M Y, g:i A');
+            return $i;
+        });
+
+        return view('admin.notifications.index', ['items' => $items]);
+    }
+
+    /** Counts + recent items for the admin notification poller (badges, bell, sound). */
+    public function notifyCounts()
+    {
+        $c = fn ($fn) => rescue($fn, 0, false);
+        ChatMessage::ensureTable();
+
+        $recent = rescue(function () {
+            $items = collect();
+            foreach (ChatMessage::where('sender', 'user')->where('read_by_agent', false)->latest('id')->take(4)->get() as $m) {
+                $items->push(['icon' => '💬', 'title' => ($m->name ?: 'Visitor') . ': ' . mb_substr($m->message, 0, 42), 'at' => $m->created_at, 'url' => route('admin.chats.index', ['open' => $m->thread_token])]);
+            }
+            foreach (\App\Models\ContactMessage::where('status', 'new')->latest('id')->take(3)->get() as $m) {
+                $items->push(['icon' => '✉️', 'title' => $m->name . ' — ' . mb_substr($m->subject ?: $m->message, 0, 38), 'at' => $m->created_at, 'url' => route('admin.messages.show', $m)]);
+            }
+            foreach (\App\Models\Order::where('status', 'pending')->latest('id')->take(3)->get() as $o) {
+                $items->push(['icon' => '🛒', 'title' => 'New order ' . ($o->order_number ?: '#' . $o->id), 'at' => $o->created_at, 'url' => route('admin.orders.show', $o)]);
+            }
+            foreach (\App\Models\SourcingRequest::where('status', 'new')->latest('id')->take(2)->get() as $r) {
+                $items->push(['icon' => '📦', 'title' => 'New sourcing ' . ($r->reference ?: '#' . $r->id), 'at' => $r->created_at, 'url' => route('admin.sourcing.show', $r)]);
+            }
+            return $items->sortByDesc('at')->take(6)->map(fn ($i) => [
+                'icon' => $i['icon'], 'title' => $i['title'], 'url' => $i['url'],
+                'time' => $i['at'] ? $i['at']->diffForHumans() : '',
+            ])->values();
+        }, collect(), false);
+
+        return response()->json([
+            'chats'            => $c(fn () => ChatMessage::where('sender', 'user')->where('read_by_agent', false)->count()),
+            'messages'         => $c(fn () => \App\Models\ContactMessage::where('status', 'new')->count()),
+            'orders'           => $c(fn () => \App\Models\Order::count()),
+            'sourcing'         => $c(fn () => \App\Models\SourcingRequest::count()),
+            'orders_pending'   => $c(fn () => \App\Models\Order::where('status', 'pending')->count()),
+            'sourcing_new'     => $c(fn () => \App\Models\SourcingRequest::where('status', 'new')->count()),
+            'recent'           => $recent,
+        ]);
+    }
+
     /** Agent sends a reply into a thread. */
     public function send(Request $request)
     {
