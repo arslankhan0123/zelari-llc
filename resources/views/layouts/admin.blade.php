@@ -67,9 +67,8 @@
 
         /* Sidebar brand logo glow */
         .brand-logo {
-            background: linear-gradient(135deg, var(--indigo), var(--violet));
-            box-shadow: 0 0 20px rgba(99, 102, 241, .6), 0 0 40px rgba(139, 92, 246, .3);
-            animation: pulse-glow 3s ease-in-out infinite;
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .35), 0 0 0 1px rgba(255, 255, 255, .12);
         }
 
         @keyframes pulse-glow {
@@ -88,13 +87,13 @@
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 11px 16px;
-            margin: 2px 8px;
-            border-radius: 10px;
+            gap: 10px;
+            padding: 8px 13px;
+            margin: 1px 8px;
+            border-radius: 9px;
             cursor: pointer;
             color: rgba(255, 255, 255, .65);
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
             text-decoration: none;
             transition: all .22s ease;
@@ -142,12 +141,12 @@
         .sub-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 9px 16px 9px 48px;
+            gap: 9px;
+            padding: 6px 14px 6px 44px;
             margin: 1px 8px;
             border-radius: 8px;
             color: rgba(255, 255, 255, .5);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 500;
             text-decoration: none;
             transition: all .2s;
@@ -713,9 +712,9 @@
         <div class="sb-blob sb-blob-2"></div>
 
         <!-- Brand -->
-        <div class="flex items-center gap-3 px-4 py-5 relative">
-            <div class="brand-logo w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-cover">
+        <div class="flex items-center gap-3 px-4 py-4 relative">
+            <div class="brand-logo w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
+                <img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-contain">
             </div>
             <div class="brand-text">
                 <div class="text-white font-bold text-lg leading-tight truncate max-w-[150px]">{{ zstore('name', 'Zelari') }}</div>
@@ -733,7 +732,7 @@
         </div>
 
         <!-- Nav label -->
-        <div class="nav-label px-5 mb-1 mt-2">
+        <div class="nav-label px-5 mb-0.5 mt-1.5">
             <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Main</span>
         </div>
 
