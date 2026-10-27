@@ -5,11 +5,11 @@
 
 @section('content')
 <style>
-.lc{display:grid;grid-template-columns:320px 1fr;gap:0;background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;height:calc(100vh - 220px);min-height:480px}
+.lc{display:grid;grid-template-columns:320px 1fr;gap:0;background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;height:calc(100vh - 280px);min-height:440px}
 @media(max-width:900px){.lc{grid-template-columns:1fr};.lc-right{display:none}.lc.chatting{grid-template-columns:1fr}.lc.chatting .lc-left{display:none}.lc.chatting .lc-right{display:flex}}
-.lc-left{border-right:1px solid #e5e7eb;display:flex;flex-direction:column;min-width:0}
+.lc-left{border-right:1px solid #e5e7eb;display:flex;flex-direction:column;min-width:0;min-height:0}
 .lc-left h3{margin:0;padding:14px 16px;font-size:14px;font-weight:800;border-bottom:1px solid #f1f2f6}
-.lc-list{flex:1;overflow-y:auto}
+.lc-list{flex:1;overflow-y:auto;min-height:0}
 .lc-t{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;border:0;border-bottom:1px solid #f4f5f9;background:#fff;cursor:pointer;font-family:inherit;transition:background .15s}
 .lc-t:hover{background:#f8f9fe}
 .lc-t.on{background:#eef0fb}
@@ -19,17 +19,17 @@
 .lc-t .meta{margin-left:auto;text-align:right;flex-shrink:0}
 .lc-t .meta time{font-size:10.5px;color:#9ca3af;display:block}
 .lc-t .meta .n{display:inline-grid;place-items:center;min-width:19px;height:19px;border-radius:10px;background:#f59e0b;color:#fff;font-size:11px;font-weight:800;padding:0 5px;margin-top:4px}
-.lc-right{display:flex;flex-direction:column;min-width:0}
+.lc-right{display:flex;flex-direction:column;min-width:0;min-height:0}
 .lc-head{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid #f1f2f6}
 .lc-head .av{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1e1b4b,#3b3680);color:#fff;font-weight:800;display:grid;place-items:center}
 .lc-head b{font-size:14px}.lc-head small{display:block;font-size:12px;color:#6b7280}
-.lc-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:9px;background:#f8f9fc}
+.lc-msgs{flex:1;overflow-y:auto;min-height:0;padding:16px;display:flex;flex-direction:column;gap:9px;background:#f8f9fc}
 .lc-m{max-width:72%;padding:9px 13px;border-radius:13px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .lc-m.user{background:#fff;border:1px solid #e5e7eb;align-self:flex-start;border-bottom-left-radius:4px}
 .lc-m.agent{background:linear-gradient(135deg,#1e1b4b,#3b3680);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
 .lc-m time{display:block;font-size:10px;opacity:.65;margin-top:4px}
 .lc-empty{flex:1;display:grid;place-items:center;color:#9ca3af;font-size:14px;padding:40px;text-align:center}
-.lc-send{display:flex;gap:9px;padding:12px;border-top:1px solid #f1f2f6}
+.lc-send{display:flex;gap:9px;padding:12px;border-top:1px solid #f1f2f6;flex-shrink:0}
 .lc-send input{flex:1;border:1.5px solid #e5e7eb;border-radius:999px;padding:0 16px;height:44px;font:inherit;font-size:13.5px;outline:0;min-width:0}
 .lc-send input:focus{border-color:#1e1b4b}
 .lc-send button{border:0;border-radius:999px;height:44px;padding:0 20px;background:linear-gradient(135deg,#1e1b4b,#3b3680);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit}
@@ -95,6 +95,7 @@
         form=document.getElementById('lcForm'), input=document.getElementById('lcInput'),
         head=document.getElementById('lcHead'), lc=document.getElementById('lc');
   let cur=null, lastId=0, busy=false;
+  let autoOpen=new URLSearchParams(location.search).get('open');
   const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
 
   async function loadThreads(){
@@ -107,6 +108,7 @@
         b.innerHTML='<span class="av">'+esc((t.name||'V').charAt(0).toUpperCase())+'</span><span style="min-width:0"><b>'+esc(t.name)+'</b><small>'+esc((t.sender==='agent'?'You: ':'')+t.last)+'</small></span><span class="meta"><time>'+esc(t.time)+'</time>'+(t.unread>0?'<span class="n">'+t.unread+'</span>':'')+'</span>';
         b.onclick=()=>open(t);
         list.appendChild(b);
+        if(autoOpen && t.token===autoOpen){ autoOpen=null; setTimeout(()=>{ if(!cur) open(t); },60); }
       });
     }catch(_){}
   }

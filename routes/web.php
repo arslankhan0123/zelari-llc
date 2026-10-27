@@ -87,16 +87,20 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
 
+    Route::get('/notifications', [\App\Http\Controllers\Admin\LiveChatController::class, 'notifications'])->name('notifications.index');
+
     Route::prefix('chats')->name('chats.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\LiveChatController::class, 'index'])->name('index');
         Route::get('/threads', [\App\Http\Controllers\Admin\LiveChatController::class, 'threads'])->name('threads');
         Route::get('/messages', [\App\Http\Controllers\Admin\LiveChatController::class, 'messages'])->name('messages');
         Route::post('/send', [\App\Http\Controllers\Admin\LiveChatController::class, 'send'])->name('send');
         Route::post('/hours', [\App\Http\Controllers\Admin\LiveChatController::class, 'saveHours'])->name('hours');
+        Route::get('/notify-counts', [\App\Http\Controllers\Admin\LiveChatController::class, 'notifyCounts'])->name('notify');
     });
 
     Route::prefix('sourcing')->name('sourcing.')->group(function () {
         Route::get('/', [SourcingRequestController::class, 'index'])->name('index');
+        Route::get('/{sourcing}', [SourcingRequestController::class, 'show'])->name('show')->whereNumber('sourcing');
         Route::post('/{sourcing}/status', [SourcingRequestController::class, 'status'])->name('status');
         Route::post('/{sourcing}/note', [SourcingRequestController::class, 'note'])->name('note');
         Route::delete('/{sourcing}', [SourcingRequestController::class, 'destroy'])->name('destroy');

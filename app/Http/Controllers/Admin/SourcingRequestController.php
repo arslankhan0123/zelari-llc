@@ -36,6 +36,12 @@ class SourcingRequestController extends Controller
         return view('admin.sourcing.index', compact('requests', 'stats'));
     }
 
+    public function show(SourcingRequest $sourcing)
+    {
+        $sourcing->load('items');
+        return view('admin.sourcing.show', ['r' => $sourcing]);
+    }
+
     public function status(Request $request, SourcingRequest $sourcing)
     {
         $data = $request->validate(['status' => 'required|in:new,reviewing,quoted,closed']);
