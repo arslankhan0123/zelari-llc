@@ -192,7 +192,7 @@ button,input,select,textarea{font-family:inherit}
 .acct-out{margin:6px 0 0;padding-top:6px;border-top:1px solid var(--line)}
 .acct-out button{color:var(--sale)}
 .acct-out button i{color:var(--sale)}
-.drawer .dloc{padding:12px 18px 4px;border-bottom:1px solid var(--surface)}
+.drawer .dloc{padding:12px 18px 12px;border-bottom:1px solid var(--surface);flex-shrink:0}
 .drawer .dloc label{display:block;font-size:12px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;margin-bottom:6px}
 .drawer .dloc select{width:100%;border:1.5px solid var(--line-2);border-radius:12px;padding:10px 12px;font:inherit;font-weight:600;background:#fff}
 .search{flex:1;display:flex;align-items:stretch;max-width:640px;margin:0 auto;position:relative;border:1.5px solid var(--line-2);border-radius:14px;background:#fff;transition:.2s}
@@ -300,10 +300,11 @@ button,input,select,textarea{font-family:inherit}
 .drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,88vw);background:#fff;z-index:1101;transform:translateX(-100%) ;transition:transform .35s cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;overflow-y:auto}
 body.drawer-open .drawer-bg{opacity:1;visibility:visible}
 body.drawer-open .drawer{transform:none}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
-.drawer form{display:flex;margin:14px 18px;border:1.5px solid var(--line-2);border-radius:12px;overflow:hidden}
-.drawer form input{flex:1;border:0;padding:10px 14px;outline:0;min-width:0}
-.drawer form button{border:0;background:var(--grad);color:#fff;width:46px}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.drawer > form{display:flex;margin:14px 18px;border:1.5px solid var(--line-2);border-radius:12px;overflow:hidden;flex-shrink:0;height:48px}
+.drawer > form input{flex:1;border:0;padding:0 14px;outline:0;min-width:0;font-size:14px;height:100%}
+.drawer > form button{border:0;background:var(--grad);color:#fff;width:48px;font-size:15px;flex-shrink:0}
+.drawer nav{flex-shrink:0}
 .drawer nav a{display:flex;align-items:center;gap:12px;padding:13px 18px;font-weight:700;font-size:15px;border-bottom:1px solid var(--surface)}
 .drawer nav a i{width:22px;color:var(--p)}
 .ctree-item a{display:flex;align-items:center;gap:10px;padding:8px 10px;padding-left:calc(10px + var(--d,0) * 16px);border-radius:10px;font-size:14px;color:var(--ink-2);font-weight:600;transition:.15s}
@@ -320,7 +321,14 @@ body.drawer-open .drawer{transform:none}
 .ctree-item a .tog.open{transform:rotate(180deg)}
 .ctree-kids{display:none}
 .ctree-kids.show{display:block}
-.drawer .dcats{padding:8px 18px 20px}
+.drawer .dcats{padding:10px 18px 24px;flex-shrink:0}
+.dcats-btn{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid var(--line-2);background:var(--surface);border-radius:12px;padding:13px 14px;font-family:inherit;font-weight:800;font-size:14.5px;color:var(--ink);cursor:pointer;transition:.2s}
+.dcats-btn > i:first-child{color:var(--p);font-size:15px}
+.dcats-btn .arr{margin-left:auto;font-size:11px;color:var(--faint);transition:transform .25s}
+.dcats-btn.open{border-color:var(--p);background:var(--brand-soft)}
+.dcats-btn.open .arr{transform:rotate(180deg)}
+.dcats-body{display:none;margin-top:8px}
+.dcats-body.show{display:block}
 .drawer .dcats h6{font-size:12px;letter-spacing:.06em;color:var(--faint);margin:12px 0 6px;text-transform:uppercase}
 
 /* ─── Mobile bottom nav ─── */
@@ -606,8 +614,13 @@ body.drawer-open .drawer{transform:none}
     @endauth
   </nav>
   <div class="dcats">
-    <h6>Categories</h6>
-    @include('shop.partials.cat-tree', ['items' => $navCategories ?? collect(), 'activePath' => [], 'depth' => 0])
+    <button type="button" class="dcats-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+      <i class="fa-solid fa-table-cells-large"></i> All Categories
+      <i class="fa-solid fa-chevron-down arr"></i>
+    </button>
+    <div class="dcats-body">
+      @include('shop.partials.cat-tree', ['items' => $navCategories ?? collect(), 'activePath' => [], 'depth' => 0])
+    </div>
   </div>
 </aside>
 
