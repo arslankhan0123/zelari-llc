@@ -213,7 +213,7 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       @endif
 
       <div class="pd-actions">
-        <a href="#" onclick="event.preventDefault();zToast('Saved to wishlist','info')"><i class="fa-regular fa-heart"></i> Add to wishlist</a>
+        @php $inWish = in_array($product->id, (array) session('wishlist', []), true); @endphp<a href="#" class="js-wish {{ $inWish ? 'on' : '' }}" data-id="{{ $product->id }}" style="{{ $inWish ? 'color:var(--sale)' : '' }}"><i class="{{ $inWish ? 'fa-solid' : 'fa-regular' }} fa-heart"></i> <span class="js-wish-label">{{ $inWish ? 'In your wishlist' : 'Add to wishlist' }}</span></a>
         <a href="#" onclick="event.preventDefault();navigator.share?navigator.share({title:document.title,url:location.href}):(navigator.clipboard.writeText(location.href),zToast('Link copied','info'))"><i class="fa-solid fa-share-nodes"></i> Share</a>
       </div>
 

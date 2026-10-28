@@ -41,6 +41,9 @@ Route::post('/location', [LocationController::class, 'set'])->name('location.set
 // ── Cart ────────────────────────────────────────────────────────────────────
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::get('/wishlist', [\App\Http\Controllers\Shop\WishlistController::class, 'index'])->name('wishlist.index');
+Route::post('/wishlist/toggle', [\App\Http\Controllers\Shop\WishlistController::class, 'toggle'])->name('wishlist.toggle')->middleware('throttle:60,1');
+Route::post('/wishlist/clear', [\App\Http\Controllers\Shop\WishlistController::class, 'clear'])->name('wishlist.clear');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::get('/cart/remove/{productId}', [CartController::class, 'remove'])->name('cart.remove');
 Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');

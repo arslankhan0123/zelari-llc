@@ -503,7 +503,7 @@ body.drawer-open .drawer{transform:none}
 
       <div class="hdr-actions">
         @if(zstore('phone'))<a href="tel:{{ ztel(zstore('phone')) }}" class="hdr-call"><i class="fa-solid fa-phone"></i><div><small>Hotline 24/7</small><strong>{{ zstore('phone') }}</strong></div></a>@endif
-        <a href="{{ route('shop.index') }}" class="icon-btn" title="Wishlist"><i class="fa-regular fa-heart"></i></a>
+        <a href="{{ route('wishlist.index') }}" class="icon-btn" id="wishIcon" title="Wishlist">@php $wc = count((array) session('wishlist', [])); @endphp<i class="fa-regular fa-heart"></i><b class="cnt js-wish-count" @if(!$wc) style="display:none" @endif>{{ $wc }}</b></a>
         <a href="{{ route('cart.index') }}" class="hdr-cart" id="hdrCart">
           <span class="icon-btn" id="cartIcon"><i class="fa-solid fa-cart-shopping"></i><b class="cnt" id="cartCount">{{ $cartCount ?? 0 }}</b></span>
           <span><small>My cart</small><em id="cartTotalTxt" style="font-style:normal">{{ zprice($cartTotal ?? 0) }}</em></span>
@@ -805,6 +805,34 @@ body.drawer-open .drawer{transform:none}
         zToast(msg,'err'); restore();
       }
     }catch(_){ zToast('Network error — please try again','err'); restore(); }
+  });
+
+  /* ───── Wishlist: toggle hearts everywhere, live header count ───── */
+  const WISH_URL='{{ route('wishlist.toggle') }}', WISH_PAGE='{{ route('wishlist.index') }}';
+  window.zWishSync=function(id,added){
+    document.querySelectorAll('.js-wish[data-id="'+id+'"]').forEach(b=>{
+      const i=b.querySelector('i'); if(i) i.className=(added?'fa-solid':'fa-regular')+' fa-heart';
+      b.classList.toggle('on',added);
+      const lbl=b.querySelector('.js-wish-label'); if(lbl) lbl.textContent=added?'In your wishlist':'Add to wishlist';
+      if(b.tagName==='A') b.style.color=added?'var(--sale)':'';
+    });
+  };
+  document.addEventListener('click', async e=>{
+    const b=e.target.closest('.js-wish'); if(!b) return;
+    e.preventDefault();
+    if(b.dataset.busy) return; b.dataset.busy='1';
+    try{
+      const r=await fetch(WISH_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({product_id:b.dataset.id})});
+      const j=await r.json();
+      if(j.ok){
+        zWishSync(b.dataset.id, j.added);
+        document.querySelectorAll('.js-wish-count').forEach(el=>{ el.textContent=j.count; el.style.display=j.count>0?'':'none'; });
+        const wi=document.getElementById('wishIcon'); if(wi&&j.added){ wi.classList.add('bump'); setTimeout(()=>wi.classList.remove('bump'),500); }
+        zToast(j.added?'<b>Added to wishlist!</b> <a href="'+WISH_PAGE+'">View wishlist</a>':'Removed from wishlist.','info');
+        if(!j.added){ const w=b.closest('[data-wish-item]'); if(w){ w.remove(); if(window.zWishEmptyCheck) zWishEmptyCheck(); } }
+      }
+    }catch(_){ zToast('Network error — please try again','err'); }
+    delete b.dataset.busy;
   });
 
   /* Countdown: data-end = unix ms */

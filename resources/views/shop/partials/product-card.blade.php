@@ -27,6 +27,8 @@
 .pc-quick a:nth-child(2),.pc-quick button:nth-child(2){transition-delay:.06s}
 .pcard:hover .pc-quick a,.pcard:hover .pc-quick button{opacity:1;transform:none}
 .pc-quick a:hover,.pc-quick button:hover{background:var(--p);color:#fff;border-color:var(--p)}
+.pc-quick .js-wish.on{opacity:1;transform:none;color:var(--sale);border-color:var(--sale);background:#fff}
+.pc-quick .js-wish.on:hover{background:var(--sale);color:#fff}
 .pc-oos{position:absolute;inset:0;background:rgba(255,255,255,.55);backdrop-filter:grayscale(1);z-index:1}
 .pc-body{display:flex;flex-direction:column;flex:1}
 .pc-cat{font-size:10.5px;font-weight:700;color:var(--p);letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
@@ -79,7 +81,8 @@
   </a>
   <div class="pc-quick">
     <a href="{{ route('shop.show', $product->slug) }}" title="Quick view"><i class="fa-regular fa-eye"></i></a>
-    <button type="button" title="Wishlist" onclick="this.firstElementChild.className='fa-solid fa-heart';this.style.color='var(--sale)';zToast('Saved to wishlist','info')"><i class="fa-regular fa-heart"></i></button>
+    @php $inWish = in_array($product->id, (array) session('wishlist', []), true); @endphp
+    <button type="button" title="Wishlist" class="js-wish {{ $inWish ? 'on' : '' }}" data-id="{{ $product->id }}"><i class="{{ $inWish ? 'fa-solid' : 'fa-regular' }} fa-heart"></i></button>
   </div>
 
   <div class="pc-body">
