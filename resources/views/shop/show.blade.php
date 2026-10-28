@@ -4,7 +4,7 @@
 
 @push('styles')
 <style>
-.pd{padding:30px 0 10px}
+.pd{padding-top:30px;padding-bottom:10px}
 .crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:22px;flex-wrap:wrap}
 .crumb i{font-size:9px}
 .crumb b{color:var(--ink);font-weight:600}

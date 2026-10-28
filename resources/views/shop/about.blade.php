@@ -3,7 +3,7 @@
 
 @push('styles')
 <style>
-.ab{padding:60px 0 10px}
+.ab{padding-top:60px;padding-bottom:10px}
 .ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
 @media(max-width:992px){.ab-grid{grid-template-columns:1fr;gap:30px}}
 .ab-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--p-soft);color:var(--p);padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:800;margin-bottom:14px}

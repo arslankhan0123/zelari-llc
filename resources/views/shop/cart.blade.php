@@ -3,7 +3,7 @@
 
 @push('styles')
 <style>
-.cartp{padding:34px 0 10px}
+.cartp{padding-top:34px;padding-bottom:10px}
 .cart-grid{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start}
 @media(max-width:992px){.cart-grid{grid-template-columns:1fr}}
 .steps{display:flex;align-items:center;gap:10px;margin-bottom:26px;flex-wrap:wrap}
