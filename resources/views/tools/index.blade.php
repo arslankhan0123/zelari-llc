@@ -46,7 +46,7 @@
 
   <div class="tl-grid reveal" id="tlGrid">
     @foreach($tools as $slug => $t)
-      <a href="{{ route('tools.show', $slug) }}" class="tl-card" data-cat="{{ $t['cat'] }}">
+      <a href="{{ ($t['live'] ?? false) ? route('tools.show', $slug) : '#' }}" class="tl-card {{ ($t['live'] ?? false) ? '' : 'js-soon' }}" data-cat="{{ $t['cat'] }}" data-name="{{ $t['name'] }}">
         <span class="tl-badge {{ ($t['live'] ?? false) ? 'yes' : 'soon' }}">{{ ($t['live'] ?? false) ? 'LIVE' : 'COMING SOON' }}</span>
         <span class="ic" style="background:{{ $t['color'] }}"><i class="fa-solid {{ $t['icon'] }}"></i></span>
         <b>{{ $t['name'] }}</b>
@@ -62,6 +62,13 @@
 <script>
 (function(){
   const cards=[...document.querySelectorAll('.tl-card')];
+  document.querySelectorAll('.tl-card.js-soon').forEach(k=>k.addEventListener('click',e=>{
+    e.preventDefault();
+    zToast('<b>'+k.dataset.name+'</b> is coming soon — we are working on it! Meanwhile, try one of the LIVE tools.','info');
+  }));
+  @if(session('toolsoon'))
+  zToast('<b>{{ session('toolsoon') }}</b> is not available yet — it is coming soon! Here are all the tools you can use right now.','info');
+  @endif
   document.querySelectorAll('.tl-chip').forEach(c=>c.onclick=()=>{
     document.querySelectorAll('.tl-chip').forEach(x=>x.classList.remove('on'));
     c.classList.add('on');

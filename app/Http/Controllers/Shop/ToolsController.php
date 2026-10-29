@@ -15,6 +15,9 @@ class ToolsController extends Controller
     {
         $tools = config('pdftools', []);
         abort_unless(isset($tools[$slug]), 404);
+        if (!($tools[$slug]['live'] ?? false)) {
+            return redirect()->route('tools.index')->with('toolsoon', $tools[$slug]['name']);
+        }
         return view('tools.show', ['slug' => $slug, 'tool' => $tools[$slug], 'tools' => $tools]);
     }
 }
