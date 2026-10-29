@@ -36,6 +36,15 @@
 .ts-file i{color:#e5322d}
 .ts-file small{color:var(--muted);margin-left:auto}
 .ts-file .x{border:0;background:none;color:var(--faint);cursor:pointer;font-size:13px;margin-left:8px}
+.org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:18px;text-align:left}
+.org-pg{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px;cursor:grab;transition:border-color .15s,opacity .15s}
+.org-pg.drag{opacity:.35}
+.org-pg:hover{border-color:var(--p)}
+.org-pg canvas,.org-pg .phx{width:100%;border-radius:8px;display:block;background:#f1f2f8}
+.org-pg .phx{aspect-ratio:3/4;display:grid;place-items:center;color:var(--faint);font-size:20px}
+.org-pg b{display:block;text-align:center;font-size:11px;color:var(--muted);margin-top:6px}
+.org-pg .del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:7px;border:0;background:#fff;color:var(--danger);box-shadow:var(--shadow);cursor:pointer;font-size:11px}
+.org-hint{margin-top:12px;font-size:12.5px;color:var(--muted)}
 .ts-more{margin-top:46px;text-align:left}
 .ts-more h3{font-size:17px;font-weight:800;margin:0 0 14px}
 .ts-more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -64,6 +73,10 @@
       <div class="ts-priv"><i class="fa-solid fa-shield-halved"></i> Files are processed securely in your browser — nothing is uploaded.</div>
     @endif
     <div class="ts-files" id="tsFiles"></div>
+    @if($slug === 'organize-pdf')
+      <div class="org-grid" id="orgGrid"></div>
+      <div class="org-hint" id="orgHint" style="display:none"><i class="fa-solid fa-hand"></i> Drag pages to reorder &nbsp;·&nbsp; ✕ to delete a page</div>
+    @endif
 
     @if($slug === 'split-pdf')
       <div class="ts-opts"><label>Pages to extract <input type="text" id="optRange" placeholder="e.g. 1-3,5,8" autocomplete="off"></label></div>
@@ -73,6 +86,10 @@
       </label></div>
     @elseif($slug === 'watermark-pdf')
       <div class="ts-opts"><label>Watermark text <input type="text" id="optText" placeholder="e.g. CONFIDENTIAL" maxlength="60" autocomplete="off"></label></div>
+    @elseif($slug === 'compress-pdf')
+      <div class="ts-opts"><label>Compression level
+        <select id="optLevel"><option value="lite">Recommended — keep quality &amp; text</option><option value="extreme">Extreme — smallest size (pages become images)</option></select>
+      </label></div>
     @endif
 
     <button type="button" class="ts-btn" id="tsGo" disabled>{{ $tool['name'] }} <i class="fa-solid fa-arrow-right"></i></button>
@@ -91,6 +108,10 @@
 
 @push('scripts')
 @if($isLive)<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>@endif
+@if(in_array($slug, ['organize-pdf', 'compress-pdf']))
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+@endif
 <script>
 (function(){
   const SLUG='{{ $slug }}', LIVE={{ $isLive ? 'true' : 'false' }}, MULTI={{ $multi ? 'true' : 'false' }};
@@ -105,7 +126,7 @@
       d.innerHTML='<i class="fa-solid fa-file-lines"></i><span></span><small class="meta"></small><small>'+fmt(f.size)+'</small><button type="button" class="x"><i class="fa-solid fa-xmark"></i></button>';
       d.children[1].textContent=f.name;
       d.querySelector('.meta').textContent = f._pages ? '· '+f._pages+' page'+(f._pages>1?'s':'') + (f._enc?' · 🔒 secured':'') : '';
-      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); };
+      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); if(SLUG==='organize-pdf') buildOrganize(); };
       list.appendChild(d);
     });
     go.disabled=!files.length;
@@ -118,6 +139,47 @@
       if(f._enc) zToast('<b>'+f.name.slice(0,40)+'</b> is a <b>secured (password-protected)</b> PDF — page detection and editing may not work correctly on it. Try an unlocked copy.','err');
       render();
     }catch(_){}
+    if(SLUG==='organize-pdf') buildOrganize();
+  }
+  async function buildOrganize(){
+    const grid=document.getElementById('orgGrid'), hint=document.getElementById('orgHint');
+    if(!grid) return;
+    grid.innerHTML=''; hint.style.display='none';
+    if(!files[0]) return;
+    let doc=null, n=files[0]._pages||0;
+    try{ if(window.pdfjsLib){ doc=await pdfjsLib.getDocument({data:new Uint8Array(await files[0].arrayBuffer())}).promise; n=doc.numPages; } }catch(_){}
+    const max=Math.min(n,150);
+    for(let i=1;i<=max;i++){
+      const card=document.createElement('div'); card.className='org-pg'; card.draggable=true; card.dataset.idx=i-1;
+      if(doc){
+        try{
+          const pg=await doc.getPage(i);
+          const vp1=pg.getViewport({scale:1}), vp=pg.getViewport({scale:110/vp1.width});
+          const c=document.createElement('canvas'); c.width=vp.width|0; c.height=vp.height|0;
+          await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+          card.appendChild(c);
+        }catch(_){ const d=document.createElement('div'); d.className='phx'; d.innerHTML='<i class="fa-solid fa-file-lines"></i>'; card.appendChild(d); }
+      } else { const d=document.createElement('div'); d.className='phx'; d.innerHTML='<i class="fa-solid fa-file-lines"></i>'; card.appendChild(d); }
+      const b=document.createElement('b'); b.textContent='Page '+i; card.appendChild(b);
+      const del=document.createElement('button'); del.type='button'; del.className='del'; del.innerHTML='<i class="fa-solid fa-xmark"></i>';
+      del.onclick=e=>{ e.stopPropagation(); card.remove(); };
+      card.appendChild(del);
+      card.addEventListener('dragstart',()=>card.classList.add('drag'));
+      card.addEventListener('dragend',()=>card.classList.remove('drag'));
+      grid.appendChild(card);
+    }
+    if(max){ hint.style.display='block'; }
+    if(n>max) zToast('Showing the first '+max+' pages for reordering.','info');
+    if(!grid.dataset.dnd){
+      grid.dataset.dnd='1';
+      grid.addEventListener('dragover',e=>{
+        e.preventDefault();
+        const drag=grid.querySelector('.drag'), tgt=e.target.closest('.org-pg');
+        if(!drag||!tgt||tgt===drag) return;
+        const r=tgt.getBoundingClientRect();
+        grid.insertBefore(drag, (e.clientX-r.left)<r.width/2 ? tgt : tgt.nextSibling);
+      });
+    }
   }
   function addFiles(fl){ const arr=[...fl]; files=MULTI?files.concat(arr):arr.slice(0,1); render(); files.forEach(f=>{ if(f._pages===undefined){ f._pages=null; inspect(f); } }); }
   window.zTsAddFile=f=>addFiles([f]);
@@ -230,6 +292,45 @@
       });
       download(await d.save(), base(files[0])+'-numbered.pdf');
     },
+    'organize-pdf': async ()=>{
+      const order=[...document.querySelectorAll('#orgGrid .org-pg')].map(el=>+el.dataset.idx);
+      if(!order.length) throw 'No pages left — re-select the file or keep at least one page.';
+      const d=await loadDoc(files[0]);
+      const out=await PDFDocument.create();
+      (await out.copyPages(d,order)).forEach(p=>out.addPage(p));
+      download(await out.save(), base(files[0])+'-organized.pdf');
+      return '<b>Done!</b> New PDF with '+order.length+' page'+(order.length>1?'s':'')+' downloaded.';
+    },
+    'compress-pdf': async ()=>{
+      const orig=files[0].size;
+      const mode=document.getElementById('optLevel').value;
+      if(mode==='lite'){
+        const d=await loadDoc(files[0]);
+        const bytes=await d.save({useObjectStreams:true});
+        if(bytes.length>=orig*0.99) throw 'This PDF is already well optimized — try <b>Extreme</b> mode for bigger savings (pages become images).';
+        download(bytes, base(files[0])+'-compressed.pdf');
+        return '<b>Done!</b> '+fmt(orig)+' → '+fmt(bytes.length)+' ('+Math.round((1-bytes.length/orig)*100)+'% smaller).';
+      }
+      if(!window.pdfjsLib) throw 'Could not load the PDF renderer — check your internet connection and reload.';
+      const src=await pdfjsLib.getDocument({data:new Uint8Array(await files[0].arrayBuffer())}).promise;
+      const out=await PDFDocument.create();
+      for(let i=1;i<=src.numPages;i++){
+        const pg=await src.getPage(i);
+        const vp1=pg.getViewport({scale:1});
+        const scale=Math.min(1.4, 1600/Math.max(vp1.width,vp1.height));
+        const vp=pg.getViewport({scale});
+        const c=document.createElement('canvas'); c.width=vp.width|0; c.height=vp.height|0;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+        await pg.render({canvasContext:ctx,viewport:vp}).promise;
+        const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.62));
+        const img=await out.embedJpg(await blob.arrayBuffer());
+        out.addPage([vp1.width,vp1.height]).drawImage(img,{x:0,y:0,width:vp1.width,height:vp1.height});
+      }
+      const bytes=await out.save();
+      download(bytes, base(files[0])+'-compressed.pdf');
+      const pct=Math.round((1-bytes.length/orig)*100);
+      return '<b>Done!</b> '+fmt(orig)+' → '+fmt(bytes.length)+(pct>0?' ('+pct+'% smaller).':'.');
+    },
     'jpg-to-pdf': async ()=>{
       const out=await PDFDocument.create();
       for(const f of files){
@@ -247,8 +348,8 @@
     if(!files.length) return;
     go.disabled=true; go.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing…';
     try{
-      await ops[SLUG]();
-      zToast('<b>Done!</b> Your file has been downloaded.','ok');
+      const msg=await ops[SLUG]();
+      zToast(msg||'<b>Done!</b> Your file has been downloaded.','ok');
     }catch(err){
       zToast(typeof err==='string'?err:'Could not process this file — it may be corrupted or password-protected.','err');
     }

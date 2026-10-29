@@ -12,8 +12,8 @@ return [
 
     'merge-pdf'      => ['name' => 'Merge PDF',      'icon' => 'fa-object-group',        'color' => '#e5322d', 'cat' => 'organize', 'live' => true, 'desc' => 'Combine PDFs in the order you want with the easiest PDF merger available.'],
     'split-pdf'      => ['name' => 'Split PDF',      'icon' => 'fa-scissors',            'color' => '#e5322d', 'cat' => 'organize', 'live' => true, 'desc' => 'Separate one page or a whole set for easy conversion into independent PDF files.'],
-    'organize-pdf'   => ['name' => 'Organize PDF',   'icon' => 'fa-folder-tree',         'color' => '#e5322d', 'cat' => 'organize', 'desc' => 'Sort, delete or add pages to your PDF file however you like.'],
-    'compress-pdf'   => ['name' => 'Compress PDF',   'icon' => 'fa-file-zipper',         'color' => '#1db954', 'cat' => 'optimize', 'desc' => 'Reduce file size while optimizing for maximal PDF quality.'],
+    'organize-pdf'   => ['name' => 'Organize PDF',   'icon' => 'fa-folder-tree',         'color' => '#e5322d', 'cat' => 'organize', 'live' => true, 'desc' => 'Sort, delete or add pages to your PDF file however you like.'],
+    'compress-pdf'   => ['name' => 'Compress PDF',   'icon' => 'fa-file-zipper',         'color' => '#1db954', 'cat' => 'optimize', 'live' => true, 'desc' => 'Reduce file size while optimizing for maximal PDF quality.'],
     'repair-pdf'     => ['name' => 'Repair PDF',     'icon' => 'fa-screwdriver-wrench',  'color' => '#1db954', 'cat' => 'optimize', 'desc' => 'Repair a damaged PDF and recover data from corrupt PDF files.'],
     'ocr-pdf'        => ['name' => 'OCR PDF',        'icon' => 'fa-font',                'color' => '#1db954', 'cat' => 'optimize', 'desc' => 'Convert scanned PDF into searchable and selectable documents.'],
     'pdf-to-word'    => ['name' => 'PDF to Word',    'icon' => 'fa-file-word',           'color' => '#2b7cd3', 'cat' => 'convert',  'desc' => 'Convert your PDF files into easy to edit DOC and DOCX documents.'],
