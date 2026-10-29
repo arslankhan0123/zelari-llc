@@ -695,7 +695,7 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
-        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*')) ? 'true' : 'false' }},
+        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*')) ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
@@ -865,7 +865,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-                <div class="submenu" :style="toolsOpen ? 'max-height:200px' : 'max-height:0'">
+                <div class="submenu" :style="toolsOpen ? 'max-height:260px' : 'max-height:0'">
                     <a href="{{ route('admin.pdftools.index') }}"
                         class="sub-item {{ request()->routeIs('admin.pdftools.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
@@ -875,6 +875,11 @@
                         class="sub-item {{ request()->routeIs('admin.calcs.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         Calculators
+                    </a>
+                    <a href="{{ route('admin.imgtools.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.imgtools.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Image Tools
                     </a>
                 </div>
             </div>

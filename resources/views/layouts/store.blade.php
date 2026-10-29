@@ -579,15 +579,18 @@ body.drawer-open .drawer{transform:none}
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
-        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled())
+        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled() || \App\Support\ImageTools::enabled())
         <li class="nav-item">
-          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : route('calculators.index') }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : (\App\Support\Calculators::enabled() ? route('calculators.index') : route('imgtools.index')) }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*')||request()->routeIs('imgtools.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd tools-dd">
             @if(\App\Support\PdfTools::enabled())
             <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a>
             @endif
             @if(\App\Support\Calculators::enabled())
             <a href="{{ route('calculators.index') }}"><span class="ti"><i class="fa-solid fa-calculator"></i></span> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a>
+            @endif
+            @if(\App\Support\ImageTools::enabled())
+            <a href="{{ route('imgtools.index') }}"><span class="ti"><i class="fa-solid fa-image"></i></span> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a>
             @endif
           </div>
         </li>
@@ -631,6 +634,9 @@ body.drawer-open .drawer{transform:none}
         @endif
         @if(\App\Support\Calculators::enabled())
         <div class="ctree-item"><a href="{{ route('calculators.index') }}"><i class="fa-solid fa-calculator"></i> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\ImageTools::enabled())
+        <div class="ctree-item"><a href="{{ route('imgtools.index') }}"><i class="fa-solid fa-image"></i> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a></div>
         @endif
       </div>
     </div>

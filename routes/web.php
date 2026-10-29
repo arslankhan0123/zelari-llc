@@ -39,6 +39,11 @@ Route::post('/pdf-tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConver
 Route::get('/pdf-tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
 Route::get('/calculators', [\App\Http\Controllers\Shop\CalculatorsController::class, 'index'])->name('calculators.index');
 Route::get('/calculators/{slug}', [\App\Http\Controllers\Shop\CalculatorsController::class, 'show'])->name('calculators.show');
+Route::get('/image-tools', [\App\Http\Controllers\Shop\ImageToolsController::class, 'index'])->name('imgtools.index');
+Route::get('/image-tools/{slug}', [\App\Http\Controllers\Shop\ImageToolsController::class, 'show'])->name('imgtools.show');
+Route::post('/coupon/apply', [\App\Http\Controllers\Shop\MarketingController::class, 'applyCoupon'])->name('coupon.apply');
+Route::post('/coupon/remove', [\App\Http\Controllers\Shop\MarketingController::class, 'removeCoupon'])->name('coupon.remove');
+Route::post('/wheel/spin', [\App\Http\Controllers\Shop\MarketingController::class, 'spin'])->name('wheel.spin');
 Route::get('/tools/{slug}', fn (string $slug) => redirect()->route('tools.show', $slug));
 Route::post('/chatbot', [\App\Http\Controllers\Shop\ChatbotController::class, 'message'])->name('chatbot.message')->middleware('throttle:40,1');
 Route::get('/chatbot/poll', [\App\Http\Controllers\Shop\ChatbotController::class, 'poll'])->name('chatbot.poll')->middleware('throttle:120,1');
@@ -113,6 +118,21 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::get('/', [\App\Http\Controllers\Admin\CalculatorsController::class, 'index'])->name('index');
         Route::post('/toggle', [\App\Http\Controllers\Admin\CalculatorsController::class, 'toggle'])->name('toggle');
         Route::post('/master', [\App\Http\Controllers\Admin\CalculatorsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('image-tools')->name('imgtools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ImageToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\ImageToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\ImageToolsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('coupons')->name('coupons.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CouponsController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\CouponsController::class, 'store'])->name('store');
+        Route::post('/{coupon}/toggle', [\App\Http\Controllers\Admin\CouponsController::class, 'toggle'])->name('toggle');
+        Route::delete('/{coupon}', [\App\Http\Controllers\Admin\CouponsController::class, 'destroy'])->name('destroy');
+        Route::post('/wheel', [\App\Http\Controllers\Admin\CouponsController::class, 'wheel'])->name('wheel');
+        Route::get('/export-emails', [\App\Http\Controllers\Admin\CouponsController::class, 'exportEmails'])->name('export');
     });
 
     Route::prefix('chats')->name('chats.')->group(function () {

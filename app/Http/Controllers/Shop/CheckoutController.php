@@ -179,7 +179,36 @@ class CheckoutController extends Controller
                 }
 
                 $shippingFee = zshipping((float) $subtotal); // from Admin → Settings → Shipping
-                $total       = $subtotal + $shippingFee;
+
+                // ── Coupon (re-validated server-side) ────────────────────
+                $discount    = 0.0;
+                $couponModel = null;
+                $couponCode  = session('coupon');
+                if ($couponCode) {
+                    try {
+                        $rate   = (float) (\App\Support\Currency::all()['USD']['rate'] ?? 1); // base -> USD
+                        $subUsd = (float) $subtotal * ($rate > 0 ? $rate : 1);
+                        $cRes   = \App\Support\Marketing::validateCoupon($couponCode, $subUsd, $request->email);
+                        if ($cRes['ok']) {
+                            $couponModel = \App\Models\Coupon::lockForUpdate()->find($cRes['coupon']->id);
+                            if ($couponModel && $couponModel->active
+                                && !($couponModel->usage_limit !== null && $couponModel->used_count >= $couponModel->usage_limit)) {
+                                if ($cRes['freeship']) {
+                                    $discount    = $shippingFee;
+                                    $shippingFee = 0.0;
+                                } else {
+                                    $discount = min((float) zusd($cRes['discount']), (float) $subtotal);
+                                }
+                            } else {
+                                $couponModel = null;
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        $discount = 0.0; $couponModel = null;
+                    }
+                }
+
+                $total = max(0, $subtotal - $discount) + $shippingFee;
 
                 // ── Find or create customer ──────────────────────────────
                 $customer = Customer::firstOrCreate(
@@ -204,7 +233,7 @@ class CheckoutController extends Controller
                     'payment_method'   => $request->payment_method,
                     'payment_intent_id'=> $isCard ? $intent['id'] : null,
                     'subtotal'         => $subtotal,
-                    'discount'         => 0,
+                    'discount'         => round($discount, 2),
                     'shipping_fee'     => $shippingFee,
                     'total'            => $total,
                     'shipping_name'    => $request->name,
@@ -227,10 +256,15 @@ class CheckoutController extends Controller
                 $order->items()->createMany($lineItems);
                 Payments::openAttempt($order);
 
+                if ($couponModel) {
+                    $couponModel->increment('used_count');
+                }
+
                 return $order;
             });
 
             session(['last_order_fingerprint' => $fingerprint, 'last_order_id' => $order->id]);
+            session()->forget('coupon');
 
             if ($isCard) {
                 // Sync the final server-side total onto the intent, then let the browser confirm the card.
