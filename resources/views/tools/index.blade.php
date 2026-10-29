@@ -30,19 +30,32 @@
 @endpush
 
 @section('content')
-<section class="sec wrap">
-  <div class="tl-head reveal">
-    <h1>Every tool you need to work with <span>PDFs</span> in one place</h1>
-    <p>All tools are 100% FREE and easy to use! Merge, split, compress, convert, rotate, unlock and watermark PDFs with just a few clicks.</p>
-  </div>
-
-  <div class="tl-chips reveal">
-    <button type="button" class="tl-chip on" data-cat="all">All</button>
-    <button type="button" class="tl-chip" data-cat="organize">Organize PDF</button>
-    <button type="button" class="tl-chip" data-cat="optimize">Optimize PDF</button>
-    <button type="button" class="tl-chip" data-cat="convert">Convert PDF</button>
-    <button type="button" class="tl-chip" data-cat="edit">Edit PDF</button>
-    <button type="button" class="tl-chip" data-cat="security">PDF Security</button>
+<section class="sec wrap th-sec">
+  <div class="th-hero reveal">
+    <i class="fa-solid fa-file-pdf th-fl f1"></i>
+    <i class="fa-solid fa-scissors th-fl f2"></i>
+    <i class="fa-solid fa-object-group th-fl f3"></i>
+    <i class="fa-solid fa-file-word th-fl f4"></i>
+    <div class="th-left">
+      <span class="th-pill"><i class="fa-solid fa-bolt"></i> {{ count($tools) }} free PDF tools &mdash; no sign-up needed</span>
+      <h1>Every tool you need to work with <span>PDFs</span> in one place</h1>
+      <p>Merge, split, compress, convert, edit, sign and protect PDFs with just a few clicks &mdash; fast, free and secure.</p>
+    </div>
+    <div class="th-right">
+      <div class="th-stats">
+      <span><i class="fa-solid fa-circle-check"></i> 100% free</span>
+      <span><i class="fa-solid fa-circle-check"></i> No sign-up required</span>
+      <span><i class="fa-solid fa-circle-check"></i> Fast &amp; secure</span>
+    </div>
+      <div class="tl-chips th-chips">
+      <button type="button" class="tl-chip on" data-cat="all">All</button>
+      <button type="button" class="tl-chip" data-cat="organize">Organize PDF</button>
+      <button type="button" class="tl-chip" data-cat="optimize">Optimize PDF</button>
+      <button type="button" class="tl-chip" data-cat="convert">Convert PDF</button>
+      <button type="button" class="tl-chip" data-cat="edit">Edit PDF</button>
+      <button type="button" class="tl-chip" data-cat="security">PDF Security</button>
+    </div>
+    </div>
   </div>
 
   <div class="tl-grid reveal" id="tlGrid">

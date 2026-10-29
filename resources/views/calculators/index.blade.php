@@ -30,19 +30,32 @@
 @endpush
 
 @section('content')
-<section class="sec wrap">
-  <div class="tl-head reveal">
-    <h1>Free online <span>calculators</span> for everything</h1>
-    <p>Finance, health, math, dates and conversions — every calculation you need in one place, 100% free.</p>
-  </div>
-
-  <div class="tl-chips reveal">
-    <button type="button" class="tl-chip on" data-cat="all">All</button>
-    <button type="button" class="tl-chip" data-cat="financial">Financial</button>
-    <button type="button" class="tl-chip" data-cat="health">Health</button>
-    <button type="button" class="tl-chip" data-cat="math">Math</button>
-    <button type="button" class="tl-chip" data-cat="datetime">Date &amp; Time</button>
-    <button type="button" class="tl-chip" data-cat="misc">Other</button>
+<section class="sec wrap th-sec">
+  <div class="th-hero reveal">
+    <i class="fa-solid fa-calculator th-fl f1"></i>
+    <i class="fa-solid fa-percent th-fl f2"></i>
+    <i class="fa-solid fa-chart-line th-fl f3"></i>
+    <i class="fa-solid fa-coins th-fl f4"></i>
+    <div class="th-left">
+      <span class="th-pill"><i class="fa-solid fa-bolt"></i> {{ count($tools) }} free calculators &mdash; instant results</span>
+      <h1>Free online <span>calculators</span> for everything</h1>
+      <p>Finance, health, math, dates and conversions &mdash; every calculation you need in one place, with results as you type.</p>
+    </div>
+    <div class="th-right">
+      <div class="th-stats">
+      <span><i class="fa-solid fa-circle-check"></i> 100% free</span>
+      <span><i class="fa-solid fa-circle-check"></i> Instant results</span>
+      <span><i class="fa-solid fa-circle-check"></i> Works on any device</span>
+    </div>
+      <div class="tl-chips th-chips">
+      <button type="button" class="tl-chip on" data-cat="all">All</button>
+      <button type="button" class="tl-chip" data-cat="financial">Financial</button>
+      <button type="button" class="tl-chip" data-cat="health">Health</button>
+      <button type="button" class="tl-chip" data-cat="math">Math</button>
+      <button type="button" class="tl-chip" data-cat="datetime">Date &amp; Time</button>
+      <button type="button" class="tl-chip" data-cat="misc">Other</button>
+    </div>
+    </div>
   </div>
 
   <div class="tl-grid reveal" id="tlGrid">
