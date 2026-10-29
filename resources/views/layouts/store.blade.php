@@ -580,9 +580,11 @@ body.drawer-open .drawer{transform:none}
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
         <li class="nav-item">
-          <a href="{{ route('tools.index') }}" class="{{ request()->routeIs('tools.*')?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : '#' }}" class="{{ request()->routeIs('tools.*')?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd tools-dd">
-            <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(config('pdftools', [])) }}</span></a>
+            @if(\App\Support\PdfTools::enabled())
+            <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a>
+            @endif
             <a href="#" onclick="event.preventDefault();zToast('<b>Calculators</b> are coming soon!','info')"><span class="ti"><i class="fa-solid fa-calculator"></i></span> Calculator <span class="n">Soon</span></a>
           </div>
         </li>
@@ -620,7 +622,9 @@ body.drawer-open .drawer{transform:none}
         <i class="fa-solid fa-chevron-down arr"></i>
       </button>
       <div class="dcats-body">
-        <div class="ctree-item"><a href="{{ route('tools.index') }}"><i class="fa-solid fa-file-pdf"></i> PDF Tools <span class="n">{{ count(config('pdftools', [])) }}</span></a></div>
+        @if(\App\Support\PdfTools::enabled())
+        <div class="ctree-item"><a href="{{ route('tools.index') }}"><i class="fa-solid fa-file-pdf"></i> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a></div>
+        @endif
         <div class="ctree-item"><a href="#" onclick="event.preventDefault();zToast('<b>Calculators</b> are coming soon!','info')"><i class="fa-solid fa-calculator"></i> Calculator <span class="n">Soon</span></a></div>
       </div>
     </div>
@@ -930,6 +934,9 @@ body.drawer-open .drawer{transform:none}
   document.addEventListener('DOMContentLoaded',()=>{ zTilt(); zReveal(); document.querySelectorAll('[data-countdown]').forEach(zCountdown); });
 })();
 </script>
+@if(session('ztoast'))
+<script>document.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ if(window.zToast) zToast(@json(session('ztoast')),'info'); },300); });</script>
+@endif
 @stack('scripts')
 </body>
 </html>

@@ -26,13 +26,18 @@ use Illuminate\Support\Facades\Route;
 
 // ── Storefront ──────────────────────────────────────────────────────────────
 Route::get('/', [ShopController::class, 'home'])->name('home');
+
+
+
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
-Route::get('/tools', [\App\Http\Controllers\Shop\ToolsController::class, 'index'])->name('tools.index');
-Route::get('/tools/convert-status/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'status'])->name('tools.convertStatus');
-Route::post('/tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'convert'])->name('tools.convert');
-Route::get('/tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
+Route::get('/pdf-tools', [\App\Http\Controllers\Shop\ToolsController::class, 'index'])->name('tools.index');
+Route::redirect('/tools', '/pdf-tools');
+Route::get('/pdf-tools/convert-status/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'status'])->name('tools.convertStatus');
+Route::post('/pdf-tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'convert'])->name('tools.convert');
+Route::get('/pdf-tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
+Route::get('/tools/{slug}', fn (string $slug) => redirect()->route('tools.show', $slug));
 Route::post('/chatbot', [\App\Http\Controllers\Shop\ChatbotController::class, 'message'])->name('chatbot.message')->middleware('throttle:40,1');
 Route::get('/chatbot/poll', [\App\Http\Controllers\Shop\ChatbotController::class, 'poll'])->name('chatbot.poll')->middleware('throttle:120,1');
 Route::post('/product/{slug}/review', [ShopReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
@@ -95,6 +100,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     });
 
     Route::get('/notifications', [\App\Http\Controllers\Admin\LiveChatController::class, 'notifications'])->name('notifications.index');
+
+    Route::prefix('pdf-tools')->name('pdftools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PdfToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\PdfToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\PdfToolsController::class, 'master'])->name('master');
+    });
 
     Route::prefix('chats')->name('chats.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\LiveChatController::class, 'index'])->name('index');

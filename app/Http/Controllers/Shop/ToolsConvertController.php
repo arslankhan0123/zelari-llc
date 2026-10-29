@@ -49,6 +49,9 @@ class ToolsConvertController extends Controller
 
     public function status(string $slug)
     {
+        if (!\App\Support\PdfTools::enabled() || !\App\Support\PdfTools::isLive($slug)) {
+            return response()->json(['available' => false]);
+        }
         $t = self::TOOLS[$slug] ?? null;
         if (!$t) {
             return response()->json(['available' => false]);
@@ -66,6 +69,9 @@ class ToolsConvertController extends Controller
         $t = self::TOOLS[$slug] ?? null;
         if (!$t) {
             return response()->json(['error' => 'Unknown tool.'], 404);
+        }
+        if (!\App\Support\PdfTools::enabled() || !\App\Support\PdfTools::isLive($slug)) {
+            return response()->json(['error' => 'This tool is currently unavailable.'], 404);
         }
         if ($slug === 'html-to-pdf') {
             return $this->htmlToPdf($request);

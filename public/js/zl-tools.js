@@ -14,7 +14,7 @@
   const SRVTOOLS=['pdf-to-word','pdf-to-excel','word-to-pdf','ppt-to-pdf','excel-to-pdf','unlock-pdf','protect-pdf'];
   let srvOk=false;
   if(LIVE && SRVTOOLS.includes(SLUG)){
-    fetch('/tools/convert-status/'+SLUG).then(r=>r.json()).then(j=>{
+    fetch('/pdf-tools/convert-status/'+SLUG).then(r=>r.json()).then(j=>{
       srvOk=!!j.available;
       if(srvOk){ const n=document.querySelector('.ts-priv'); if(n) n.innerHTML='<i class="fa-solid fa-bolt"></i> High-fidelity engine active — exact layout conversion (file is converted on our server and deleted right away).'; }
     }).catch(()=>{});
@@ -1439,7 +1439,7 @@
       if(!passEl.value){ throw SLUG==='unlock-pdf' ? 'Enter the current password of this PDF first.' : 'Choose a password first.'; }
       fd.append('password', passEl.value);
     }
-    const res=await fetch('/tools/convert/'+SLUG,{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
+    const res=await fetch('/pdf-tools/convert/'+SLUG,{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
     if(res.status===503) throw {offline:true};
     if(!res.ok){ let j=null; try{ j=await res.json(); }catch(_){} throw (j&&(j.error||j.message))||'The server converter could not process this file.'; }
     const blob=await res.blob();
@@ -1454,7 +1454,7 @@
     if(!/^https?:\/\//i.test(u)) throw 'Enter a full URL starting with http:// or https://';
     spin('Converting the webpage…');
     const fd=new FormData(); fd.append('url', u);
-    const res=await fetch('/tools/convert/html-to-pdf',{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
+    const res=await fetch('/pdf-tools/convert/html-to-pdf',{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
     if(!res.ok){ let j=null; try{ j=await res.json(); }catch(_){} throw (j&&(j.error||j.message))||'Could not convert this page.'; }
     const blob=await res.blob();
     let nm='webpage'; try{ nm=new URL(u).hostname.replace(/^www\./,''); }catch(_){}
