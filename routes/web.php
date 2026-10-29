@@ -30,6 +30,8 @@ Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
 Route::get('/tools', [\App\Http\Controllers\Shop\ToolsController::class, 'index'])->name('tools.index');
+Route::get('/tools/convert-status/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'status'])->name('tools.convertStatus');
+Route::post('/tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'convert'])->name('tools.convert');
 Route::get('/tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
 Route::post('/chatbot', [\App\Http\Controllers\Shop\ChatbotController::class, 'message'])->name('chatbot.message')->middleware('throttle:40,1');
 Route::get('/chatbot/poll', [\App\Http\Controllers\Shop\ChatbotController::class, 'poll'])->name('chatbot.poll')->middleware('throttle:120,1');
