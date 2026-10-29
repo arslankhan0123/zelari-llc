@@ -37,6 +37,8 @@ Route::redirect('/tools', '/pdf-tools');
 Route::get('/pdf-tools/convert-status/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'status'])->name('tools.convertStatus');
 Route::post('/pdf-tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'convert'])->name('tools.convert');
 Route::get('/pdf-tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
+Route::get('/calculators', [\App\Http\Controllers\Shop\CalculatorsController::class, 'index'])->name('calculators.index');
+Route::get('/calculators/{slug}', [\App\Http\Controllers\Shop\CalculatorsController::class, 'show'])->name('calculators.show');
 Route::get('/tools/{slug}', fn (string $slug) => redirect()->route('tools.show', $slug));
 Route::post('/chatbot', [\App\Http\Controllers\Shop\ChatbotController::class, 'message'])->name('chatbot.message')->middleware('throttle:40,1');
 Route::get('/chatbot/poll', [\App\Http\Controllers\Shop\ChatbotController::class, 'poll'])->name('chatbot.poll')->middleware('throttle:120,1');
@@ -105,6 +107,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::get('/', [\App\Http\Controllers\Admin\PdfToolsController::class, 'index'])->name('index');
         Route::post('/toggle', [\App\Http\Controllers\Admin\PdfToolsController::class, 'toggle'])->name('toggle');
         Route::post('/master', [\App\Http\Controllers\Admin\PdfToolsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('calculators')->name('calcs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CalculatorsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\CalculatorsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\CalculatorsController::class, 'master'])->name('master');
     });
 
     Route::prefix('chats')->name('chats.')->group(function () {

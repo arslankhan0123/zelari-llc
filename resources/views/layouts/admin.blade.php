@@ -695,7 +695,7 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
-        toolsOpen: {{ request()->routeIs('admin.pdftools.*') ? 'true' : 'false' }},
+        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*')) ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
@@ -870,6 +870,11 @@
                         class="sub-item {{ request()->routeIs('admin.pdftools.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         PDF Tools
+                    </a>
+                    <a href="{{ route('admin.calcs.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.calcs.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Calculators
                     </a>
                 </div>
             </div>

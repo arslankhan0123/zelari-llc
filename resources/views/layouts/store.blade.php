@@ -579,15 +579,19 @@ body.drawer-open .drawer{transform:none}
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
+        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled())
         <li class="nav-item">
-          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : '#' }}" class="{{ request()->routeIs('tools.*')?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : route('calculators.index') }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd tools-dd">
             @if(\App\Support\PdfTools::enabled())
             <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a>
             @endif
-            <a href="#" onclick="event.preventDefault();zToast('<b>Calculators</b> are coming soon!','info')"><span class="ti"><i class="fa-solid fa-calculator"></i></span> Calculator <span class="n">Soon</span></a>
+            @if(\App\Support\Calculators::enabled())
+            <a href="{{ route('calculators.index') }}"><span class="ti"><i class="fa-solid fa-calculator"></i></span> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a>
+            @endif
           </div>
         </li>
+        @endif
       </ul>
 
       <a href="{{ route('shop.index',['on_sale'=>1]) }}" class="deal-btn"><i class="fa-solid fa-bolt"></i> Deal Today</a>
@@ -625,7 +629,9 @@ body.drawer-open .drawer{transform:none}
         @if(\App\Support\PdfTools::enabled())
         <div class="ctree-item"><a href="{{ route('tools.index') }}"><i class="fa-solid fa-file-pdf"></i> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a></div>
         @endif
-        <div class="ctree-item"><a href="#" onclick="event.preventDefault();zToast('<b>Calculators</b> are coming soon!','info')"><i class="fa-solid fa-calculator"></i> Calculator <span class="n">Soon</span></a></div>
+        @if(\App\Support\Calculators::enabled())
+        <div class="ctree-item"><a href="{{ route('calculators.index') }}"><i class="fa-solid fa-calculator"></i> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a></div>
+        @endif
       </div>
     </div>
     <a href="{{ route('cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Cart ({{ $cartCount ?? 0 }})</a>
