@@ -28,12 +28,16 @@
     <h1>{{ $tool['name'] }}</h1>
     <p>{{ $tool['desc'] }}</p>
 
+    @if($slug === 'html-to-pdf')
+    <div class="ts-url"><i class="fa-solid fa-globe"></i><input type="url" id="htmlUrl" placeholder="https://example.com/page" autocomplete="off" spellcheck="false"></div>
+    @else
     <div class="ts-drop" id="tsDrop">
       <i class="fa-solid fa-cloud-arrow-up"></i>
       <b>{{ $pick }}</b>
       <small>or drag and drop {{ $multi ? 'files' : 'a file' }} here</small>
       <input type="file" id="tsInput" accept="{{ $accept }}" {{ $multi ? 'multiple' : '' }} hidden>
     </div>
+    @endif
     @if($isLive)
       <div class="ts-priv"><i class="fa-solid fa-shield-halved"></i> Files are processed securely in your browser — nothing is uploaded.</div>
     @endif
@@ -41,6 +45,21 @@
     @if($slug === 'organize-pdf')
       <div class="org-grid" id="orgGrid"></div>
       <div class="org-hint" id="orgHint" style="display:none"><i class="fa-solid fa-hand"></i> Drag pages to reorder &nbsp;·&nbsp; ✕ to delete a page</div>
+    @elseif($slug === 'edit-pdf')
+      <div class="ed-bar" id="edBar" style="display:none">
+        <button type="button" data-tool="text" class="on"><i class="fa-solid fa-font"></i> Text</button>
+        <button type="button" data-tool="pen"><i class="fa-solid fa-pencil"></i> Draw</button>
+        <button type="button" data-tool="rect"><i class="fa-regular fa-square"></i> Box</button>
+        <button type="button" data-tool="ellipse"><i class="fa-regular fa-circle"></i> Circle</button>
+        <button type="button" data-tool="img"><i class="fa-regular fa-image"></i> Image</button>
+        <input type="text" id="edText" placeholder="Type text, then click the page" maxlength="120">
+        <input type="color" id="edColor" value="#e11d48" title="Color">
+        <select id="edSize" title="Line width"><option>2</option><option>3</option><option selected>4</option><option>6</option><option>9</option></select>
+        <select id="edFont" title="Text size"><option>14</option><option selected>18</option><option>24</option><option>32</option><option>44</option></select>
+        <button type="button" id="edUndo"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+      </div>
+      <div id="edPages"></div>
+      <input type="file" id="edImgPick" accept="image/png,image/jpeg" hidden>
     @endif
 
     @if($slug === 'split-pdf')
@@ -75,7 +94,7 @@
 
 @push('scripts')
 @if($isLive)<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>@endif
-@if(in_array($slug, ['organize-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-word', 'pdf-to-excel', 'pdf-to-ppt']))
+@if(in_array($slug, ['organize-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-word', 'pdf-to-excel', 'pdf-to-ppt', 'pdf-to-jpg', 'edit-pdf']))
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 @endif
@@ -88,7 +107,7 @@
 <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 @endif
-@if($slug === 'ppt-to-pdf')<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>@endif
+@if(in_array($slug, ['ppt-to-pdf', 'pdf-to-jpg']))<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>@endif
 <script>window.ZTOOL={slug:@json($slug), live:@json($isLive), multi:@json($multi), name:@json($tool['name']), csrf:'{{ csrf_token() }}'};</script>
 <script src="{{ asset('js/zl-tools.js') }}?v={{ @filemtime(public_path('js/zl-tools.js')) ?: 1 }}"></script>
 @endpush

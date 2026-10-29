@@ -30,7 +30,7 @@
       d.innerHTML='<i class="fa-solid fa-file-lines"></i><span></span><small class="meta"></small><small>'+fmt(f.size)+'</small><button type="button" class="x"><i class="fa-solid fa-xmark"></i></button>';
       d.children[1].textContent=f.name;
       d.querySelector('.meta').textContent = f._pages ? '· '+f._pages+' page'+(f._pages>1?'s':'') + (f._enc?' · 🔒 secured':'') : '';
-      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); if(SLUG==='organize-pdf') buildOrganize(); };
+      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); if(SLUG==='organize-pdf') buildOrganize(); if(SLUG==='edit-pdf') buildEditor(); };
       list.appendChild(d);
     });
     go.disabled=!files.length;
@@ -44,6 +44,7 @@
       render();
     }catch(_){}
     if(SLUG==='organize-pdf') buildOrganize();
+    if(SLUG==='edit-pdf') buildEditor();
   }
   async function buildOrganize(){
     const grid=document.getElementById('orgGrid'), hint=document.getElementById('orgHint');
@@ -87,15 +88,116 @@
   }
   function addFiles(fl){ const arr=[...fl]; files=MULTI?files.concat(arr):arr.slice(0,1); render(); files.forEach(f=>{ if(f._pages===undefined){ f._pages=null; inspect(f); } }); }
   window.zTsAddFile=f=>addFiles([f]);
-  drop.onclick=()=>input.click();
-  input.onchange=()=>{ addFiles(input.files); input.value=''; };
-  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  if(drop&&input){
+    drop.onclick=()=>input.click();
+    input.onchange=()=>{ addFiles(input.files); input.value=''; };
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  }
 
   if(!LIVE){
     go.onclick=()=>zToast('<b>'+(ZT.name||'This tool')+'</b> is being set up — this tool will be live very soon!','info');
     return;
+  }
+
+  /* ───── Edit PDF: in-browser annotator ───── */
+  const ED = SLUG==='edit-pdf' ? {tool:'text', pages:[], img:null, last:null} : null;
+  function edSetup(){
+    const bar=document.getElementById('edBar'); if(!bar||bar.dataset.init) return;
+    bar.dataset.init='1';
+    bar.querySelectorAll('button[data-tool]').forEach(b=>b.onclick=()=>{
+      ED.tool=b.dataset.tool;
+      bar.querySelectorAll('button[data-tool]').forEach(x=>x.classList.toggle('on',x===b));
+      if(ED.tool==='img'&&!ED.img) document.getElementById('edImgPick').click();
+      if(ED.tool==='text') document.getElementById('edText').focus();
+    });
+    document.getElementById('edImgPick').onchange=e=>{
+      const f=e.target.files[0]; if(!f) return;
+      const im=new Image();
+      im.onload=()=>{ ED.img=im; zToast('Image ready — click on a page to place it.','info'); };
+      im.src=URL.createObjectURL(f);
+    };
+    document.getElementById('edUndo').onclick=()=>{
+      const st=ED.last; if(!st||!st.hist.length) return;
+      st.ctx.putImageData(st.hist.pop(),0,0);
+      st.used=st.hist.length>0||st.used;
+    };
+  }
+  async function buildEditor(){
+    const wrap=document.getElementById('edPages'); if(!wrap) return;
+    wrap.innerHTML=''; ED.pages=[]; ED.last=null;
+    document.getElementById('edBar').style.display=files[0]?'flex':'none';
+    if(!files[0]) return;
+    edSetup();
+    let doc=null;
+    try{ doc=await pjsDoc(files[0]); }catch(_){ zToast('Could not open this PDF.','err'); return; }
+    const n=Math.min(doc.numPages,30);
+    for(let i=1;i<=n;i++){
+      const pg=await doc.getPage(i);
+      const vp1=pg.getViewport({scale:1});
+      const vp=pg.getViewport({scale:Math.min(1.6, 820/vp1.width)});
+      const holder=document.createElement('div'); holder.className='ed-pg';
+      const base64c=document.createElement('canvas'); base64c.width=vp.width|0; base64c.height=vp.height|0;
+      const bctx=base64c.getContext('2d'); bctx.fillStyle='#fff'; bctx.fillRect(0,0,base64c.width,base64c.height);
+      await pg.render({canvasContext:bctx,viewport:vp}).promise;
+      const ov=document.createElement('canvas'); ov.width=base64c.width; ov.height=base64c.height; ov.className='ed-ov';
+      const lab=document.createElement('b'); lab.textContent='Page '+i;
+      holder.appendChild(base64c); holder.appendChild(ov); holder.appendChild(lab);
+      wrap.appendChild(holder);
+      const st={ov, ctx:ov.getContext('2d'), hist:[], used:false};
+      ED.pages.push(st);
+      edAttach(st);
+    }
+    if(doc.numPages>n) zToast('Editing the first '+n+' pages.','info');
+  }
+  function edPush(st){ if(st.hist.length>14) st.hist.shift(); st.hist.push(st.ctx.getImageData(0,0,st.ov.width,st.ov.height)); ED.last=st; }
+  function edAttach(st){
+    const ov=st.ov, ctx=st.ctx;
+    const pos=e=>{ const r=ov.getBoundingClientRect(); return {x:(e.clientX-r.left)*ov.width/r.width, y:(e.clientY-r.top)*ov.height/r.height}; };
+    let drawing=false, startP=null, snap=null;
+    ov.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const p=pos(e);
+      const col=document.getElementById('edColor').value;
+      const lw=+document.getElementById('edSize').value;
+      if(ED.tool==='text'){
+        const t=sane(document.getElementById('edText').value.trim());
+        if(!t){ zToast('Toolbar ke text box mein pehle kuch likhein, phir page par click karein. / Type your text in the toolbar first.','info'); return; }
+        edPush(st);
+        const fs=+document.getElementById('edFont').value;
+        ctx.fillStyle=col; ctx.font='bold '+fs+'px Arial, Helvetica, sans-serif'; ctx.textBaseline='top';
+        ctx.fillText(t,p.x,p.y);
+        st.used=true; return;
+      }
+      if(ED.tool==='img'){
+        if(!ED.img){ document.getElementById('edImgPick').click(); return; }
+        edPush(st);
+        const w=Math.min(ED.img.width, ov.width*0.45), h=w*ED.img.height/ED.img.width;
+        ctx.drawImage(ED.img, p.x-w/2, p.y-h/2, w, h);
+        st.used=true; return;
+      }
+      edPush(st);
+      drawing=true; startP=p;
+      try{ ov.setPointerCapture(e.pointerId); }catch(_){}
+      ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+      if(ED.tool==='pen'){ ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+      else snap=ctx.getImageData(0,0,ov.width,ov.height);
+    });
+    ov.addEventListener('pointermove',e=>{
+      if(!drawing) return;
+      const p=pos(e);
+      if(ED.tool==='pen'){ ctx.lineTo(p.x,p.y); ctx.stroke(); }
+      else{
+        ctx.putImageData(snap,0,0);
+        ctx.beginPath();
+        if(ED.tool==='rect') ctx.strokeRect(startP.x,startP.y,p.x-startP.x,p.y-startP.y);
+        else{ ctx.ellipse((startP.x+p.x)/2,(startP.y+p.y)/2,Math.abs(p.x-startP.x)/2,Math.abs(p.y-startP.y)/2,0,0,Math.PI*2); ctx.stroke(); }
+      }
+    });
+    const up=()=>{ if(!drawing) return; drawing=false; st.used=true; };
+    ov.addEventListener('pointerup',up);
+    ov.addEventListener('pointercancel',up);
   }
 
   /* ───── processing (pdf-lib, fully in the browser) ───── */
@@ -1036,6 +1138,40 @@
       download(await out.save(), base(files[0])+'.pdf');
       return '<b>Done!</b> '+wb.SheetNames.length+' sheet'+(wb.SheetNames.length>1?'s':'')+' converted to PDF.';
     },
+    'pdf-to-jpg': async ()=>{
+      const doc=await pjsDoc(files[0]);
+      const n=Math.min(doc.numPages,100);
+      const blobs=[];
+      for(let i=1;i<=n;i++){
+        spin('Page '+i+' / '+n+'…');
+        const pg=await doc.getPage(i);
+        const s1=pg.getViewport({scale:1});
+        const vp=pg.getViewport({scale:Math.min(2, 1800/Math.max(s1.width,s1.height))});
+        const c=document.createElement('canvas'); c.width=vp.width|0; c.height=vp.height|0;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+        await pg.render({canvasContext:ctx,viewport:vp}).promise;
+        blobs.push(await new Promise(r=>c.toBlob(r,'image/jpeg',0.92)));
+      }
+      if(blobs.length===1){ download(blobs[0], base(files[0])+'.jpg', 'image/jpeg'); return '<b>Done!</b> Page saved as a JPG image.'; }
+      if(!window.JSZip) throw 'Could not load the ZIP engine — check your internet connection and reload the page.';
+      const zip=new JSZip();
+      blobs.forEach((b,i)=>zip.file('page-'+(i+1)+'.jpg', b));
+      download(await zip.generateAsync({type:'blob'}), base(files[0])+'-images.zip', 'application/zip');
+      return '<b>Done!</b> '+blobs.length+' pages saved as JPG images (ZIP).';
+    },
+    'edit-pdf': async ()=>{
+      if(!ED || !ED.pages.some(p=>p.used)) throw 'Nothing to save yet — add some text, drawings or images first.';
+      const d=await loadDoc(files[0]);
+      for(let i=0;i<ED.pages.length;i++){
+        const st=ED.pages[i]; if(!st.used) continue;
+        const png=await d.embedPng(st.ov.toDataURL('image/png'));
+        const page=d.getPage(i);
+        const sz=page.getSize();
+        page.drawImage(png,{x:0,y:0,width:sz.width,height:sz.height});
+      }
+      download(await d.save(), base(files[0])+'-edited.pdf');
+      return '<b>Done!</b> Your edited PDF has been downloaded.';
+    },
     'jpg-to-pdf': async ()=>{
       const out=await PDFDocument.create();
       for(const f of files){
@@ -1058,8 +1194,29 @@
     download(blob, base(files[0])+'.'+(SLUG==='pdf-to-word'?'docx':(SLUG==='pdf-to-excel'?'xlsx':'pdf')));
     return '<b>Done!</b> Converted with the high-fidelity engine — original layout preserved.';
   }
+  async function htmlConvert(){
+    const inp=document.getElementById('htmlUrl');
+    const u=(inp&&inp.value||'').trim();
+    if(!/^https?:\/\//i.test(u)) throw 'Enter a full URL starting with http:// or https://';
+    spin('Converting the webpage…');
+    const fd=new FormData(); fd.append('url', u);
+    const res=await fetch('/tools/convert/html-to-pdf',{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
+    if(!res.ok){ let j=null; try{ j=await res.json(); }catch(_){} throw (j&&(j.error||j.message))||'Could not convert this page.'; }
+    const blob=await res.blob();
+    let nm='webpage'; try{ nm=new URL(u).hostname.replace(/^www\./,''); }catch(_){}
+    download(blob, nm+'.pdf');
+    return '<b>Done!</b> Webpage saved as PDF.';
+  }
+  if(SLUG==='html-to-pdf' && LIVE){ go.disabled=false; }
   const origHtml=go.innerHTML;
   go.onclick=async ()=>{
+    if(SLUG==='html-to-pdf'){
+      go.disabled=true; go.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing…';
+      try{ zToast(await htmlConvert(),'ok'); }
+      catch(err){ zToast(typeof err==='string'?err:'Could not convert this page.','err'); }
+      go.innerHTML=origHtml; go.disabled=false;
+      return;
+    }
     if(!files.length) return;
     go.disabled=true; go.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Processing…';
     try{

@@ -23,6 +23,7 @@ class ToolsConvertController extends Controller
     private const TOOLS = [
         'pdf-to-word'  => ['engine' => 'pdf2docx', 'in' => ['pdf'],           'out' => 'docx'],
         'pdf-to-excel' => ['engine' => 'adobe',    'in' => ['pdf'],           'out' => 'xlsx'],
+        'html-to-pdf'  => ['engine' => 'html',     'in' => [],                'out' => 'pdf'],
         'word-to-pdf'  => ['engine' => 'soffice',  'in' => ['doc', 'docx', 'rtf', 'odt'], 'out' => 'pdf'],
         'ppt-to-pdf'   => ['engine' => 'soffice',  'in' => ['ppt', 'pptx', 'odp'],        'out' => 'pdf'],
         'excel-to-pdf' => ['engine' => 'soffice',  'in' => ['xls', 'xlsx', 'csv', 'ods'], 'out' => 'pdf'],
@@ -50,7 +51,8 @@ class ToolsConvertController extends Controller
         if (!$t) {
             return response()->json(['available' => false]);
         }
-        $available = $this->adobeCreds()
+        $available = $t['engine'] === 'html'
+            || $this->adobeCreds()
             || ($t['engine'] === 'soffice' ? (bool) $this->findSoffice()
                 : ($t['engine'] === 'pdf2docx' ? (bool) $this->findPdf2docx() : false));
 
@@ -62,6 +64,9 @@ class ToolsConvertController extends Controller
         $t = self::TOOLS[$slug] ?? null;
         if (!$t) {
             return response()->json(['error' => 'Unknown tool.'], 404);
+        }
+        if ($slug === 'html-to-pdf') {
+            return $this->htmlToPdf($request);
         }
         $request->validate(['file' => 'required|file|max:51200']);
         @set_time_limit(360);
@@ -131,7 +136,8 @@ class ToolsConvertController extends Controller
 
     /* ── Adobe PDF Services API (free tier) ── */
 
-    private function adobeConvert(string $slug, string $in, string $ext, string $out): void
+    /** @return array{0:string,1:array} [$base, $headers] */
+    private function adobeAuth(): array
     {
         $base = 'https://pdf-services.adobe.io';
         $id = env('ADOBE_CLIENT_ID');
@@ -146,7 +152,40 @@ class ToolsConvertController extends Controller
 
             return $r->json('access_token');
         });
-        $H = ['Authorization' => 'Bearer ' . $token, 'x-api-key' => $id];
+
+        return [$base, ['Authorization' => 'Bearer ' . $token, 'x-api-key' => $id]];
+    }
+
+    private function adobePoll(string $loc, array $H, string $out): void
+    {
+        $deadline = time() + 240;
+        while (time() < $deadline) {
+            sleep(2);
+            $st = Http::withHeaders($H)->timeout(30)->get($loc);
+            $status = $st->json('status');
+            if ($status === 'done') {
+                $uri = $st->json('asset.downloadUri') ?: ($st->json('content.downloadUri') ?: $st->json('resource.downloadUri'));
+                if (!$uri) {
+                    throw new \RuntimeException('Adobe: no download URI in result.');
+                }
+                $dl = Http::timeout(180)->get($uri);
+                if ($dl->failed()) {
+                    throw new \RuntimeException('Adobe download failed (' . $dl->status() . ')');
+                }
+                file_put_contents($out, $dl->body());
+
+                return;
+            }
+            if ($status === 'failed') {
+                throw new \RuntimeException('Adobe reported the conversion as failed.');
+            }
+        }
+        throw new \RuntimeException('Adobe conversion timed out.');
+    }
+
+    private function adobeConvert(string $slug, string $in, string $ext, string $out): void
+    {
+        [$base, $H] = $this->adobeAuth();
         $mime = self::MIMES[$ext];
 
         $a = Http::withHeaders($H)->timeout(30)->post($base . '/assets', ['mediaType' => $mime]);
@@ -172,35 +211,73 @@ class ToolsConvertController extends Controller
         if ($j->status() !== 201 || !$j->header('location')) {
             throw new \RuntimeException('Adobe job failed (' . $j->status() . '): ' . Str::limit($j->body(), 120));
         }
-        $loc = $j->header('location');
+        $this->adobePoll($j->header('location'), $H, $out);
+        try {
+            Http::withHeaders($H)->timeout(15)->delete($base . '/assets/' . $assetId);
+        } catch (\Throwable $e) {
+        }
+    }
 
-        $deadline = time() + 240;
-        while (time() < $deadline) {
-            sleep(2);
-            $st = Http::withHeaders($H)->timeout(30)->get($loc);
-            $status = $st->json('status');
-            if ($status === 'done') {
-                $uri = $st->json('asset.downloadUri') ?: ($st->json('content.downloadUri') ?: $st->json('resource.downloadUri'));
-                if (!$uri) {
-                    throw new \RuntimeException('Adobe: no download URI in result.');
-                }
-                $dl = Http::timeout(180)->get($uri);
-                if ($dl->failed()) {
-                    throw new \RuntimeException('Adobe download failed (' . $dl->status() . ')');
-                }
-                file_put_contents($out, $dl->body());
-                try {
-                    Http::withHeaders($H)->timeout(15)->delete($base . '/assets/' . $assetId);
-                } catch (\Throwable $e) {
-                }
+    private function htmlToPdf(Request $request)
+    {
+        $request->validate(['url' => 'required|string|max:2000']);
+        $url = trim($request->input('url'));
+        if (!preg_match('~^https?://~i', $url)) {
+            return response()->json(['error' => 'Enter a full URL starting with http:// or https://'], 422);
+        }
+        @set_time_limit(300);
+        $host = parse_url($url, PHP_URL_HOST) ?: 'webpage';
+        $isLocal = (bool) preg_match('/^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i', $host);
 
-                return;
-            }
-            if ($status === 'failed') {
-                throw new \RuntimeException('Adobe reported the conversion as failed.');
+        $this->cleanupOld();
+        $work = storage_path('app' . DIRECTORY_SEPARATOR . 'tools-convert' . DIRECTORY_SEPARATOR . Str::random(16));
+        @mkdir($work, 0777, true);
+        $out = $work . DIRECTORY_SEPARATOR . 'page.pdf';
+
+        /* 1) Adobe HTML-to-PDF (real browser rendering) for public URLs */
+        if ($this->adobeCreds() && !$isLocal) {
+            try {
+                [$base, $H] = $this->adobeAuth();
+                $j = Http::withHeaders($H)->timeout(30)->post($base . '/operation/htmltopdf', [
+                    'inputUrl' => $url,
+                    'json' => '{}',
+                    'pageLayout' => ['pageWidth' => 8.27, 'pageHeight' => 11.69],
+                ]);
+                if ($j->status() === 201 && $j->header('location')) {
+                    $this->adobePoll($j->header('location'), $H, $out);
+                }
+            } catch (\Throwable $e) {
+                @unlink($out);
             }
         }
-        throw new \RuntimeException('Adobe conversion timed out.');
+
+        /* 2) dompdf fallback (simple pages) */
+        if (!is_file($out) || filesize($out) < 100) {
+            try {
+                $resp = Http::timeout(30)->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'])->get($url);
+                if ($resp->failed()) {
+                    return response()->json(['error' => 'Could not fetch that URL (' . $resp->status() . ').'], 422);
+                }
+                $html = $resp->body();
+                $baseTag = '<base href="' . e($url) . '">';
+                if (stripos($html, '<head') !== false) {
+                    $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $baseTag, $html, 1);
+                } else {
+                    $html = $baseTag . $html;
+                }
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true])
+                    ->loadHTML($html)->setPaper('a4');
+                file_put_contents($out, $pdf->output());
+            } catch (\Throwable $e) {
+                return response()->json(['error' => 'Could not convert this page: ' . Str::limit($e->getMessage(), 120)], 500);
+            }
+        }
+
+        if (!is_file($out) || filesize($out) < 100) {
+            return response()->json(['error' => 'Conversion produced no output.'], 500);
+        }
+
+        return response()->download($out, $host . '.pdf')->deleteFileAfterSend(true);
     }
 
     /* ── engine discovery (free, open-source binaries) ── */
