@@ -63,6 +63,8 @@
 <script>
 (function(){
   const cards=[...document.querySelectorAll('.tl-card')];
+  const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  cards.forEach((k,i)=>{ k.style.setProperty('--i',i); k.addEventListener('animationend',()=>{ k.style.animation=rm?'none':('tlDrift '+(4.6+(i%5)*0.5)+'s ease-in-out '+(-(i%8)*0.7)+'s infinite'); },{once:true}); });
   document.querySelectorAll('.tl-card.js-soon').forEach(k=>k.addEventListener('click',e=>{
     e.preventDefault();
     zToast('<b>'+k.dataset.name+'</b> is coming soon — we are working on it!','info');

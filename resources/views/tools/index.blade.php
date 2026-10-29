@@ -3,6 +3,7 @@
 @section('meta_description', 'Every tool you need to work with PDFs in one place — merge, split, compress, convert, rotate, unlock and watermark PDFs with just a few clicks.')
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/zl-tools.css') }}?v={{ @filemtime(public_path('css/zl-tools.css')) ?: 1 }}">
 <style>
 .tl-head{text-align:center;max-width:760px;margin:0 auto 26px}
 .tl-head h1{font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:-1px;margin:0 0 10px}
@@ -62,6 +63,8 @@
 <script>
 (function(){
   const cards=[...document.querySelectorAll('.tl-card')];
+  const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  cards.forEach((k,i)=>{ k.style.setProperty('--i',i); k.addEventListener('animationend',()=>{ k.style.animation=rm?'none':('tlDrift '+(4.6+(i%5)*0.5)+'s ease-in-out '+(-(i%8)*0.7)+'s infinite'); },{once:true}); });
   document.querySelectorAll('.tl-card.js-soon').forEach(k=>k.addEventListener('click',e=>{
     e.preventDefault();
     zToast('<b>'+k.dataset.name+'</b> is coming soon — we are working on it! Meanwhile, try one of the LIVE tools.','info');

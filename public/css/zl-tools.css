@@ -61,3 +61,20 @@
 .sg-lbl{font-size:13px;font-weight:800;color:var(--ink-2)}
 .sg-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 #crWrap .ed-ov{cursor:crosshair}
+
+/* ───── index card animations (PDF tools + calculators) ───── */
+.tl-card{overflow:hidden;animation:tlIn .55s cubic-bezier(.22,.9,.3,1.18) both;animation-delay:calc(var(--i,0)*45ms)}
+@keyframes tlIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+.tl-card .ic{transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s}
+.tl-card .ic i{animation:tlFloat 3.4s ease-in-out infinite;animation-delay:calc(var(--i,0)*-.4s)}
+@keyframes tlFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3.5px)}}
+.tl-card:hover .ic{transform:scale(1.14) rotate(-7deg);box-shadow:0 12px 22px -9px rgba(0,0,0,.35)}
+.tl-card b{transition:color .2s}
+.tl-card:hover b{color:var(--p)}
+.tl-badge{transition:transform .25s}
+.tl-card:hover .tl-badge{transform:scale(1.1)}
+.tl-card::after{content:"";position:absolute;top:0;left:-80%;width:55%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);pointer-events:none;opacity:0}
+.tl-card:hover::after{animation:tlShine .65s ease forwards}
+@keyframes tlShine{from{left:-80%;opacity:1}to{left:135%;opacity:1}}
+@keyframes tlDrift{0%,100%{translate:0 0}50%{translate:0 -6px}}
+@media (prefers-reduced-motion: reduce){.tl-card,.tl-card .ic i{animation:none !important}}
