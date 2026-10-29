@@ -738,7 +738,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px)">
+        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px);overflow-x:hidden">
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
