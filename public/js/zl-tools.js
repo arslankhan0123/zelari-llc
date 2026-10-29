@@ -163,7 +163,7 @@
       const lw=+document.getElementById('edSize').value;
       if(ED.tool==='text'){
         const t=sane(document.getElementById('edText').value.trim());
-        if(!t){ zToast('Toolbar ke text box mein pehle kuch likhein, phir page par click karein. / Type your text in the toolbar first.','info'); return; }
+        if(!t){ zToast('Type your text in the toolbar box first, then click on the page to place it.','info'); return; }
         edPush(st);
         const fs=+document.getElementById('edFont').value;
         ctx.fillStyle=col; ctx.font='bold '+fs+'px Arial, Helvetica, sans-serif'; ctx.textBaseline='top';
@@ -180,7 +180,7 @@
       edPush(st);
       drawing=true; startP=p;
       try{ ov.setPointerCapture(e.pointerId); }catch(_){}
-      ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.strokeStyle=col; ctx.fillStyle=(ED.tool==='white'?'#ffffff':col); ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
       if(ED.tool==='pen'){ ctx.beginPath(); ctx.moveTo(p.x,p.y); }
       else snap=ctx.getImageData(0,0,ov.width,ov.height);
     });
@@ -191,7 +191,8 @@
       else{
         ctx.putImageData(snap,0,0);
         ctx.beginPath();
-        if(ED.tool==='rect') ctx.strokeRect(startP.x,startP.y,p.x-startP.x,p.y-startP.y);
+        if(ED.tool==='white'){ ctx.fillStyle='#ffffff'; ctx.fillRect(startP.x,startP.y,p.x-startP.x,p.y-startP.y); }
+        else if(ED.tool==='rect') ctx.strokeRect(startP.x,startP.y,p.x-startP.x,p.y-startP.y);
         else{ ctx.ellipse((startP.x+p.x)/2,(startP.y+p.y)/2,Math.abs(p.x-startP.x)/2,Math.abs(p.y-startP.y)/2,0,0,Math.PI*2); ctx.stroke(); }
       }
     });

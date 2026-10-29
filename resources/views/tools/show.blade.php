@@ -49,6 +49,7 @@
       <div class="ed-bar" id="edBar" style="display:none">
         <button type="button" data-tool="text" class="on"><i class="fa-solid fa-font"></i> Text</button>
         <button type="button" data-tool="pen"><i class="fa-solid fa-pencil"></i> Draw</button>
+        <button type="button" data-tool="white"><i class="fa-solid fa-eraser"></i> Whiteout</button>
         <button type="button" data-tool="rect"><i class="fa-regular fa-square"></i> Box</button>
         <button type="button" data-tool="ellipse"><i class="fa-regular fa-circle"></i> Circle</button>
         <button type="button" data-tool="img"><i class="fa-regular fa-image"></i> Image</button>
