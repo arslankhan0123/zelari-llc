@@ -5,7 +5,7 @@
 @php
   // tools processed right in the browser with pdf-lib — no upload needed
   $isLive = $tool['live'] ?? false;
-  $multi  = in_array($slug, ['merge-pdf', 'jpg-to-pdf'], true);
+  $multi  = in_array($slug, ['merge-pdf', 'jpg-to-pdf', 'compare-pdf'], true);
   $accepts = [
     'jpg-to-pdf'   => ['image/jpeg,image/png', 'Select JPG / PNG images'],
     'word-to-pdf'  => ['.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Select Word file (.docx)'],
@@ -61,6 +61,30 @@
       </div>
       <div id="edPages"></div>
       <input type="file" id="edImgPick" accept="image/png,image/jpeg" hidden>
+    @elseif($slug === 'crop-pdf')
+      <div class="org-hint" id="crHint" style="display:none"><i class="fa-solid fa-crop"></i> Drag on the preview to select the area to keep — it will be applied to all pages.</div>
+      <div id="crWrap"></div>
+    @elseif($slug === 'sign-pdf')
+      <div class="ed-bar" id="sgBar" style="display:none">
+        <span class="sg-lbl">Draw your signature:</span>
+        <canvas id="sgPad" width="520" height="160"></canvas>
+        <span class="sg-ctl">
+          <input type="color" id="sgColor" value="#1d4ed8" title="Ink color">
+          <select id="sgSize" title="Signature size"><option value="120">Small</option><option value="180" selected>Medium</option><option value="260">Large</option></select>
+          <button type="button" id="sgClear"><i class="fa-solid fa-eraser"></i> Clear</button>
+          <button type="button" id="sgUpload"><i class="fa-regular fa-image"></i> Upload image</button>
+          <button type="button" id="sgUndo"><i class="fa-solid fa-rotate-left"></i> Undo place</button>
+        </span>
+      </div>
+      <div class="org-hint" id="sgHint" style="display:none"><i class="fa-solid fa-hand-pointer"></i> Draw (or upload) your signature above, then click on a page to place it.</div>
+      <div id="sgPages"></div>
+      <input type="file" id="sgPick" accept="image/png,image/jpeg" hidden>
+    @elseif($slug === 'redact-pdf')
+      <div class="ed-bar" id="rdBar" style="display:none">
+        <span class="sg-lbl"><i class="fa-solid fa-eraser"></i> Drag black boxes over anything to remove permanently.</span>
+        <button type="button" id="rdUndo"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+      </div>
+      <div id="rdPages"></div>
     @endif
 
     @if($slug === 'split-pdf')
@@ -73,6 +97,12 @@
       <div class="ts-opts"><label>Watermark text <input type="text" id="optText" placeholder="e.g. CONFIDENTIAL" maxlength="60" autocomplete="off"></label></div>
     @elseif($slug === 'ocr-pdf')
       <div class="ts-opts" style="font-size:12.5px;color:var(--muted)"><i class="fa-solid fa-circle-info"></i> Recognizes English text · up to 25 pages · can take a minute on big files</div>
+    @elseif($slug === 'unlock-pdf')
+      <div class="ts-opts"><label>PDF password <input type="password" id="optPass" placeholder="Current password of this PDF" autocomplete="off" maxlength="128"></label></div>
+    @elseif($slug === 'protect-pdf')
+      <div class="ts-opts"><label>Set password <input type="password" id="optPass" placeholder="Choose a password" autocomplete="off" maxlength="128"></label></div>
+    @elseif($slug === 'compare-pdf')
+      <div class="ts-opts" style="font-size:12.5px;color:var(--muted)"><i class="fa-solid fa-circle-info"></i> Select the two PDF versions — differences will be highlighted in red, side by side.</div>
     @elseif($slug === 'compress-pdf')
       <div class="ts-opts"><label>Compression level
         <select id="optLevel"><option value="lite">Recommended — keep quality &amp; text</option><option value="extreme">Extreme — smallest size (pages become images)</option></select>
@@ -95,7 +125,7 @@
 
 @push('scripts')
 @if($isLive)<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>@endif
-@if(in_array($slug, ['organize-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-word', 'pdf-to-excel', 'pdf-to-ppt', 'pdf-to-jpg', 'edit-pdf']))
+@if(in_array($slug, ['organize-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-word', 'pdf-to-excel', 'pdf-to-ppt', 'pdf-to-jpg', 'edit-pdf', 'crop-pdf', 'sign-pdf', 'redact-pdf', 'compare-pdf']))
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 @endif

@@ -55,3 +55,9 @@
 .ed-pg canvas{display:block;max-width:100%;height:auto}
 .ed-pg .ed-ov{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
 .ed-pg b{position:absolute;left:8px;top:8px;background:rgba(30,27,75,.75);color:#fff;font-size:11px;padding:2px 8px;border-radius:999px;pointer-events:none}
+
+/* Sign PDF pad */
+#sgPad{background:#fff;border:1.5px dashed var(--line);border-radius:10px;touch-action:none;cursor:crosshair;max-width:100%}
+.sg-lbl{font-size:13px;font-weight:800;color:var(--ink-2)}
+.sg-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#crWrap .ed-ov{cursor:crosshair}

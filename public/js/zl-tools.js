@@ -11,7 +11,7 @@
   const ZT=window.ZTOOL||{};
   const SLUG=ZT.slug||'', LIVE=!!ZT.live, MULTI=!!ZT.multi;
   const CSRF=ZT.csrf||'';
-  const SRVTOOLS=['pdf-to-word','pdf-to-excel','word-to-pdf','ppt-to-pdf','excel-to-pdf'];
+  const SRVTOOLS=['pdf-to-word','pdf-to-excel','word-to-pdf','ppt-to-pdf','excel-to-pdf','unlock-pdf','protect-pdf'];
   let srvOk=false;
   if(LIVE && SRVTOOLS.includes(SLUG)){
     fetch('/tools/convert-status/'+SLUG).then(r=>r.json()).then(j=>{
@@ -30,7 +30,7 @@
       d.innerHTML='<i class="fa-solid fa-file-lines"></i><span></span><small class="meta"></small><small>'+fmt(f.size)+'</small><button type="button" class="x"><i class="fa-solid fa-xmark"></i></button>';
       d.children[1].textContent=f.name;
       d.querySelector('.meta').textContent = f._pages ? '· '+f._pages+' page'+(f._pages>1?'s':'') + (f._enc?' · 🔒 secured':'') : '';
-      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); if(SLUG==='organize-pdf') buildOrganize(); if(SLUG==='edit-pdf') buildEditor(); };
+      d.querySelector('.x').onclick=()=>{ files.splice(i,1); render(); if(SLUG==='organize-pdf') buildOrganize(); if(SLUG==='edit-pdf') buildEditor(); if(SLUG==='crop-pdf') buildCrop(); if(SLUG==='sign-pdf') buildSign(); if(SLUG==='redact-pdf') buildRedact(); };
       list.appendChild(d);
     });
     go.disabled=!files.length;
@@ -45,6 +45,9 @@
     }catch(_){}
     if(SLUG==='organize-pdf') buildOrganize();
     if(SLUG==='edit-pdf') buildEditor();
+    if(SLUG==='crop-pdf') buildCrop();
+    if(SLUG==='sign-pdf') buildSign();
+    if(SLUG==='redact-pdf') buildRedact();
   }
   async function buildOrganize(){
     const grid=document.getElementById('orgGrid'), hint=document.getElementById('orgHint');
@@ -199,6 +202,148 @@
     const up=()=>{ if(!drawing) return; drawing=false; st.used=true; };
     ov.addEventListener('pointerup',up);
     ov.addEventListener('pointercancel',up);
+  }
+
+  /* ───── shared page previews with a drawing overlay ───── */
+  async function annotBuild(wrapId, cap, attach){
+    const wrap=document.getElementById(wrapId); if(!wrap) return [];
+    wrap.innerHTML='';
+    if(!files[0]) return [];
+    let doc=null;
+    try{ doc=await pjsDoc(files[0]); }catch(_){ zToast('Could not open this PDF.','err'); return []; }
+    const n=Math.min(doc.numPages,cap);
+    const out=[];
+    for(let i=1;i<=n;i++){
+      const pg=await doc.getPage(i);
+      const vp1=pg.getViewport({scale:1});
+      const vp=pg.getViewport({scale:Math.min(1.6, 820/vp1.width)});
+      const holder=document.createElement('div'); holder.className='ed-pg';
+      const bc=document.createElement('canvas'); bc.width=vp.width|0; bc.height=vp.height|0;
+      const bctx=bc.getContext('2d'); bctx.fillStyle='#fff'; bctx.fillRect(0,0,bc.width,bc.height);
+      await pg.render({canvasContext:bctx,viewport:vp}).promise;
+      const ov=document.createElement('canvas'); ov.width=bc.width; ov.height=bc.height; ov.className='ed-ov';
+      const lab=document.createElement('b'); lab.textContent='Page '+i;
+      holder.appendChild(bc); holder.appendChild(ov); holder.appendChild(lab);
+      wrap.appendChild(holder);
+      const st={ov, ctx:ov.getContext('2d'), hist:[], used:false, idx:i-1};
+      out.push(st);
+      attach(st);
+    }
+    if(doc.numPages>n && cap>1) zToast('Showing the first '+n+' pages.','info');
+    return out;
+  }
+  const ovPos=(ov,e)=>{ const r=ov.getBoundingClientRect(); return {x:(e.clientX-r.left)*ov.width/r.width, y:(e.clientY-r.top)*ov.height/r.height}; };
+  function histPush(st){ if(st.hist.length>14) st.hist.shift(); st.hist.push(st.ctx.getImageData(0,0,st.ov.width,st.ov.height)); }
+  function histUndo(st){ if(st&&st.hist.length){ st.ctx.putImageData(st.hist.pop(),0,0); } }
+
+  /* ───── Crop PDF ───── */
+  const CR = SLUG==='crop-pdf' ? {box:null, st:null} : null;
+  async function buildCrop(){
+    const hint=document.getElementById('crHint');
+    CR.box=null;
+    const pages=await annotBuild('crWrap', 1, st=>{
+      CR.st=st;
+      const ov=st.ov, ctx=st.ctx;
+      let drag=false, sp=null;
+      const paint=(a,b)=>{
+        ctx.clearRect(0,0,ov.width,ov.height);
+        ctx.fillStyle='rgba(15,10,60,0.45)'; ctx.fillRect(0,0,ov.width,ov.height);
+        const x=Math.min(a.x,b.x), y=Math.min(a.y,b.y), w=Math.abs(b.x-a.x), h=Math.abs(b.y-a.y);
+        ctx.clearRect(x,y,w,h);
+        ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2.5; ctx.setLineDash([7,5]); ctx.strokeRect(x,y,w,h); ctx.setLineDash([]);
+        CR.box={fx:x/ov.width, fy:y/ov.height, fw:w/ov.width, fh:h/ov.height};
+      };
+      ov.addEventListener('pointerdown',e=>{ e.preventDefault(); drag=true; sp=ovPos(ov,e); try{ ov.setPointerCapture(e.pointerId); }catch(_){} });
+      ov.addEventListener('pointermove',e=>{ if(drag) paint(sp,ovPos(ov,e)); });
+      const up=()=>{ drag=false; };
+      ov.addEventListener('pointerup',up); ov.addEventListener('pointercancel',up);
+    });
+    if(hint) hint.style.display=pages.length?'block':'none';
+  }
+
+  /* ───── Sign PDF ───── */
+  const SG = SLUG==='sign-pdf' ? {pages:[], sig:null, last:null} : null;
+  function sgSetup(){
+    const bar=document.getElementById('sgBar'); if(!bar||bar.dataset.init) return;
+    bar.dataset.init='1';
+    const pad=document.getElementById('sgPad'), pctx=pad.getContext('2d');
+    pctx.fillStyle='#fff'; pctx.fillRect(0,0,pad.width,pad.height);
+    let drawing=false;
+    const pp=e=>{ const r=pad.getBoundingClientRect(); return {x:(e.clientX-r.left)*pad.width/r.width, y:(e.clientY-r.top)*pad.height/r.height}; };
+    pad.addEventListener('pointerdown',e=>{ e.preventDefault(); drawing=true; const p=pp(e);
+      pctx.strokeStyle=document.getElementById('sgColor').value; pctx.lineWidth=2.6; pctx.lineCap='round'; pctx.lineJoin='round';
+      pctx.beginPath(); pctx.moveTo(p.x,p.y); try{ pad.setPointerCapture(e.pointerId); }catch(_){} });
+    pad.addEventListener('pointermove',e=>{ if(!drawing) return; const p=pp(e); pctx.lineTo(p.x,p.y); pctx.stroke(); SG.sig='pad'; });
+    const up=()=>{ drawing=false; };
+    pad.addEventListener('pointerup',up); pad.addEventListener('pointercancel',up);
+    document.getElementById('sgClear').onclick=()=>{ pctx.fillStyle='#fff'; pctx.fillRect(0,0,pad.width,pad.height); if(SG.sig==='pad') SG.sig=null; };
+    document.getElementById('sgUpload').onclick=()=>document.getElementById('sgPick').click();
+    document.getElementById('sgPick').onchange=e=>{
+      const f=e.target.files[0]; if(!f) return;
+      const im=new Image(); im.onload=()=>{ SG.sig=im; zToast('Signature image ready — click on a page to place it.','info'); }; im.src=URL.createObjectURL(f);
+    };
+    document.getElementById('sgUndo').onclick=()=>histUndo(SG.last);
+  }
+  function sgImage(){
+    if(SG.sig instanceof Image) return SG.sig;
+    if(SG.sig==='pad'){
+      const pad=document.getElementById('sgPad');
+      const c=document.createElement('canvas'); c.width=pad.width; c.height=pad.height;
+      const x=c.getContext('2d');
+      x.drawImage(pad,0,0);
+      /* white -> transparent */
+      const im=x.getImageData(0,0,c.width,c.height);
+      for(let k=0;k<im.data.length;k+=4){ if(im.data[k]>242&&im.data[k+1]>242&&im.data[k+2]>242) im.data[k+3]=0; }
+      x.putImageData(im,0,0);
+      return c;
+    }
+    return null;
+  }
+  async function buildSign(){
+    document.getElementById('sgBar').style.display=files[0]?'flex':'none';
+    document.getElementById('sgHint').style.display=files[0]?'block':'none';
+    if(!files[0]){ document.getElementById('sgPages').innerHTML=''; SG.pages=[]; return; }
+    sgSetup();
+    SG.pages=await annotBuild('sgPages', 30, st=>{
+      st.ov.addEventListener('pointerdown',e=>{
+        e.preventDefault();
+        const src=sgImage();
+        if(!src){ zToast('Draw or upload your signature first.','info'); return; }
+        const p=ovPos(st.ov,e);
+        histPush(st); SG.last=st;
+        const w=+document.getElementById('sgSize').value;
+        const h=w*src.height/src.width;
+        st.ctx.drawImage(src, p.x-w/2, p.y-h/2, w, h);
+        st.used=true;
+      });
+    });
+  }
+
+  /* ───── Redact PDF ───── */
+  const RD = SLUG==='redact-pdf' ? {pages:[], last:null} : null;
+  async function buildRedact(){
+    document.getElementById('rdBar').style.display=files[0]?'flex':'none';
+    if(!files[0]){ document.getElementById('rdPages').innerHTML=''; RD.pages=[]; return; }
+    const ub=document.getElementById('rdUndo');
+    if(!ub.dataset.init){ ub.dataset.init='1'; ub.onclick=()=>histUndo(RD.last); }
+    RD.pages=await annotBuild('rdPages', 30, st=>{
+      const ov=st.ov, ctx=st.ctx;
+      let drag=false, sp=null, snap=null;
+      ov.addEventListener('pointerdown',e=>{
+        e.preventDefault(); drag=true; sp=ovPos(ov,e);
+        histPush(st); RD.last=st;
+        snap=ctx.getImageData(0,0,ov.width,ov.height);
+        try{ ov.setPointerCapture(e.pointerId); }catch(_){}
+      });
+      ov.addEventListener('pointermove',e=>{
+        if(!drag) return; const p=ovPos(ov,e);
+        ctx.putImageData(snap,0,0);
+        ctx.fillStyle='#000';
+        ctx.fillRect(Math.min(sp.x,p.x),Math.min(sp.y,p.y),Math.abs(p.x-sp.x),Math.abs(p.y-sp.y));
+      });
+      const up=()=>{ if(drag){ drag=false; st.used=true; } };
+      ov.addEventListener('pointerup',up); ov.addEventListener('pointercancel',up);
+    });
   }
 
   /* ───── processing (pdf-lib, fully in the browser) ───── */
@@ -1139,6 +1284,107 @@
       download(await out.save(), base(files[0])+'.pdf');
       return '<b>Done!</b> '+wb.SheetNames.length+' sheet'+(wb.SheetNames.length>1?'s':'')+' converted to PDF.';
     },
+    'crop-pdf': async ()=>{
+      if(!CR||!CR.box||CR.box.fw<0.02||CR.box.fh<0.02) throw 'Drag on the preview first to select the area to keep.';
+      const d=await loadDoc(files[0]);
+      d.getPages().forEach(pg=>{
+        const w=pg.getWidth(), h=pg.getHeight();
+        const x=CR.box.fx*w, cw=CR.box.fw*w, ch=CR.box.fh*h;
+        const y=h-(CR.box.fy+CR.box.fh)*h;
+        pg.setCropBox(x,y,cw,ch);
+        pg.setMediaBox(x,y,cw,ch);
+      });
+      download(await d.save(), base(files[0])+'-cropped.pdf');
+      return '<b>Done!</b> All pages cropped to the selected area.';
+    },
+    'sign-pdf': async ()=>{
+      if(!SG||!SG.pages.some(p=>p.used)) throw 'Place your signature on a page first (draw it above, then click on the page).';
+      const d=await loadDoc(files[0]);
+      for(const st of SG.pages){
+        if(!st.used) continue;
+        const png=await d.embedPng(st.ov.toDataURL('image/png'));
+        const page=d.getPage(st.idx);
+        const sz=page.getSize();
+        page.drawImage(png,{x:0,y:0,width:sz.width,height:sz.height});
+      }
+      download(await d.save(), base(files[0])+'-signed.pdf');
+      return '<b>Done!</b> Your signed PDF has been downloaded.';
+    },
+    'redact-pdf': async ()=>{
+      if(!RD||!RD.pages.some(p=>p.used)) throw 'Drag a black box over the content you want to remove first.';
+      const src=await pjsDoc(files[0]);
+      const orig=await loadDoc(files[0]);
+      const out=await PDFDocument.create();
+      const usedIdx=new Set(RD.pages.filter(p=>p.used).map(p=>p.idx));
+      for(let i=0;i<orig.getPageCount();i++){
+        spin('Page '+(i+1)+' / '+orig.getPageCount()+'…');
+        if(!usedIdx.has(i)){
+          const [cp]=await out.copyPages(orig,[i]);
+          out.addPage(cp);
+          continue;
+        }
+        const st=RD.pages.find(p=>p.idx===i);
+        const pg=await src.getPage(i+1);
+        const vp1=pg.getViewport({scale:1});
+        const vp=pg.getViewport({scale:Math.min(2.2, 1800/vp1.width)});
+        const c=document.createElement('canvas'); c.width=vp.width|0; c.height=vp.height|0;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+        await pg.render({canvasContext:ctx,viewport:vp}).promise;
+        ctx.drawImage(st.ov,0,0,c.width,c.height);
+        const img=await out.embedJpg(c.toDataURL('image/jpeg',0.92));
+        out.addPage([vp1.width,vp1.height]).drawImage(img,{x:0,y:0,width:vp1.width,height:vp1.height});
+      }
+      download(await out.save(), base(files[0])+'-redacted.pdf');
+      return '<b>Done!</b> Redacted content is permanently removed (redacted pages are flattened to images).';
+    },
+    'compare-pdf': async ()=>{
+      if(files.length!==2) throw 'Select exactly two PDF files to compare.';
+      const A=await pjsDoc(files[0]), B=await pjsDoc(files[1]);
+      const n=Math.min(Math.max(A.numPages,B.numPages),30);
+      const out=await PDFDocument.create();
+      const font=await out.embedFont(StandardFonts.HelveticaBold);
+      const W=850;
+      const renderAt=async (doc,i)=>{
+        if(!doc||i>doc.numPages) return null;
+        const pg=await doc.getPage(i);
+        const vp1=pg.getViewport({scale:1});
+        const vp=pg.getViewport({scale:W/vp1.width});
+        const c=document.createElement('canvas'); c.width=W; c.height=vp.height|0;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+        await pg.render({canvasContext:ctx,viewport:vp}).promise;
+        return c;
+      };
+      let diffTotal=0;
+      for(let i=1;i<=n;i++){
+        spin('Comparing page '+i+' / '+n+'…');
+        const ca=await renderAt(A,i), cb=await renderAt(B,i);
+        const H=Math.max(ca?ca.height:0, cb?cb.height:0, 100);
+        const mk=c0=>{ const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); if(c0) x.drawImage(c0,0,0); return c; };
+        const left=mk(ca), right=mk(cb);
+        const da=left.getContext('2d').getImageData(0,0,W,H).data;
+        const rctx=right.getContext('2d');
+        const db=rctx.getImageData(0,0,W,H);
+        let diff=0;
+        for(let k=0;k<db.data.length;k+=4){
+          if(Math.abs(da[k]-db.data[k])+Math.abs(da[k+1]-db.data[k+1])+Math.abs(da[k+2]-db.data[k+2])>60){
+            db.data[k]=235; db.data[k+1]=30; db.data[k+2]=30; diff++;
+          }
+        }
+        if(diff>25) rctx.putImageData(db,0,0);
+        diffTotal+=diff>25?1:0;
+        const gap=26, headH=34;
+        const page=out.addPage([W*2+gap*3, H+headH+gap*2]);
+        const ph=page.getHeight();
+        const imgL=await out.embedJpg(left.toDataURL('image/jpeg',0.82));
+        const imgR=await out.embedJpg(right.toDataURL('image/jpeg',0.82));
+        page.drawText('ORIGINAL — page '+i,{x:gap,y:ph-headH+8,size:13,font,color:rgb(0.2,0.2,0.3)});
+        page.drawText('MODIFIED — page '+i+(diff>25?'  (differences in red)':'  (no changes)'),{x:W+gap*2,y:ph-headH+8,size:13,font,color:diff>25?rgb(0.85,0.1,0.1):rgb(0.1,0.55,0.25)});
+        page.drawImage(imgL,{x:gap,y:gap,width:W,height:H});
+        page.drawImage(imgR,{x:W+gap*2,y:gap,width:W,height:H});
+      }
+      download(await out.save(), 'comparison.pdf');
+      return '<b>Done!</b> '+n+' page'+(n>1?'s':'')+' compared — '+(diffTotal?diffTotal+' page'+(diffTotal>1?'s':'')+' with differences (red).':'no differences found.');
+    },
     'pdf-to-jpg': async ()=>{
       const doc=await pjsDoc(files[0]);
       const n=Math.min(doc.numPages,100);
@@ -1188,11 +1434,18 @@
   async function serverConvert(){
     spin('Converting with the high-fidelity engine…');
     const fd=new FormData(); fd.append('file', files[0]);
+    const passEl=document.getElementById('optPass');
+    if(passEl){
+      if(!passEl.value){ throw SLUG==='unlock-pdf' ? 'Enter the current password of this PDF first.' : 'Choose a password first.'; }
+      fd.append('password', passEl.value);
+    }
     const res=await fetch('/tools/convert/'+SLUG,{method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}, body:fd});
     if(res.status===503) throw {offline:true};
     if(!res.ok){ let j=null; try{ j=await res.json(); }catch(_){} throw (j&&(j.error||j.message))||'The server converter could not process this file.'; }
     const blob=await res.blob();
     download(blob, base(files[0])+'.'+(SLUG==='pdf-to-word'?'docx':(SLUG==='pdf-to-excel'?'xlsx':'pdf')));
+    if(SLUG==='unlock-pdf') return '<b>Done!</b> Password removed — your unlocked PDF has been downloaded.';
+    if(SLUG==='protect-pdf') return '<b>Done!</b> Your PDF is now password-protected (AES-256).';
     return '<b>Done!</b> Converted with the high-fidelity engine — original layout preserved.';
   }
   async function htmlConvert(){

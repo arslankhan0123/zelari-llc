@@ -29,11 +29,11 @@ return [
     'rotate-pdf'     => ['name' => 'Rotate PDF',     'icon' => 'fa-rotate',              'color' => '#8b5cf6', 'cat' => 'edit',     'live' => true, 'desc' => 'Rotate your PDFs the way you need them. Rotate multiple PDFs at once!'],
     'page-numbers'   => ['name' => 'Page numbers',   'icon' => 'fa-list-ol',             'color' => '#8b5cf6', 'cat' => 'edit',     'live' => true, 'desc' => 'Add page numbers into PDFs with ease, with custom positions and typography.'],
     'watermark-pdf'  => ['name' => 'Watermark',      'icon' => 'fa-stamp',               'color' => '#8b5cf6', 'cat' => 'edit',     'live' => true, 'desc' => 'Stamp an image or text over your PDF in seconds.'],
-    'crop-pdf'       => ['name' => 'Crop PDF',       'icon' => 'fa-crop',                'color' => '#8b5cf6', 'cat' => 'edit',     'desc' => 'Crop margins of PDF documents or select specific areas.'],
-    'sign-pdf'       => ['name' => 'Sign PDF',       'icon' => 'fa-signature',           'color' => '#0ea5e9', 'cat' => 'security', 'desc' => 'Sign yourself or request electronic signatures from others.'],
-    'unlock-pdf'     => ['name' => 'Unlock PDF',     'icon' => 'fa-unlock',              'color' => '#0ea5e9', 'cat' => 'security', 'desc' => 'Remove PDF password security, giving you freedom to use your PDFs.'],
-    'protect-pdf'    => ['name' => 'Protect PDF',    'icon' => 'fa-lock',                'color' => '#0ea5e9', 'cat' => 'security', 'desc' => 'Protect PDF files with a password to prevent unauthorized access.'],
-    'redact-pdf'     => ['name' => 'Redact PDF',     'icon' => 'fa-eraser',              'color' => '#0ea5e9', 'cat' => 'security', 'desc' => 'Redact text and graphics to permanently remove sensitive information.'],
-    'compare-pdf'    => ['name' => 'Compare PDF',    'icon' => 'fa-code-compare',        'color' => '#0ea5e9', 'cat' => 'security', 'desc' => 'Show a side-by-side comparison and easily spot changes between file versions.'],
+    'crop-pdf'       => ['name' => 'Crop PDF',       'icon' => 'fa-crop',                'color' => '#8b5cf6', 'cat' => 'edit',     'live' => true, 'desc' => 'Crop margins of PDF documents or select specific areas.'],
+    'sign-pdf'       => ['name' => 'Sign PDF',       'icon' => 'fa-signature',           'color' => '#0ea5e9', 'cat' => 'security', 'live' => true, 'desc' => 'Sign yourself or request electronic signatures from others.'],
+    'unlock-pdf'     => ['name' => 'Unlock PDF',     'icon' => 'fa-unlock',              'color' => '#0ea5e9', 'cat' => 'security', 'live' => true, 'desc' => 'Remove PDF password security, giving you freedom to use your PDFs.'],
+    'protect-pdf'    => ['name' => 'Protect PDF',    'icon' => 'fa-lock',                'color' => '#0ea5e9', 'cat' => 'security', 'live' => true, 'desc' => 'Protect PDF files with a password to prevent unauthorized access.'],
+    'redact-pdf'     => ['name' => 'Redact PDF',     'icon' => 'fa-eraser',              'color' => '#0ea5e9', 'cat' => 'security', 'live' => true, 'desc' => 'Redact text and graphics to permanently remove sensitive information.'],
+    'compare-pdf'    => ['name' => 'Compare PDF',    'icon' => 'fa-code-compare',        'color' => '#0ea5e9', 'cat' => 'security', 'live' => true, 'desc' => 'Show a side-by-side comparison and easily spot changes between file versions.'],
 
 ];

@@ -24,6 +24,8 @@ class ToolsConvertController extends Controller
         'pdf-to-word'  => ['engine' => 'pdf2docx', 'in' => ['pdf'],           'out' => 'docx'],
         'pdf-to-excel' => ['engine' => 'adobe',    'in' => ['pdf'],           'out' => 'xlsx'],
         'html-to-pdf'  => ['engine' => 'html',     'in' => [],                'out' => 'pdf'],
+        'unlock-pdf'   => ['engine' => 'adobe',    'in' => ['pdf'],           'out' => 'pdf', 'suffix' => '-unlocked'],
+        'protect-pdf'  => ['engine' => 'adobe',    'in' => ['pdf'],           'out' => 'pdf', 'suffix' => '-protected'],
         'word-to-pdf'  => ['engine' => 'soffice',  'in' => ['doc', 'docx', 'rtf', 'odt'], 'out' => 'pdf'],
         'ppt-to-pdf'   => ['engine' => 'soffice',  'in' => ['ppt', 'pptx', 'odp'],        'out' => 'pdf'],
         'excel-to-pdf' => ['engine' => 'soffice',  'in' => ['xls', 'xlsx', 'csv', 'ods'], 'out' => 'pdf'],
@@ -69,6 +71,11 @@ class ToolsConvertController extends Controller
             return $this->htmlToPdf($request);
         }
         $request->validate(['file' => 'required|file|max:51200']);
+        $password = null;
+        if (in_array($slug, ['unlock-pdf', 'protect-pdf'], true)) {
+            $request->validate(['password' => 'required|string|min:1|max:128']);
+            $password = $request->input('password');
+        }
         @set_time_limit(360);
 
         $file = $request->file('file');
@@ -90,13 +97,20 @@ class ToolsConvertController extends Controller
         try {
             /* 1) Adobe PDF Services (exact, same-to-same) */
             if ($this->adobeCreds() && isset(self::MIMES[$ext])) {
+                $adobeErr = null;
                 try {
-                    $this->adobeConvert($slug, $inPath, $ext, $outPath);
+                    $this->adobeConvert($slug, $inPath, $ext, $outPath, $password);
                 } catch (\Throwable $e) {
+                    $adobeErr = $e->getMessage();
                     @unlink($outPath);
                 }
                 if (is_file($outPath) && filesize($outPath) > 100) {
-                    return response()->download($outPath, $origBase . '.' . $t['out'])->deleteFileAfterSend(true);
+                    return response()->download($outPath, $origBase . ($t['suffix'] ?? '') . '.' . $t['out'])->deleteFileAfterSend(true);
+                }
+                if ($password !== null) {
+                    return response()->json(['error' => $slug === 'unlock-pdf'
+                        ? 'Could not unlock — the password may be incorrect.'
+                        : 'Could not protect this PDF: ' . Str::limit((string) $adobeErr, 100)], 422);
                 }
             }
 
@@ -183,7 +197,7 @@ class ToolsConvertController extends Controller
         throw new \RuntimeException('Adobe conversion timed out.');
     }
 
-    private function adobeConvert(string $slug, string $in, string $ext, string $out): void
+    private function adobeConvert(string $slug, string $in, string $ext, string $out, ?string $password = null): void
     {
         [$base, $H] = $this->adobeAuth();
         $mime = self::MIMES[$ext];
@@ -200,7 +214,14 @@ class ToolsConvertController extends Controller
             throw new \RuntimeException('Adobe upload failed (' . $up->status() . ')');
         }
 
-        if (str_starts_with($slug, 'pdf-to-')) {
+        if ($slug === 'unlock-pdf') {
+            $op = 'removeprotection';
+            $body = ['assetID' => $assetId, 'password' => (string) $password];
+        } elseif ($slug === 'protect-pdf') {
+            $op = 'protectpdf';
+            $body = ['assetID' => $assetId, 'encryptionAlgorithm' => 'AES_256',
+                'passwordProtection' => ['userPassword' => (string) $password]];
+        } elseif (str_starts_with($slug, 'pdf-to-')) {
             $op = 'exportpdf';
             $body = ['assetID' => $assetId, 'targetFormat' => $slug === 'pdf-to-excel' ? 'xlsx' : 'docx'];
         } else {
