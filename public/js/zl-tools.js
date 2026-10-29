@@ -11,7 +11,7 @@
   const ZT=window.ZTOOL||{};
   const SLUG=ZT.slug||'', LIVE=!!ZT.live, MULTI=!!ZT.multi;
   const CSRF=ZT.csrf||'';
-  const SRVTOOLS=['pdf-to-word','word-to-pdf','ppt-to-pdf','excel-to-pdf'];
+  const SRVTOOLS=['pdf-to-word','pdf-to-excel','word-to-pdf','ppt-to-pdf','excel-to-pdf'];
   let srvOk=false;
   if(LIVE && SRVTOOLS.includes(SLUG)){
     fetch('/tools/convert-status/'+SLUG).then(r=>r.json()).then(j=>{
@@ -1055,7 +1055,7 @@
     if(res.status===503) throw {offline:true};
     if(!res.ok){ let j=null; try{ j=await res.json(); }catch(_){} throw (j&&(j.error||j.message))||'The server converter could not process this file.'; }
     const blob=await res.blob();
-    download(blob, base(files[0])+'.'+(SLUG==='pdf-to-word'?'docx':'pdf'));
+    download(blob, base(files[0])+'.'+(SLUG==='pdf-to-word'?'docx':(SLUG==='pdf-to-excel'?'xlsx':'pdf')));
     return '<b>Done!</b> Converted with the high-fidelity engine — original layout preserved.';
   }
   const origHtml=go.innerHTML;

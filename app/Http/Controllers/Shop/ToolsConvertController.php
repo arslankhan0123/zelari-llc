@@ -22,6 +22,7 @@ class ToolsConvertController extends Controller
 {
     private const TOOLS = [
         'pdf-to-word'  => ['engine' => 'pdf2docx', 'in' => ['pdf'],           'out' => 'docx'],
+        'pdf-to-excel' => ['engine' => 'adobe',    'in' => ['pdf'],           'out' => 'xlsx'],
         'word-to-pdf'  => ['engine' => 'soffice',  'in' => ['doc', 'docx', 'rtf', 'odt'], 'out' => 'pdf'],
         'ppt-to-pdf'   => ['engine' => 'soffice',  'in' => ['ppt', 'pptx', 'odp'],        'out' => 'pdf'],
         'excel-to-pdf' => ['engine' => 'soffice',  'in' => ['xls', 'xlsx', 'csv', 'ods'], 'out' => 'pdf'],
@@ -50,7 +51,8 @@ class ToolsConvertController extends Controller
             return response()->json(['available' => false]);
         }
         $available = $this->adobeCreds()
-            || ($t['engine'] === 'soffice' ? (bool) $this->findSoffice() : (bool) $this->findPdf2docx());
+            || ($t['engine'] === 'soffice' ? (bool) $this->findSoffice()
+                : ($t['engine'] === 'pdf2docx' ? (bool) $this->findPdf2docx() : false));
 
         return response()->json(['available' => $available]);
     }
@@ -94,6 +96,9 @@ class ToolsConvertController extends Controller
             }
 
             /* 2) Local engines, if installed */
+            if ($t['engine'] === 'adobe') {
+                return response()->json(['error' => 'offline'], 503);
+            }
             if ($t['engine'] === 'soffice') {
                 $bin = $this->findSoffice();
                 if (!$bin) {
@@ -156,9 +161,9 @@ class ToolsConvertController extends Controller
             throw new \RuntimeException('Adobe upload failed (' . $up->status() . ')');
         }
 
-        if ($slug === 'pdf-to-word') {
+        if (str_starts_with($slug, 'pdf-to-')) {
             $op = 'exportpdf';
-            $body = ['assetID' => $assetId, 'targetFormat' => 'docx'];
+            $body = ['assetID' => $assetId, 'targetFormat' => $slug === 'pdf-to-excel' ? 'xlsx' : 'docx'];
         } else {
             $op = 'createpdf';
             $body = ['assetID' => $assetId];
