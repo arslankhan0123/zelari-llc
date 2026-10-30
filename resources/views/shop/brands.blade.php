@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', 'Brands')
+@section('title', 'Shop by Brand - Top Brands & Makers')
 
 @push('styles')
 <style>

@@ -35,6 +35,13 @@ window.zmoney=function(n){var c=window.ZCUR,v=(Number(n)||0)*c.rate,s=v.toLocale
 <meta name="twitter:title" content="@yield('title', 'Shop') · {{ zstore('name','Zelari') }}">
 <meta name="twitter:description" content="@yield('meta_description', zstore('name','Zelari').' — fast worldwide delivery.')">
 <meta name="twitter:image" content="@yield('og_image', asset('images/logo.png'))">
+{{-- SEO: structured data (Organization + WebSite with sitelinks search) --}}
+<script type="application/ld+json">
+{!! json_encode(['@context'=>'https://schema.org','@graph'=>[
+  ['@type'=>'Organization','@id'=>url('/').'#org','name'=>zstore('name','Zelari'),'url'=>url('/'),'logo'=>asset('images/logo.png')],
+  ['@type'=>'WebSite','@id'=>url('/').'#website','url'=>url('/'),'name'=>zstore('name','Zelari'),'publisher'=>['@id'=>url('/').'#org'],'potentialAction'=>['@type'=>'SearchAction','target'=>['@type'=>'EntryPoint','urlTemplate'=>url('/shop').'?q={search_term_string}'],'query-input'=>'required name=search_term_string']],
+]], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -444,8 +451,8 @@ body.drawer-open .drawer{transform:none}
 .ph-crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);margin-bottom:12px}
 .ph-crumb a:hover{color:#fff}
 .ph-crumb i{font-size:9px}
-.ph-content h1{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1px;margin:0 0 8px}
-.ph-content h1 span{background:linear-gradient(90deg,#c7d2fe,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ph-content h1,.ph-content h2{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1px;margin:0 0 8px}
+.ph-content h1 span,.ph-content h2 span{background:linear-gradient(90deg,#c7d2fe,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ph-content p{color:rgba(255,255,255,.75);max-width:560px;margin:0;font-size:15px}
 .ph-art{position:absolute;z-index:2;right:6%;top:50%;transform:translateY(-50%);width:200px;height:200px;transform-style:preserve-3d;animation:floatY 6s ease-in-out infinite}
 .ph-art .cube{position:absolute;inset:30px;border-radius:28px;background:var(--grad);box-shadow:0 30px 60px -20px rgba(249,115,22,.8);transform:rotateX(18deg) rotateY(-24deg)}

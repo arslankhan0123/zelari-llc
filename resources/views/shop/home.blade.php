@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', 'Home')
+@section('title', 'Smart Online Shopping - Deals & Fast Delivery')
 
 @push('styles')
 <style>
@@ -23,8 +23,8 @@
 .hs-content{position:relative;z-index:3;max-width:560px}
 .hs-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px 6px 6px;font-size:12.5px;font-weight:700;color:#fff;margin-bottom:18px;backdrop-filter:blur(8px)}
 .hs-eyebrow b{background:var(--sale);color:#fff;padding:4px 9px;border-radius:999px;font-size:11px}
-.hs h1{font-size:clamp(32px,4.6vw,60px);font-weight:800;line-height:1.05;letter-spacing:-1.8px;margin:0 0 16px;text-transform:uppercase;color:#fff;text-shadow:0 10px 40px rgba(0,0,0,.45)}
-.hs h1 span{background:linear-gradient(90deg,#c7d2fe 0%,#f97316 40%,#f59e0b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 24px rgba(249,115,22,.5))}
+.hs h1,.hs h2{font-size:clamp(32px,4.6vw,60px);font-weight:800;line-height:1.05;letter-spacing:-1.8px;margin:0 0 16px;text-transform:uppercase;color:#fff;text-shadow:0 10px 40px rgba(0,0,0,.45)}
+.hs h1 span,.hs h2 span{background:linear-gradient(90deg,#c7d2fe 0%,#f97316 40%,#f59e0b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 24px rgba(249,115,22,.5))}
 .hs p{font-size:16px;color:rgba(255,255,255,.85);max-width:460px;margin:0 0 28px;line-height:1.65;text-shadow:0 2px 12px rgba(0,0,0,.4)}
 .hs-ctas{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .hs-ghost{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:14.5px;padding:13px 22px;border-radius:12px;border:1.5px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);backdrop-filter:blur(8px);transition:.2s}
@@ -237,7 +237,7 @@
           <span class="hs-orb" style="width:260px;height:260px;background:#f59e0b;right:30%;bottom:-120px;animation-delay:-7s"></span>
           <div class="hs-content">
             <div class="hs-eyebrow" data-swiper-parallax="-120"><b>{{ $s['pill'] }}</b> {{ $s['eyebrow'] }}</div>
-            <h1 data-swiper-parallax="-220">{!! $s['h'] !!}</h1>
+            @if($i === 0)<h1 data-swiper-parallax="-220">{!! $s['h'] !!}</h1>@else<h2 data-swiper-parallax="-220">{!! $s['h'] !!}</h2>@endif
             <p data-swiper-parallax="-320">{{ $s['p'] }}</p>
             <div class="hs-ctas" data-swiper-parallax="-420">
               <a href="{{ $s['href'] }}" class="btn-sale" style="padding:14px 28px;font-size:15px">{{ $s['btn'] }} <i class="fa-solid fa-arrow-right"></i></a>

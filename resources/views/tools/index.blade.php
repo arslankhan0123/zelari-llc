@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', 'PDF Tools')
+@section('title', 'Free Online PDF Tools - Merge, Split & More')
 @section('meta_description', 'Every tool you need to work with PDFs in one place — merge, split, compress, convert, rotate, unlock and watermark PDFs with just a few clicks.')
 
 @push('styles')

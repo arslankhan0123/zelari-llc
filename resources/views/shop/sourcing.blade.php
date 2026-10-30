@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', 'Product Sourcing')
+@section('title', 'Product Sourcing - We Find It For You')
 
 @push('styles')
 <style>
