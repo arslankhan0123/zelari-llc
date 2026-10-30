@@ -579,9 +579,9 @@ body.drawer-open .drawer{transform:none}
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
-        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled() || \App\Support\ImageTools::enabled() || \App\Support\Marketing::wheelEnabled())
+        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled() || \App\Support\ImageTools::enabled() || \App\Support\TextTools::enabled() || \App\Support\DevTools::enabled() || \App\Support\QrTools::enabled() || \App\Support\ColorTools::enabled() || \App\Support\RandomTools::enabled() || \App\Support\SellerTools::enabled() || \App\Support\Marketing::wheelEnabled())
         <li class="nav-item">
-          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : (\App\Support\Calculators::enabled() ? route('calculators.index') : (\App\Support\ImageTools::enabled() ? route('imgtools.index') : route('spinwheel.index'))) }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*')||request()->routeIs('imgtools.*')||request()->routeIs('spinwheel.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : (\App\Support\Calculators::enabled() ? route('calculators.index') : (\App\Support\ImageTools::enabled() ? route('imgtools.index') : route('spinwheel.index'))) }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*')||request()->routeIs('imgtools.*')||request()->routeIs('texttools.*')||request()->routeIs('devtools.*')||request()->routeIs('qrtools.*')||request()->routeIs('colortools.*')||request()->routeIs('randomtools.*')||request()->routeIs('sellertools.*')||request()->routeIs('spinwheel.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd tools-dd">
             @if(\App\Support\PdfTools::enabled())
             <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a>
@@ -591,6 +591,24 @@ body.drawer-open .drawer{transform:none}
             @endif
             @if(\App\Support\ImageTools::enabled())
             <a href="{{ route('imgtools.index') }}"><span class="ti"><i class="fa-solid fa-image"></i></span> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\TextTools::enabled())
+            <a href="{{ route('texttools.index') }}"><span class="ti"><i class="fa-solid fa-font"></i></span> Text Tools <span class="n">{{ count(\App\Support\TextTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\DevTools::enabled())
+            <a href="{{ route('devtools.index') }}"><span class="ti"><i class="fa-solid fa-code"></i></span> Developer Tools <span class="n">{{ count(\App\Support\DevTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\QrTools::enabled())
+            <a href="{{ route('qrtools.index') }}"><span class="ti"><i class="fa-solid fa-qrcode"></i></span> QR &amp; Barcode <span class="n">{{ count(\App\Support\QrTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\ColorTools::enabled())
+            <a href="{{ route('colortools.index') }}"><span class="ti"><i class="fa-solid fa-palette"></i></span> Color Tools <span class="n">{{ count(\App\Support\ColorTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\RandomTools::enabled())
+            <a href="{{ route('randomtools.index') }}"><span class="ti"><i class="fa-solid fa-shuffle"></i></span> Random Tools <span class="n">{{ count(\App\Support\RandomTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\SellerTools::enabled())
+            <a href="{{ route('sellertools.index') }}"><span class="ti"><i class="fa-solid fa-store"></i></span> Seller Tools <span class="n">{{ count(\App\Support\SellerTools::all()) }}</span></a>
             @endif
             @if(\App\Support\Marketing::wheelEnabled())
             <a href="{{ route('spinwheel.index') }}"><span class="ti"><i class="fa-solid fa-dharmachakra"></i></span> Spin &amp; Win</a>
@@ -640,6 +658,24 @@ body.drawer-open .drawer{transform:none}
         @endif
         @if(\App\Support\ImageTools::enabled())
         <div class="ctree-item"><a href="{{ route('imgtools.index') }}"><i class="fa-solid fa-image"></i> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\TextTools::enabled())
+        <div class="ctree-item"><a href="{{ route('texttools.index') }}"><i class="fa-solid fa-font"></i> Text Tools <span class="n">{{ count(\App\Support\TextTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\DevTools::enabled())
+        <div class="ctree-item"><a href="{{ route('devtools.index') }}"><i class="fa-solid fa-code"></i> Developer Tools <span class="n">{{ count(\App\Support\DevTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\QrTools::enabled())
+        <div class="ctree-item"><a href="{{ route('qrtools.index') }}"><i class="fa-solid fa-qrcode"></i> QR &amp; Barcode <span class="n">{{ count(\App\Support\QrTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\ColorTools::enabled())
+        <div class="ctree-item"><a href="{{ route('colortools.index') }}"><i class="fa-solid fa-palette"></i> Color Tools <span class="n">{{ count(\App\Support\ColorTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\RandomTools::enabled())
+        <div class="ctree-item"><a href="{{ route('randomtools.index') }}"><i class="fa-solid fa-shuffle"></i> Random Tools <span class="n">{{ count(\App\Support\RandomTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\SellerTools::enabled())
+        <div class="ctree-item"><a href="{{ route('sellertools.index') }}"><i class="fa-solid fa-store"></i> Seller Tools <span class="n">{{ count(\App\Support\SellerTools::all()) }}</span></a></div>
         @endif
         @if(\App\Support\Marketing::wheelEnabled())
         <div class="ctree-item"><a href="{{ route('spinwheel.index') }}"><i class="fa-solid fa-dharmachakra"></i> Spin &amp; Win</a></div>
