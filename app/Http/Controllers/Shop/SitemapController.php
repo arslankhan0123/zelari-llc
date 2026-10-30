@@ -68,25 +68,23 @@ class SitemapController extends Controller
                 $add($loc, null, $freq, $priority);
             }
 
-            // 2) Live tool DETAIL pages (parameterized, so added explicitly, gated by section).
-            if (PdfTools::enabled()) {
-                foreach (PdfTools::all() as $slug => $t) {
+            // 2) Live tool DETAIL pages across every tool section (parameterized).
+            $suites = [
+                [\App\Support\PdfTools::class, 'tools.show'],
+                [\App\Support\Calculators::class, 'calculators.show'],
+                [\App\Support\ImageTools::class, 'imgtools.show'],
+                [\App\Support\TextTools::class, 'texttools.show'],
+                [\App\Support\DevTools::class, 'devtools.show'],
+                [\App\Support\QrTools::class, 'qrtools.show'],
+                [\App\Support\ColorTools::class, 'colortools.show'],
+                [\App\Support\RandomTools::class, 'randomtools.show'],
+                [\App\Support\SellerTools::class, 'sellertools.show'],
+            ];
+            foreach ($suites as [$cls, $rn]) {
+                if (!$cls::enabled()) { continue; }
+                foreach ($cls::all() as $s => $t) {
                     if ($t['live'] ?? false) {
-                        $add(route('tools.show', $slug), null, 'monthly', '0.6');
-                    }
-                }
-            }
-            if (Calculators::enabled()) {
-                foreach (Calculators::all() as $slug => $t) {
-                    if ($t['live'] ?? false) {
-                        $add(route('calculators.show', $slug), null, 'monthly', '0.6');
-                    }
-                }
-            }
-            if (ImageTools::enabled()) {
-                foreach (ImageTools::all() as $slug => $t) {
-                    if ($t['live'] ?? false) {
-                        $add(route('imgtools.show', $slug), null, 'monthly', '0.6');
+                        $add(route($rn, $s), null, 'monthly', '0.6');
                     }
                 }
             }

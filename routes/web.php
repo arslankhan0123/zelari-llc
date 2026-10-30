@@ -42,6 +42,19 @@ Route::get('/calculators', [\App\Http\Controllers\Shop\CalculatorsController::cl
 Route::get('/calculators/{slug}', [\App\Http\Controllers\Shop\CalculatorsController::class, 'show'])->name('calculators.show');
 Route::get('/image-tools', [\App\Http\Controllers\Shop\ImageToolsController::class, 'index'])->name('imgtools.index');
 Route::get('/image-tools/{slug}', [\App\Http\Controllers\Shop\ImageToolsController::class, 'show'])->name('imgtools.show');
+Route::get('/text-tools', [\App\Http\Controllers\Shop\TextToolsController::class, 'index'])->name('texttools.index');
+Route::get('/text-tools/{slug}', [\App\Http\Controllers\Shop\TextToolsController::class, 'show'])->name('texttools.show');
+// ZT_PUBLIC_ANCHOR
+Route::get('/seller-tools', [\App\Http\Controllers\Shop\SellerToolsController::class, 'index'])->name('sellertools.index');
+Route::get('/seller-tools/{slug}', [\App\Http\Controllers\Shop\SellerToolsController::class, 'show'])->name('sellertools.show');
+Route::get('/random-tools', [\App\Http\Controllers\Shop\RandomToolsController::class, 'index'])->name('randomtools.index');
+Route::get('/random-tools/{slug}', [\App\Http\Controllers\Shop\RandomToolsController::class, 'show'])->name('randomtools.show');
+Route::get('/color-tools', [\App\Http\Controllers\Shop\ColorToolsController::class, 'index'])->name('colortools.index');
+Route::get('/color-tools/{slug}', [\App\Http\Controllers\Shop\ColorToolsController::class, 'show'])->name('colortools.show');
+Route::get('/qr-tools', [\App\Http\Controllers\Shop\QrToolsController::class, 'index'])->name('qrtools.index');
+Route::get('/qr-tools/{slug}', [\App\Http\Controllers\Shop\QrToolsController::class, 'show'])->name('qrtools.show');
+Route::get('/dev-tools', [\App\Http\Controllers\Shop\DevToolsController::class, 'index'])->name('devtools.index');
+Route::get('/dev-tools/{slug}', [\App\Http\Controllers\Shop\DevToolsController::class, 'show'])->name('devtools.show');
 Route::post('/coupon/apply', [\App\Http\Controllers\Shop\MarketingController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/coupon/remove', [\App\Http\Controllers\Shop\MarketingController::class, 'removeCoupon'])->name('coupon.remove');
 Route::get('/spin-wheel', [\App\Http\Controllers\Shop\MarketingController::class, 'page'])->name('spinwheel.index');
@@ -128,6 +141,38 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::post('/master', [\App\Http\Controllers\Admin\ImageToolsController::class, 'master'])->name('master');
     });
 
+    Route::prefix('text-tools')->name('texttools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TextToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\TextToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\TextToolsController::class, 'master'])->name('master');
+    });
+
+    // ZT_ADMIN_ANCHOR
+    Route::prefix('seller-tools')->name('sellertools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SellerToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\SellerToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\SellerToolsController::class, 'master'])->name('master');
+    });
+    Route::prefix('random-tools')->name('randomtools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RandomToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\RandomToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\RandomToolsController::class, 'master'])->name('master');
+    });
+    Route::prefix('color-tools')->name('colortools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ColorToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\ColorToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\ColorToolsController::class, 'master'])->name('master');
+    });
+    Route::prefix('qr-tools')->name('qrtools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\QrToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\QrToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\QrToolsController::class, 'master'])->name('master');
+    });
+    Route::prefix('dev-tools')->name('devtools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\DevToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\DevToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\DevToolsController::class, 'master'])->name('master');
+    });
     Route::prefix('coupons')->name('coupons.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\CouponsController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Admin\CouponsController::class, 'store'])->name('store');
