@@ -60,6 +60,55 @@
     </form>
   </div>
 
+  {{-- ───── Prize wheel segments ───── --}}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6" x-data="segEditor(@js($segments))">
+    <div class="flex items-center justify-between mb-1">
+      <div class="font-bold text-gray-800"><i class="fa-solid fa-dharmachakra text-indigo-500 mr-1"></i> Prize segments</div>
+      <span class="text-xs text-gray-400">2&ndash;12 segments &middot; higher weight = more likely</span>
+    </div>
+    <p class="text-sm text-gray-500 mb-4">These are the slices shown on the wheel. “Try Again” (type <b>None</b>) means no prize. Weight controls how often each one is landed on.</p>
+
+    <form method="POST" action="{{ route('admin.coupons.segments') }}">
+      @csrf
+      <div class="hidden md:grid grid-cols-12 gap-2 px-1 mb-1 text-[11px] font-bold text-gray-400">
+        <div class="col-span-3">Label</div><div class="col-span-2">Type</div><div class="col-span-2">Value</div><div class="col-span-2">Weight</div><div class="col-span-2">Color</div><div class="col-span-1"></div>
+      </div>
+      <div class="space-y-2">
+        <template x-for="(seg,i) in segs" :key="i">
+          <div class="grid grid-cols-2 md:grid-cols-12 gap-2 items-center border border-gray-100 rounded-lg p-2 md:border-0 md:p-0">
+            <input :name="`segments[${i}][label]`" x-model="seg.label" maxlength="30" placeholder="5% OFF" class="col-span-2 md:col-span-3 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select :name="`segments[${i}][type]`" x-model="seg.type" class="col-span-1 md:col-span-2 border border-gray-200 rounded-lg px-2 py-2 text-sm">
+              <option value="percent">Percent %</option>
+              <option value="fixed">Fixed $</option>
+              <option value="freeship">Free shipping</option>
+              <option value="none">None (lose)</option>
+            </select>
+            <input :name="`segments[${i}][value]`" x-model="seg.value" type="number" min="0" step="0.01" :disabled="seg.type==='freeship'||seg.type==='none'" class="col-span-1 md:col-span-2 border border-gray-200 rounded-lg px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-400">
+            <input :name="`segments[${i}][weight]`" x-model="seg.weight" type="number" min="0" step="1" class="col-span-1 md:col-span-2 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <div class="col-span-1 md:col-span-2 flex items-center gap-2">
+              <input :name="`segments[${i}][color]`" x-model="seg.color" type="color" class="w-9 h-9 border border-gray-200 rounded-lg p-0.5 bg-white cursor-pointer">
+              <span class="w-6 h-6 rounded" :style="`background:${seg.color}`"></span>
+            </div>
+            <button type="button" @click="segs.splice(i,1)" class="col-span-2 md:col-span-1 text-gray-300 hover:text-red-500 md:text-right" title="Remove"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        </template>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-4">
+        <button type="button" @click="segs.length<12 && segs.push({label:'',type:'percent',value:5,weight:10,color:'#6366f1'})" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"><i class="fa-solid fa-plus mr-1"></i> Add segment</button>
+        <span class="text-xs text-gray-400" x-show="segs.length>=12">Maximum 12 segments</span>
+        <div class="flex-1"></div>
+        <button type="submit" :disabled="segs.length<2" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 rounded-lg">Save segments</button>
+      </div>
+    </form>
+
+    <form method="POST" action="{{ route('admin.coupons.segments') }}" onsubmit="return confirm('Reset the wheel to the default segments (3% / 5% / 8% / 10% / Free shipping / Try Again)?')" class="mt-3">
+      @csrf
+      <input type="hidden" name="reset" value="1">
+      <button class="text-xs font-semibold text-gray-400 hover:text-gray-600"><i class="fa-solid fa-rotate-left mr-1"></i> Reset to default</button>
+      @if($isCustomSegments)<span class="text-xs text-amber-600 ml-2">Custom segments are active</span>@else<span class="text-xs text-gray-400 ml-2">Using the default segments</span>@endif
+    </form>
+  </div>
+
   {{-- ───── Create coupon ───── --}}
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
     <div class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-ticket text-amber-500 mr-1"></i> Create a coupon</div>
@@ -191,6 +240,9 @@
 
 @push('scripts')
 <script>
+function segEditor(initial){
+  return { segs: (initial||[]).map(s=>({label:s.label,type:s.type,value:s.value,weight:s.weight,color:s.color})) };
+}
 (function(){
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
   // type → value label / disable value for freeship

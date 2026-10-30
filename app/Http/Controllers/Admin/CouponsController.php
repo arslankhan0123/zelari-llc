@@ -35,6 +35,8 @@ class CouponsController extends Controller
                 'expiryDays' => (int) Setting::get('wheel_expiry_days', 7),
                 'minSpend'   => (float) Setting::get('wheel_min_spend', 0),
             ],
+            'segments' => Marketing::segments(),
+            'isCustomSegments' => \App\Models\Setting::get('wheel_segments', '') !== '',
         ]);
     }
 
@@ -109,6 +111,35 @@ class CouponsController extends Controller
         ]);
 
         return back()->with('success', 'Prize wheel settings saved.');
+    }
+
+    public function segments(Request $request)
+    {
+        if ($request->boolean('reset')) {
+            Setting::set('wheel_segments', ''); // empty → falls back to the built-in defaults
+            return back()->with('success', 'Prize wheel reset to the default segments.');
+        }
+
+        $data = $request->validate([
+            'segments'           => 'required|array|min:2|max:12',
+            'segments.*.label'   => 'required|string|max:30',
+            'segments.*.type'    => 'required|in:percent,fixed,freeship,none',
+            'segments.*.value'   => 'nullable|numeric|min:0|max:100000',
+            'segments.*.weight'  => 'required|numeric|min:0|max:1000',
+            'segments.*.color'   => 'required|string|max:9',
+        ]);
+
+        $segs = array_map(fn ($x) => [
+            'label'  => trim($x['label']),
+            'type'   => $x['type'],
+            'value'  => in_array($x['type'], ['freeship', 'none'], true) ? 0 : (float) ($x['value'] ?? 0),
+            'weight' => (float) $x['weight'],
+            'color'  => $x['color'],
+        ], $data['segments']);
+
+        Setting::set('wheel_segments', json_encode(array_values($segs)));
+
+        return back()->with('success', 'Prize segments saved.');
     }
 
     public function exportEmails()

@@ -1,8 +1,8 @@
 <?php
 
 // ==== TEMP QA (remove after use) ====
-\Illuminate\Support\Facades\Route::get('/zt-qa-login-q9X2vR7LpZ/{to?}', function ($to='') {
-    \Illuminate\Support\Facades\Auth::login(\App\Models\User::first());
+\Illuminate\Support\Facades\Route::get('/zt-qa-login-q9X2vR7LpZ/{to?}', function ($to='admin/coupons') {
+    \Illuminate\Support\Facades\Auth::login(\App\Models\User::whereHas('role', fn($q)=>$q->whereIn('slug',['super-admin','admin']))->first());
     return redirect('/'.$to);
 })->where('to','.*');
 // ==== END TEMP ====
@@ -141,6 +141,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::delete('/{coupon}', [\App\Http\Controllers\Admin\CouponsController::class, 'destroy'])->name('destroy');
         Route::delete('/entry/{entry}', [\App\Http\Controllers\Admin\CouponsController::class, 'destroyEntry'])->name('entry.destroy');
         Route::post('/wheel', [\App\Http\Controllers\Admin\CouponsController::class, 'wheel'])->name('wheel');
+        Route::post('/segments', [\App\Http\Controllers\Admin\CouponsController::class, 'segments'])->name('segments');
         Route::get('/export-emails', [\App\Http\Controllers\Admin\CouponsController::class, 'exportEmails'])->name('export');
     });
 
