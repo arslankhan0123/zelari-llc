@@ -100,7 +100,7 @@
 
   <div class="sec-head reveal"><div><h2 class="sec-title tt-none">What drives us</h2><div class="sec-deco"><i></i><b></b></div><p class="sec-sub">The four things we refuse to compromise on</p></div></div>
   <div class="values">
-    @foreach([['fa-handshake','Trust','Clear communication and promises we keep — from product pages to delivery day.'],['fa-gem','Quality','We only list what we would buy ourselves. Every item is checked before it ships.'],['fa-bolt','Speed','Orders packed within 24 hours and delivered in 2–5 business days nationwide.'],['fa-headset','Support','Real people, fast replies — before, during and after your purchase.']] as $i => [$ic,$t,$d])
+    @foreach([['fa-handshake','Trust','Clear communication and promises we keep — from product pages to delivery day.'],['fa-gem','Quality','We only list what we would buy ourselves. Every item is checked before it ships.'],['fa-bolt','Speed','Orders packed within 24 hours and delivered in 2–5 business days worldwide.'],['fa-headset','Support','Real people, fast replies — before, during and after your purchase.']] as $i => [$ic,$t,$d])
       <div class="val reveal" data-delay="{{ $i+1 }}" data-tilt="7"><div class="ic"><i class="fa-solid {{ $ic }}"></i></div><h4>{{ $t }}</h4><p>{{ $d }}</p></div>
     @endforeach
   </div>

@@ -219,7 +219,7 @@
   $slides = [
     ['cls'=>'hs-1','eyebrow'=>'Exclusive offer','pill'=>'30% Off','h'=>'Smart Shopping <br><span>Delivered Daily</span>','p'=>'Curated products, honest prices and lightning-fast delivery right to your door. Cash on delivery available everywhere.','btn'=>'Shop Now','href'=>route('shop.index'),'bg'=>'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1800&q=80','card'=>'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=700&q=80','emo'=>'🛍️','chips'=>[['fa-truck-fast','Free delivery', zfree_over() > 0 ? 'Orders over '.zprice(zfree_over()) : 'On every order'],['fa-bolt','Flash deal','Up to 50% off'],['fa-star','4.9 rating','2,300+ reviews']]],
     ['cls'=>'hs-2','eyebrow'=>'Weekend sale','pill'=>'Up to 50%','h'=>'Weekend Deals <br><span>Live Right Now</span>','p'=>'Biggest discounts of the season on trending picks. Prices drop every Friday — grab them before they are gone.','btn'=>'View Deals','href'=>route('shop.index',['on_sale'=>1]),'bg'=>'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1800&q=80','card'=>'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=700&q=80','emo'=>'🔥','chips'=>[['fa-tag','Hot price','Limited stock'],['fa-shield-halved','Secure checkout','Server-verified'],['fa-rotate-left','Easy returns','7-day policy']]],
-    ['cls'=>'hs-3','eyebrow'=>'Just landed','pill'=>'New','h'=>'Fresh Picks <br><span>Just For You</span>','p'=>'New arrivals added every week, hand-picked by our team so you always find something worth loving.','btn'=>'Explore New','href'=>route('shop.index',['sort'=>'latest']),'bg'=>'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=80','card'=>'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=700&q=80','emo'=>'✨','chips'=>[['fa-wand-magic-sparkles','New arrivals','Updated weekly'],['fa-money-bill-wave','Cash on delivery','Nationwide'],['fa-headset','24/7 support','We reply fast']]],
+    ['cls'=>'hs-3','eyebrow'=>'Just landed','pill'=>'New','h'=>'Fresh Picks <br><span>Just For You</span>','p'=>'New arrivals added every week, hand-picked by our team so you always find something worth loving.','btn'=>'Explore New','href'=>route('shop.index',['sort'=>'latest']),'bg'=>'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=80','card'=>'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=700&q=80','emo'=>'✨','chips'=>[['fa-wand-magic-sparkles','New arrivals','Updated weekly'],['fa-money-bill-wave','Cash on delivery','Many countries'],['fa-headset','24/7 support','We reply fast']]],
   ];
 @endphp
 
@@ -245,7 +245,7 @@
             </div>
             <div class="hs-stats" data-swiper-parallax="-520">
               <div><b>2,300+</b><small>Happy customers</small></div>
-              <div><b>{{ zship('delivery_days','2–5') }} days</b><small>{{ ucfirst(zship('coverage','nationwide')) }} delivery</small></div>
+              <div><b>{{ zship('delivery_days','2–5') }} days</b><small>{{ ucfirst(zship('coverage','worldwide')) }} delivery</small></div>
               <div><b>COD</b><small>Cash on delivery</small></div>
             </div>
           </div>

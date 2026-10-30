@@ -141,7 +141,7 @@
   <div class="bpartner reveal">
     <div>
       <h2>Make it. We'll sell it.</h2>
-      <p>Are you a manufacturer or distributor? List your products with {{ zstore('name', 'Zelari') }} and reach customers {{ zship('coverage', 'nationwide') }} — we handle the storefront, payments and delivery.</p>
+      <p>Are you a manufacturer or distributor? List your products with {{ zstore('name', 'Zelari') }} and reach customers {{ zship('coverage', 'worldwide') }} — we handle the storefront, payments and delivery.</p>
     </div>
     <div class="pacts">
       <a href="{{ route('contact') }}" class="bp-btn"><i class="fa-solid fa-handshake"></i> Become a partner</a>
