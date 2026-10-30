@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WheelEntry extends Model
 {
-    protected $fillable = ['email', 'prize_label', 'coupon_id', 'ip'];
+    protected $fillable = ['email', 'prize_label', 'coupon_id', 'ip', 'user_id'];
 
     public function coupon()
     {

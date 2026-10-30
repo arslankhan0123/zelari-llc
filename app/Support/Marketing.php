@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Coupon;
 use App\Models\WheelEntry;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 /**
@@ -29,14 +30,12 @@ class Marketing
     public static function defaultSegments(): array
     {
         return [
-            ['label' => '5% OFF',        'type' => 'percent',  'value' => 5,  'weight' => 20, 'color' => '#6366f1'],
-            ['label' => '10% OFF',       'type' => 'percent',  'value' => 10, 'weight' => 18, 'color' => '#ec4899'],
+            ['label' => '3% OFF',        'type' => 'percent',  'value' => 3,  'weight' => 24, 'color' => '#6366f1'],
+            ['label' => '5% OFF',        'type' => 'percent',  'value' => 5,  'weight' => 22, 'color' => '#ec4899'],
+            ['label' => '8% OFF',        'type' => 'percent',  'value' => 8,  'weight' => 14, 'color' => '#8b5cf6'],
+            ['label' => '10% OFF',       'type' => 'percent',  'value' => 10, 'weight' => 10, 'color' => '#f59e0b'],
             ['label' => 'Free Shipping', 'type' => 'freeship', 'value' => 0,  'weight' => 14, 'color' => '#14b8a6'],
-            ['label' => '15% OFF',       'type' => 'percent',  'value' => 15, 'weight' => 12, 'color' => '#f59e0b'],
-            ['label' => 'Try Again',     'type' => 'none',     'value' => 0,  'weight' => 10, 'color' => '#64748b'],
-            ['label' => '$5 OFF',        'type' => 'fixed',    'value' => 5,  'weight' => 14, 'color' => '#8b5cf6'],
-            ['label' => '20% OFF',       'type' => 'percent',  'value' => 20, 'weight' => 7,  'color' => '#ef4444'],
-            ['label' => 'Try Again',     'type' => 'none',     'value' => 0,  'weight' => 5,  'color' => '#475569'],
+            ['label' => 'Try Again',     'type' => 'none',     'value' => 0,  'weight' => 16, 'color' => '#64748b'],
         ];
     }
 
@@ -88,11 +87,11 @@ class Marketing
         return count($segments) - 1;
     }
 
-    /** Has this email already spun? (one spin per email) */
-    public static function alreadySpun(string $email): bool
+    /** Has this user already spun? (one spin per account) */
+    public static function alreadySpun(User $user): bool
     {
         try {
-            return WheelEntry::where('email', $email)->exists();
+            return WheelEntry::where('user_id', $user->id)->exists();
         } catch (\Throwable $e) {
             return false;
         }
@@ -102,14 +101,14 @@ class Marketing
      * Run a spin for an email: pick a prize, create a coupon if they won,
      * record the entry. Returns the result payload for the frontend.
      */
-    public static function spin(string $email, ?string $ip = null): array
+    public static function spin(User $user, ?string $ip = null): array
     {
         $segments = self::segments();
         $idx      = self::pickSegment($segments);
         $seg      = $segments[$idx];
         $won      = ($seg['type'] ?? 'none') !== 'none';
 
-        $couponId = null;
+        $coupon   = null;
         $code     = null;
         $expires  = null;
 
@@ -129,15 +128,16 @@ class Marketing
                 'expires_at'   => $expires,
                 'active'       => true,
                 'source'       => 'wheel',
-                'email'        => $email,
+                'email'        => $user->email,
+                'user_id'      => $user->id,
             ]);
-            $couponId = $coupon->id;
         }
 
         WheelEntry::create([
-            'email'       => $email,
+            'email'       => $user->email,
+            'user_id'     => $user->id,
             'prize_label' => $seg['label'] ?? '',
-            'coupon_id'   => $couponId,
+            'coupon_id'   => $coupon?->id,
             'ip'          => $ip,
         ]);
 
@@ -146,6 +146,7 @@ class Marketing
             'won'       => $won,
             'label'     => $seg['label'] ?? '',
             'code'      => $code,
+            'coupon'    => $coupon,
             'expiresAt' => $expires ? $expires->toDateString() : null,
         ];
     }
@@ -166,13 +167,21 @@ class Marketing
      * Returns ['ok'=>true, 'coupon'=>Coupon, 'discount'=>float(USD), 'freeship'=>bool, 'label'=>string]
      * or ['ok'=>false, 'message'=>string].
      */
-    public static function validateCoupon(string $code, float $subtotalUsd, ?string $email = null): array
+    public static function validateCoupon(string $code, float $subtotalUsd, ?int $userId = null): array
     {
         $code   = trim(strtoupper($code));
         $coupon = Coupon::whereRaw('UPPER(code) = ?', [$code])->first();
 
         if (!$coupon || !$coupon->active) {
             return ['ok' => false, 'message' => 'This coupon code is not valid.'];
+        }
+        if ($coupon->user_id !== null) {
+            if ($userId === null) {
+                return ['ok' => false, 'message' => 'Please log in to use this coupon — it is tied to an account.'];
+            }
+            if ((int) $coupon->user_id !== (int) $userId) {
+                return ['ok' => false, 'message' => 'This coupon belongs to a different account.'];
+            }
         }
         if ($coupon->expires_at && $coupon->expires_at->isPast()) {
             return ['ok' => false, 'message' => 'This coupon has expired.'];
@@ -201,10 +210,34 @@ class Marketing
         return [
             'ok'       => true,
             'coupon'   => $coupon,
-            'discount' => $discount,
+            'discount' => $discount,   // USD, for display only
             'freeship' => $freeship,
             'label'    => self::couponLabel($coupon),
         ];
+    }
+
+    /**
+     * The discount to take off, computed directly in the store's base currency
+     * so percent coupons are exact (no USD-cents round-trip). Fixed coupons and
+     * the percent cap are defined in USD and converted with zusd().
+     */
+    public static function discountBase(array $res, float $subtotalBase): float
+    {
+        if (!($res['ok'] ?? false) || ($res['freeship'] ?? false)) {
+            return 0.0;
+        }
+        $c = $res['coupon'];
+        $d = 0.0;
+        if ($c->type === 'percent') {
+            $d = $subtotalBase * ((float) $c->value) / 100;
+            if ($c->max_discount !== null) {
+                $d = min($d, (float) zusd((float) $c->max_discount));
+            }
+        } elseif ($c->type === 'fixed') {
+            $d = (float) zusd((float) $c->value);
+        }
+
+        return round(min($d, $subtotalBase), 2);
     }
 
     public static function couponLabel(Coupon $c): string

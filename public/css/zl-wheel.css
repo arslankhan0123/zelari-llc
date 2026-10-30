@@ -1,0 +1,23 @@
+:root{--zw-gold:#fbbf24;--zw-gold2:#f59e0b;--zw-ink:#1e1b4b}
+/* shared wheel component (used in the popup and on the spin page) */
+.zw-wheelwrap{position:relative;width:340px;height:340px;max-width:100%;margin:0 auto}
+.zw-canvas{width:100%;height:auto;filter:drop-shadow(0 14px 30px rgba(0,0,0,.45));transition:transform 5s cubic-bezier(.17,.67,.2,1)}
+.zw-pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:26px solid var(--zw-gold);z-index:2;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.zw-hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--zw-ink);font-size:22px;box-shadow:0 4px 14px rgba(0,0,0,.35);z-index:2}
+.zw-panel{color:#fff;display:flex;flex-direction:column;justify-content:center}
+.zw-badge{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.5);color:var(--zw-gold);font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:14px}
+.zw-title{font-size:clamp(22px,3vw,28px);font-weight:800;line-height:1.15;margin:0 0 10px}
+.zw-sub{color:rgba(255,255,255,.76);font-size:14px;line-height:1.6;margin:0 0 18px}
+.zw-err{color:#fda4af;font-size:12.5px;font-weight:600;min-height:16px;margin:8px 2px 0}
+.zw-spin{width:100%;margin-top:4px;border:0;background:linear-gradient(90deg,var(--zw-gold),var(--zw-gold2));color:var(--zw-ink);font-weight:800;font-family:inherit;font-size:15px;letter-spacing:.03em;padding:14px;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:.2s;text-decoration:none}
+.zw-spin:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.zw-spin:disabled{opacity:.6;cursor:wait;transform:none}
+.zw-fine{display:block;color:rgba(255,255,255,.5);font-size:11px;line-height:1.5;margin-top:14px}
+.zw-result-ic{font-size:40px;color:var(--zw-gold);margin-bottom:8px}
+.zw-code{display:flex;gap:8px;align-items:stretch;margin:4px 0 2px}
+.zw-code code{flex:1;background:rgba(255,255,255,.12);border:1.5px dashed var(--zw-gold);border-radius:11px;padding:13px;font-size:19px;font-weight:800;letter-spacing:.08em;text-align:center;color:#fff}
+.zw-code button{border:0;background:var(--zw-gold);color:var(--zw-ink);font-weight:800;font-family:inherit;padding:0 16px;border-radius:11px;cursor:pointer;font-size:13px;white-space:nowrap}
+.zw-code button:hover{filter:brightness(1.07)}
+.zw-shop{display:inline-block;margin-top:16px;width:100%;box-sizing:border-box;text-align:center;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-weight:700;font-family:inherit;font-size:14px;padding:12px;border-radius:12px;cursor:pointer;text-decoration:none;transition:.2s}
+.zw-shop:hover{background:rgba(255,255,255,.12)}
+@media(prefers-reduced-motion:reduce){.zw-canvas{transition:transform 1.2s ease-out}}

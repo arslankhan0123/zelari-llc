@@ -188,16 +188,15 @@ class CheckoutController extends Controller
                     try {
                         $rate   = (float) (\App\Support\Currency::all()['USD']['rate'] ?? 1); // base -> USD
                         $subUsd = (float) $subtotal * ($rate > 0 ? $rate : 1);
-                        $cRes   = \App\Support\Marketing::validateCoupon($couponCode, $subUsd, $request->email);
+                        $cRes   = \App\Support\Marketing::validateCoupon($couponCode, $subUsd, optional($request->user())->id);
                         if ($cRes['ok']) {
                             $couponModel = \App\Models\Coupon::lockForUpdate()->find($cRes['coupon']->id);
                             if ($couponModel && $couponModel->active
                                 && !($couponModel->usage_limit !== null && $couponModel->used_count >= $couponModel->usage_limit)) {
                                 if ($cRes['freeship']) {
-                                    $discount    = $shippingFee;
-                                    $shippingFee = 0.0;
+                                    $shippingFee = 0.0; // free shipping — nothing taken off the subtotal
                                 } else {
-                                    $discount = min((float) zusd($cRes['discount']), (float) $subtotal);
+                                    $discount = \App\Support\Marketing::discountBase($cRes, (float) $subtotal);
                                 }
                             } else {
                                 $couponModel = null;

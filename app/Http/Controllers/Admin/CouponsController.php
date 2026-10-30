@@ -52,7 +52,7 @@ class CouponsController extends Controller
 
         $code = strtoupper(trim($data['code'] ?? '')) ?: Marketing::uniqueCode('PROMO');
         if (Coupon::whereRaw('UPPER(code)=?', [$code])->exists()) {
-            return back()->with('admin_error', 'A coupon with that code already exists.');
+            return back()->with('error', 'A coupon with that code already exists.');
         }
 
         Coupon::create([
@@ -67,7 +67,7 @@ class CouponsController extends Controller
             'source'       => 'manual',
         ]);
 
-        return back()->with('admin_ok', 'Coupon ' . $code . ' created.');
+        return back()->with('success', 'Coupon ' . $code . ' created.');
     }
 
     public function toggle(Coupon $coupon)
@@ -78,8 +78,16 @@ class CouponsController extends Controller
 
     public function destroy(Coupon $coupon)
     {
+        // remove the related wheel entries too, so no orphaned rows are left behind
+        $coupon->entries()->delete();
         $coupon->delete();
-        return back()->with('admin_ok', 'Coupon deleted.');
+        return back()->with('success', 'Coupon and its related data were deleted.');
+    }
+
+    public function destroyEntry(WheelEntry $entry)
+    {
+        $entry->delete();
+        return back()->with('success', 'Wheel entry removed.');
     }
 
     public function wheel(Request $request)
@@ -100,7 +108,7 @@ class CouponsController extends Controller
             'wheel_min_spend'   => (string) ($data['min_spend'] ?? 0),
         ]);
 
-        return back()->with('admin_ok', 'Prize wheel settings saved.');
+        return back()->with('success', 'Prize wheel settings saved.');
     }
 
     public function exportEmails()

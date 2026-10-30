@@ -695,7 +695,7 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
-        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*')) ? 'true' : 'false' }},
+        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*') || request()->routeIs('admin.coupons.*')) ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
@@ -854,7 +854,7 @@
             <!-- Tools -->
             <div>
                 <button @click="toolsOpen = !toolsOpen"
-                    class="nav-item w-full {{ request()->routeIs('admin.pdftools.*') ? 'active' : '' }}">
+                    class="nav-item w-full {{ (request()->routeIs('admin.pdftools.*')||request()->routeIs('admin.calcs.*')||request()->routeIs('admin.imgtools.*')||request()->routeIs('admin.coupons.*')) ? 'active' : '' }}">
                     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085" />
@@ -865,7 +865,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-                <div class="submenu" :style="toolsOpen ? 'max-height:260px' : 'max-height:0'">
+                <div class="submenu" :style="toolsOpen ? 'max-height:320px' : 'max-height:0'">
                     <a href="{{ route('admin.pdftools.index') }}"
                         class="sub-item {{ request()->routeIs('admin.pdftools.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
@@ -880,6 +880,11 @@
                         class="sub-item {{ request()->routeIs('admin.imgtools.index') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         Image Tools
+                    </a>
+                    <a href="{{ route('admin.coupons.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Spin Wheel
                     </a>
                 </div>
             </div>
