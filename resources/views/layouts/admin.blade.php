@@ -496,7 +496,14 @@
         body select option { color: #1e293b; background: #fff; }
 
         /* ───── Custom dropdown (enhances native <select>) — reused on every page ───── */
-        .zl-dd { position: relative; display: flex; align-items: center; cursor: pointer; }
+        .zl-dd {
+            position: relative; display: inline-flex; align-items: center; cursor: pointer; box-sizing: border-box;
+            min-width: 150px; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+            background: #fff; font-size: 14px; color: #1e293b; font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .zl-dd:hover { border-color: #cbd5e1; }
+        .zl-dd.open { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12); }
         .zl-dd-native {
             position: absolute !important; width: 1px; height: 1px;
             opacity: 0; pointer-events: none; margin: 0; padding: 0 !important; border: 0;
@@ -505,7 +512,6 @@
         .zl-dd .zl-dd-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
         .zl-dd .zl-dd-chev { flex: none; display: inline-flex; color: #94a3b8; margin-left: 8px; transition: transform .2s; }
         .zl-dd.open .zl-dd-chev { transform: rotate(180deg); }
-        .zl-dd.open { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12); }
         .zl-dd-panel {
             position: absolute; left: 0; top: calc(100% + 6px); min-width: 100%; width: max-content; max-width: 320px;
             z-index: 60; background: #fff; border: 1px solid #eef2f7; border-radius: 12px;

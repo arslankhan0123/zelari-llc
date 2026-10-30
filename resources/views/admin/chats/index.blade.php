@@ -38,35 +38,39 @@
 </style>
 
 <style>
-.lc-hours{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#f8f9fe;border:1px solid #e5e7eb;border-radius:14px;padding:10px 14px}
-.lc-hours label{font-size:12px;font-weight:700;color:#374151}
-.lc-hours input[type=time],.lc-hours select{border:1.5px solid #e5e7eb;border-radius:9px;padding:6px 9px;font:inherit;font-size:13px;outline:0;background:#fff}
-.lc-hours input:focus,.lc-hours select:focus{border-color:#1e1b4b}
-.lc-hours .sv{border:0;border-radius:9px;padding:8px 16px;background:linear-gradient(135deg,#1e1b4b,#3b3680);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+.lc-hours{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;background:#fff;border:1px solid #eef0f5;border-radius:16px;padding:16px 20px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.lc-hours label{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#374151}
+.lc-hours input[type=time]{border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font:inherit;font-size:13.5px;font-weight:600;color:#1e293b;outline:0;background:#fff;transition:border-color .2s,box-shadow .2s}
+.lc-hours input[type=time]:focus{border-color:var(--brand,#6366f1);box-shadow:0 0 0 3px rgba(var(--shadow-rgb,99 102 241),.12)}
+.lc-hours .lc-spacer{flex:1 1 auto}
+.lc-hours .sv{border:0;border-radius:10px;padding:11px 22px;background:var(--brand-grad,linear-gradient(135deg,#1e1b4b,#3b3680));color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;transition:filter .15s,transform .15s}
+.lc-hours .sv:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .lc-st{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px}
 .lc-st.on{background:#dcfce7;color:#166534}.lc-st.off{background:#fee2e2;color:#991b1b}
 .lc-st i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
 .lc-ok{font-size:12px;font-weight:700;color:#16a34a;opacity:0;transition:opacity .3s}
 </style>
 
-<div class="page-header" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+<div class="page-header">
   <div>
     <h2 class="text-xl font-bold text-gray-800">Live Chat</h2>
     <p class="text-sm text-gray-500 mt-0.5">Conversations from the website chat widget — replies reach the visitor instantly.</p>
   </div>
-  <form class="lc-hours" id="lcHours" style="margin-left:auto">
-    <span class="lc-st {{ $hours['open'] ? 'on' : 'off' }}" id="lcStatus"><i></i> {{ $hours['open'] ? 'Agents ONLINE now' : 'Agents OFFLINE now' }}</span>
-    <label>From <input type="time" name="start" value="{{ $hours['start'] }}" required></label>
-    <label>To <input type="time" name="end" value="{{ $hours['end'] }}" required></label>
-    <select name="tz">
-      @foreach(['America/New_York'=>'US Eastern','America/Chicago'=>'US Central','America/Denver'=>'US Mountain','America/Los_Angeles'=>'US Pacific','UTC'=>'UTC','Europe/London'=>'UK','Asia/Karachi'=>'Pakistan'] as $tz => $lbl)
-        <option value="{{ $tz }}" {{ $hours['tz'] === $tz ? 'selected' : '' }}>{{ $lbl }}</option>
-      @endforeach
-    </select>
-    <button type="submit" class="sv">Save hours</button>
-    <span class="lc-ok" id="lcOk">Saved ✓</span>
-  </form>
 </div>
+
+<form class="lc-hours" id="lcHours">
+  <span class="lc-st {{ $hours['open'] ? 'on' : 'off' }}" id="lcStatus"><i></i> {{ $hours['open'] ? 'Agents ONLINE now' : 'Agents OFFLINE now' }}</span>
+  <label>From <input type="time" name="start" value="{{ $hours['start'] }}" required></label>
+  <label>To <input type="time" name="end" value="{{ $hours['end'] }}" required></label>
+  <select name="tz">
+    @foreach(['America/New_York'=>'US Eastern','America/Chicago'=>'US Central','America/Denver'=>'US Mountain','America/Los_Angeles'=>'US Pacific','UTC'=>'UTC','Europe/London'=>'UK','Asia/Karachi'=>'Pakistan'] as $tz => $lbl)
+      <option value="{{ $tz }}" {{ $hours['tz'] === $tz ? 'selected' : '' }}>{{ $lbl }}</option>
+    @endforeach
+  </select>
+  <span class="lc-spacer"></span>
+  <button type="submit" class="sv">Save hours</button>
+  <span class="lc-ok" id="lcOk">Saved ✓</span>
+</form>
 
 <div class="lc" id="lc">
   <div class="lc-left">
