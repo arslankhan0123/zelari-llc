@@ -9,41 +9,37 @@
       <div style="color:#fff;font-size:22px;font-weight:800">This week at {{ $store }} 🛍️</div>
       <div style="color:#c7d2fe;font-size:14px;margin-top:6px">Fresh deals and new arrivals, picked for you.</div>
     </div>
-    <div style="background:#fff;padding:24px;border-radius:0 0 16px 16px">
+    <div style="background:#fff;padding:20px 22px;border-radius:0 0 16px 16px">
+
+      @php
+        $row = function($d, $saleColor) {
+          $stars = '';
+          for ($i = 1; $i <= 5; $i++) {
+              $stars .= '<span style="color:'.($i <= ($d['rating'] ?? 0) ? '#f5a623' : '#d8d8d8').';font-size:13px">&#9733;</span>';
+          }
+          $html  = '<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f0f1f4"><tr>';
+          $html .= '<td width="76" style="padding:10px 12px 10px 0;vertical-align:top">';
+          $html .= '<a href="'.$d['url'].'" style="text-decoration:none"><img src="'.$d['image'].'" alt="" width="64" height="64" style="width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;border:1px solid #eee"></a>';
+          $html .= '</td><td style="vertical-align:top;padding:10px 0">';
+          $html .= '<a href="'.$d['url'].'" style="font-size:14px;font-weight:700;color:#1f2430;text-decoration:none;line-height:1.35">'.e(\Illuminate\Support\Str::limit($d['name'], 48)).'</a>';
+          $html .= '<div style="margin:4px 0 2px">'.$stars.($d['reviews'] ? ' <span style="color:#9aa0ad;font-size:11px">('.$d['reviews'].')</span>' : '').'</div>';
+          $html .= '<div style="font-size:15px;font-weight:800;color:'.$saleColor.'">'.$d['price'];
+          if (!empty($d['was'])) $html .= ' <span style="color:#9aa0ad;font-weight:600;font-size:12px;text-decoration:line-through">'.$d['was'].'</span>';
+          $html .= '</div></td></tr></table>';
+          return $html;
+        };
+      @endphp
+
       @if(count($deals))
-        <div style="font-size:16px;font-weight:800;color:#e5322d;margin:0 0 12px">🔥 Hot Deals</div>
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          @foreach($deals as $d)
-          <td width="50%" style="padding:6px;vertical-align:top">
-            <a href="{{ $d['url'] }}" style="text-decoration:none;color:#1f2430;display:block;border:1px solid #eee;border-radius:12px;overflow:hidden">
-              @if($d['image'])<img src="{{ $d['image'] }}" alt="{{ $d['name'] }}" style="width:100%;height:120px;object-fit:cover;display:block">@endif
-              <div style="padding:10px">
-                <div style="font-size:13px;font-weight:700;line-height:1.3">{{ \Illuminate\Support\Str::limit($d['name'],40) }}</div>
-                <div style="margin-top:4px"><span style="color:#e5322d;font-weight:800">{{ $d['price'] }}</span> @if($d['was'])<span style="color:#999;text-decoration:line-through;font-size:12px">{{ $d['was'] }}</span>@endif</div>
-              </div>
-            </a>
-          </td>
-          @if($loop->iteration % 2 == 0 && !$loop->last)</tr><tr>@endif
-          @endforeach
-        </tr></table>
+        <div style="font-size:16px;font-weight:800;color:#e5322d;margin:0 0 6px">🔥 Hot Deals</div>
+        @foreach($deals as $d){!! $row($d, '#e5322d') !!}@endforeach
       @endif
+
       @if(count($fresh))
-        <div style="font-size:16px;font-weight:800;color:#1f7244;margin:20px 0 12px">🆕 New Arrivals</div>
-        <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          @foreach($fresh as $d)
-          <td width="50%" style="padding:6px;vertical-align:top">
-            <a href="{{ $d['url'] }}" style="text-decoration:none;color:#1f2430;display:block;border:1px solid #eee;border-radius:12px;overflow:hidden">
-              @if($d['image'])<img src="{{ $d['image'] }}" alt="{{ $d['name'] }}" style="width:100%;height:120px;object-fit:cover;display:block">@endif
-              <div style="padding:10px">
-                <div style="font-size:13px;font-weight:700;line-height:1.3">{{ \Illuminate\Support\Str::limit($d['name'],40) }}</div>
-                <div style="margin-top:4px;color:#1f7244;font-weight:800">{{ $d['price'] }}</div>
-              </div>
-            </a>
-          </td>
-          @if($loop->iteration % 2 == 0 && !$loop->last)</tr><tr>@endif
-          @endforeach
-        </tr></table>
+        <div style="font-size:16px;font-weight:800;color:#1f7244;margin:22px 0 6px">🆕 New Arrivals</div>
+        @foreach($fresh as $d){!! $row($d, '#1f7244') !!}@endforeach
       @endif
+
       <div style="text-align:center;margin:26px 0 6px">
         <a href="{{ $shopUrl }}" style="background:#6d28d9;color:#fff;text-decoration:none;font-weight:700;padding:14px 32px;border-radius:12px;display:inline-block">Shop Everything →</a>
       </div>
