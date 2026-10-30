@@ -73,6 +73,43 @@
     @endforeach
   </div>
 
+
+  {{-- Product feeds — benefit & how-to (English) --}}
+  <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 text-sm text-amber-900">
+    <div class="font-bold text-base mb-1"><i class="fa-solid fa-circle-question"></i> What this is &amp; how to use it</div>
+    <p class="mb-3">A <b>product feed</b> is a file that lists every product in your store — title, price, image, link and stock — in the exact format Google and Meta understand. Connect a feed URL <b>once</b> and these platforms automatically pull your whole catalog and keep it in sync. New products, price changes and stock updates sync on their own — no manual re-uploading, ever.</p>
+
+    <div class="font-semibold mb-1">Why it helps your store</div>
+    <ul class="list-disc list-inside mb-4 space-y-0.5 text-amber-800">
+      <li>Your products appear in <b>Google Shopping</b> — both free listings and Shopping ads.</li>
+      <li>Your products become shoppable on <b>Facebook &amp; Instagram Shops</b> — tag them in posts, reels and ads.</li>
+      <li>More visibility and buyer-ready traffic: people searching for what you sell can find and buy it.</li>
+    </ul>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div>
+        <div class="font-semibold mb-1.5"><i class="fa-brands fa-google"></i> Google Merchant Center (Shopping)</div>
+        <ol class="list-decimal list-inside space-y-1 text-amber-800">
+          <li>Create a free account at <b>merchants.google.com</b> and verify your website (zelarillc.com).</li>
+          <li>Open <b>Products → Feeds</b> and click <b>“+”</b> to add a feed.</li>
+          <li>Choose <b>Scheduled fetch</b>, then paste the <b>Google Merchant Center</b> URL shown above.</li>
+          <li>Set the fetch frequency to <b>Daily</b> and save. Google pulls your catalog automatically from then on.</li>
+        </ol>
+      </div>
+      <div>
+        <div class="font-semibold mb-1.5"><i class="fa-brands fa-meta"></i> Meta Commerce (Facebook &amp; Instagram)</div>
+        <ol class="list-decimal list-inside space-y-1 text-amber-800">
+          <li>Open <b>Commerce Manager</b> (business.facebook.com) and create a <b>Catalog</b>.</li>
+          <li>Go to <b>Catalog → Data sources → Add items → Data feed</b>.</li>
+          <li>Choose <b>Scheduled feed</b>, then paste the <b>Meta Commerce</b> URL shown above.</li>
+          <li>Set it to <b>Daily</b>, save, then connect the catalog to your Facebook Page / Instagram shopping.</li>
+        </ol>
+      </div>
+    </div>
+
+    <p class="text-[12px] text-amber-700 mt-4 pt-3 border-t border-amber-100"><i class="fa-solid fa-circle-info"></i> Both platforms review your store once before products go live. After approval, everything stays in sync automatically — you never touch the feed again.</p>
+  </div>
+
   {{-- ===== Email campaign ===== --}}
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
     <div class="font-bold text-gray-800 text-lg mb-1"><i class="fa-solid fa-envelope-open-text text-emerald-600"></i> Email newsletter</div>
