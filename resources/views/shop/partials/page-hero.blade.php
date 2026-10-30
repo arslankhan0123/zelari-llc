@@ -24,7 +24,7 @@
               @if(!$loop->last)<i class="fa-solid fa-chevron-right"></i>@endif
             @endforeach
           </div>
-          <h1 data-swiper-parallax="-200">{!! $s['title'] !!}</h1>
+          @if($loop->first)<h1 data-swiper-parallax="-200">{!! $s['title'] !!}</h1>@else<h2 data-swiper-parallax="-200">{!! $s['title'] !!}</h2>@endif
           @if(!empty($s['text']))<p>{{ $s['text'] }}</p>@endif
         </div>
         <div class="ph-art"><div class="ring"></div><div class="cube"></div><div class="ic"><i class="fa-solid {{ $s['icon'] ?? 'fa-sparkles' }}"></i></div></div>

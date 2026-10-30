@@ -175,9 +175,9 @@ class SeoAudit
         // Image alt coverage
         $imgs = $dom->getElementsByTagName('img');
         $total = $imgs->length; $noAlt = 0;
-        foreach ($imgs as $img) { if (trim($img->getAttribute('alt')) === '') $noAlt++; }
-        if ($total > 0 && $noAlt / $total > 0.3)
-            $add('Images missing alt', 'low', $noAlt.' of '.$total.' images have no alt text', 8);
+        foreach ($imgs as $img) { if (!$img->hasAttribute('alt')) $noAlt++; }
+        if ($total > 0 && $noAlt > 0)
+            $add('Images missing alt', 'low', $noAlt.' of '.$total.' images have no alt attribute', min(10, $noAlt * 2));
 
         // Word count
         $body = $dom->getElementsByTagName('body');

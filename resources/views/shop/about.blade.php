@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', 'About Us')
+@section('title', 'About Zelari - Our Story & Promise')
 
 @push('styles')
 <style>

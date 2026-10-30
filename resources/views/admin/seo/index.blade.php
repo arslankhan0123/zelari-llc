@@ -22,12 +22,18 @@
         @endif
       </p>
     </div>
+    <div class="flex gap-2 flex-wrap">
+      <form method="POST" action="{{ route('admin.seo.fix') }}" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Fixing…'">
+        @csrf
+        <button class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fix issues</button>
+      </form>
     <form method="POST" action="{{ route('admin.seo.run') }}" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Running audit…'">
       @csrf
       <button class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition">
         <i class="fa-solid fa-rotate"></i> Run audit now
       </button>
     </form>
+    </div>
   </div>
 
   @if(request('done'))
@@ -35,6 +41,36 @@
       <i class="fa-solid fa-circle-check"></i> SEO audit finished — report updated below.
     </div>
   @endif
+
+  @if(request('fixed') !== null)
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 mb-5 text-sm font-semibold flex items-center gap-2">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fix applied — {{ request('fixed') }} slug(s) repaired; site-wide SEO tags (canonical, social, structured data) are active. Report re-run below.
+    </div>
+  @endif
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+    <div class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600"></i> What auto-fix handles</div>
+    <div class="grid sm:grid-cols-2 gap-3 text-sm">
+      <div>
+        <div class="font-semibold text-emerald-700 mb-1">Done automatically</div>
+        <ul class="text-gray-600 space-y-1 list-disc list-inside">
+          <li>Canonical tags on every page</li>
+          <li>Open Graph &amp; Twitter social cards</li>
+          <li>Structured data (Organization, Product, Breadcrumb)</li>
+          <li>Image alt text &amp; product slugs</li>
+          <li>Single H1 &amp; keyword-rich titles</li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold text-amber-700 mb-1">Needs you (can't auto-create)</div>
+        <ul class="text-gray-600 space-y-1 list-disc list-inside">
+          <li>Real product photos for items missing an image</li>
+          <li>Longer, unique product descriptions</li>
+          <li>Adding fresh content / blog posts for keywords</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   @if(!$report)
     {{-- Empty state --}}

@@ -1,5 +1,5 @@
 @extends('layouts.store')
-@section('title', $selectedCategory ? $selectedCategory->name : (request('q') ? 'Search: '.request('q') : 'Shop'))
+@section('title', $selectedCategory ? $selectedCategory->name : (request('q') ? 'Search: '.request('q') : 'Shop All Products - Best Prices Online'))
 
 @push('styles')
 <style>

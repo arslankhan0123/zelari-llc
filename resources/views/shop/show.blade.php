@@ -468,3 +468,28 @@ new Swiper('#relSwiper',{slidesPerView:1.3,spaceBetween:16,speed:600,grabCursor:
 @endif
 </script>
 @endpush
+
+@push('scripts')
+@php
+  $pImg = $product->display_image ?: asset('images/logo.png');
+  $pImg = \Illuminate\Support\Str::startsWith($pImg, 'http') ? $pImg : url($pImg);
+  $pPrice = number_format((float) ($product->sale_price ?: $product->purchase_price), 2, '.', '');
+@endphp
+<script type="application/ld+json">
+{!! json_encode(['@context'=>'https://schema.org','@type'=>'Product',
+  'name'=>$product->name,
+  'image'=>[$pImg],
+  'description'=>\Illuminate\Support\Str::limit(strip_tags($product->short_description ?: $product->description ?: $product->name), 300),
+  'sku'=>$product->sku ?: (string) $product->id,
+  'brand'=>['@type'=>'Brand','name'=>optional($product->manufacturer)->name ?: zstore('name','Zelari')],
+  'offers'=>['@type'=>'Offer','price'=>$pPrice,'priceCurrency'=>'USD','availability'=>(($product->quantity ?? 0) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'),'url'=>url('/product/'.$product->slug)],
+], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode(['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>[
+  ['@type'=>'ListItem','position'=>1,'name'=>'Home','item'=>url('/')],
+  ['@type'=>'ListItem','position'=>2,'name'=>'Shop','item'=>url('/shop')],
+  ['@type'=>'ListItem','position'=>3,'name'=>$product->name,'item'=>url('/product/'.$product->slug)],
+]], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}
+</script>
+@endpush
