@@ -1054,10 +1054,22 @@
                 </a>
                 @endif
 
-                <a href="{{ route('admin.settings.index') }}" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    Settings
-                </a>
+                @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
+                <div x-data="{ sub: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
+                    <button type="button" @click="sub = !sub" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}" style="width:100%">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span style="flex:1;text-align:left">Settings</span>
+                        <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': sub }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="sub" x-cloak>
+                        @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
+                        <a href="{{ route('admin.settings.show', $sk) }}" class="acct-item {{ $curSec === $sk ? 'on' : '' }}" style="padding-left:30px;font-size:13px">
+                            <span class="rounded-full bg-current" style="width:6px;height:6px;flex:none;opacity:.5"></span>
+                            {{ $sl }}
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
 
                 <a href="{{ route('home') }}" target="_blank" rel="noopener" class="acct-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>

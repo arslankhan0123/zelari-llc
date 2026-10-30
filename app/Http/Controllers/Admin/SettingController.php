@@ -9,13 +9,17 @@ use Illuminate\Support\Facades\Mail;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index($section = 'branding')
     {
+        $allowed = ['branding', 'email', 'store', 'payments'];
+        if (!in_array($section, $allowed, true)) {
+            abort(404);
+        }
         $settings = Setting::allValues();
-        return view('admin.settings.index', compact('settings'));
+        return view('admin.settings.index', compact('settings', 'section'));
     }
 
-    public function update(Request $request)
+    public function updateEmail(Request $request)
     {
         $data = $request->validate([
             'mail_enabled'       => 'nullable|boolean',
@@ -29,30 +33,39 @@ class SettingController extends Controller
             'mail_from_address'  => 'nullable|email|max:190',
             'mail_from_name'     => 'nullable|string|max:120',
             'mail_admin_address' => 'nullable|email|max:190',
-            'store_name'         => 'nullable|string|max:120',
-            'store_tagline'      => 'nullable|string|max:120',
-            'store_phone'        => 'nullable|string|max:60',
-            'store_whatsapp'     => 'nullable|string|max:60',
-            'store_email'        => 'nullable|email|max:190',
-            'store_address'      => 'nullable|string|max:255',
-            'store_hours'        => 'nullable|string|max:120',
-            'store_facebook'     => 'nullable|url|max:255',
-            'store_instagram'    => 'nullable|url|max:255',
-            'store_twitter'      => 'nullable|url|max:255',
-            'store_pinterest'    => 'nullable|url|max:255',
         ]);
 
         $data['mail_enabled']     = $request->boolean('mail_enabled') ? '1' : '0';
         $data['mail_verify_peer'] = $request->boolean('mail_verify_peer') ? '1' : '0';
 
-        // Keep the stored password when the field is left blank
         if (($data['mail_password'] ?? '') === '') {
             unset($data['mail_password']);
         }
 
         Setting::setMany($data);
 
-        return back()->with('success', 'Settings saved successfully.');
+        return back()->with('success', 'Email settings saved.');
+    }
+
+    public function updateStore(Request $request)
+    {
+        $data = $request->validate([
+            'store_name'      => 'nullable|string|max:120',
+            'store_tagline'   => 'nullable|string|max:120',
+            'store_phone'     => 'nullable|string|max:60',
+            'store_whatsapp'  => 'nullable|string|max:60',
+            'store_email'     => 'nullable|email|max:190',
+            'store_address'   => 'nullable|string|max:255',
+            'store_hours'     => 'nullable|string|max:120',
+            'store_facebook'  => 'nullable|url|max:255',
+            'store_instagram' => 'nullable|url|max:255',
+            'store_twitter'   => 'nullable|url|max:255',
+            'store_pinterest' => 'nullable|url|max:255',
+        ]);
+
+        Setting::setMany($data);
+
+        return back()->with('success', 'Store details saved.');
     }
 
     /** POST /admin/settings/branding — logo, icon and print logo uploads */

