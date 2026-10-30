@@ -230,8 +230,13 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
         <div><i class="fa-solid fa-truck-fast"></i> Fast dispatch</div>
         <div><i class="fa-solid fa-money-bill-wave"></i> Cash on delivery</div>
       </div>
-      <div class="pay-strip"><i class="fa-solid fa-lock"></i> Guaranteed safe checkout:</div>
-      <div style="margin-top:8px">@include('shop.partials.payment-icons', ['size' => 'sm'])</div>
+      <div style="margin-top:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap">
+        <div>
+          <div class="pay-strip" style="margin-top:0"><i class="fa-solid fa-lock"></i> Guaranteed safe checkout:</div>
+          <div style="margin-top:7px">@include('shop.partials.payment-icons', ['size' => 'sm'])</div>
+        </div>
+        @include('shop.partials.share', ['shareUrl' => url('/product/'.$product->slug), 'shareTitle' => $product->name, 'shareImage' => $product->display_image])
+      </div>
     </div>
   </div>
 

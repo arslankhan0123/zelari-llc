@@ -756,6 +756,26 @@ body.drawer-open .drawer{transform:none}
 
 {{-- ═════════════ FOOTER ═════════════ --}}
 <footer class="footer">
+  <div class="wrap" style="padding:30px 24px 0">
+    <div class="nl-signup">
+      <div class="nl-copy"><b>Get deals in your inbox</b><span>New arrivals, offers &amp; more — no spam, unsubscribe anytime.</span></div>
+      <form method="POST" action="{{ route('newsletter.subscribe') }}" class="nl-form">
+        @csrf
+        <input type="email" name="email" placeholder="Your email address" required aria-label="Email address">
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Subscribe</button>
+      </form>
+    </div>
+  </div>
+  <style>
+  .nl-signup{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:var(--grad);border-radius:18px;padding:22px 26px;color:#fff}
+  .nl-copy b{display:block;font-size:17px;font-weight:800}
+  .nl-copy span{font-size:13px;opacity:.9}
+  .nl-form{display:flex;gap:8px;flex:1;min-width:280px;max-width:460px}
+  .nl-form input{flex:1;border:0;border-radius:11px;padding:12px 14px;font:inherit;font-size:14px;outline:0}
+  .nl-form button{border:0;border-radius:11px;padding:12px 20px;font:inherit;font-size:14px;font-weight:700;background:#fff;color:var(--p);cursor:pointer;white-space:nowrap}
+  .nl-form button:hover{filter:brightness(.97)}
+  @media(max-width:560px){.nl-signup{flex-direction:column;align-items:stretch;text-align:center}.nl-form{max-width:none}}
+  </style>
   <div class="wrap">
     <div class="f-feats">
       <div class="f-feat"><i class="fa-solid fa-gem"></i><span>Curated Quality Products</span></div>
