@@ -465,6 +465,65 @@
             margin-bottom: 6px;
         }
 
+        /* ───── Generic dropdown (select) styling — reused across every admin page ───── */
+        body select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27none%27%20viewBox%3D%270%200%2024%2024%27%20stroke%3D%27%2394a3b8%27%20stroke-width%3D%272%27%3E%3Cpath%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20d%3D%27M19%209l-7%207-7-7%27/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 16px 16px !important;
+            padding-right: 38px !important;
+            cursor: pointer;
+        }
+        /* selects that don't already use .form-input still get a consistent box */
+        body select:not(.form-input) {
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1e293b;
+            background-color: #fff;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        body select:hover { border-color: #cbd5e1; }
+        body select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12);
+        }
+        body select option { color: #1e293b; background: #fff; }
+
+        /* ───── Custom dropdown (enhances native <select>) — reused on every page ───── */
+        .zl-dd { position: relative; display: flex; align-items: center; cursor: pointer; }
+        .zl-dd-native {
+            position: absolute !important; width: 1px; height: 1px;
+            opacity: 0; pointer-events: none; margin: 0; padding: 0 !important; border: 0;
+            background-image: none !important;
+        }
+        .zl-dd .zl-dd-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        .zl-dd .zl-dd-chev { flex: none; display: inline-flex; color: #94a3b8; margin-left: 8px; transition: transform .2s; }
+        .zl-dd.open .zl-dd-chev { transform: rotate(180deg); }
+        .zl-dd.open { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12); }
+        .zl-dd-panel {
+            position: absolute; left: 0; top: calc(100% + 6px); min-width: 100%; width: max-content; max-width: 320px;
+            z-index: 60; background: #fff; border: 1px solid #eef2f7; border-radius: 12px;
+            box-shadow: 0 16px 40px -12px rgba(16,24,40,.25); padding: 6px; max-height: 300px; overflow: auto;
+            opacity: 0; transform: translateY(-6px); pointer-events: none;
+            transition: opacity .15s ease, transform .15s ease;
+        }
+        .zl-dd.open .zl-dd-panel { opacity: 1; transform: none; pointer-events: auto; }
+        .zl-dd-opt {
+            width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 9px 12px; border: 0; background: none; border-radius: 8px;
+            font-size: 13.5px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
+        }
+        .zl-dd-opt:hover { background: #f1f5f9; }
+        .zl-dd-opt.on { background: var(--brand-grad); color: #fff; }
+        .zl-dd-opt .zl-dd-check { width: 15px; height: 15px; flex: none; opacity: 0; }
+        .zl-dd-opt.on .zl-dd-check { opacity: 1; }
+
 
         /* Brand overrides for Tailwind's indigo utilities used throughout the admin pages.
            Scoped under body so they beat the CDN utilities without !important. */
@@ -1386,6 +1445,75 @@
     })();
     </script>
 
+    <script>
+    /* Progressive dropdown enhancer — turns native <select> into a styled custom dropdown,
+       matching the Settings design, on every admin page. Keeps the real <select> in the DOM
+       (hidden) so form submission + change listeners keep working. */
+    (function(){
+      var CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>';
+      var CHECK = '<svg class="zl-dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+      var openWrap = null;
+
+      function skip(sel){
+        return sel.multiple || sel.size > 1 || sel.dataset.zlEnhanced
+          || sel.hasAttribute('x-model') || sel.hasAttribute(':name') || sel.hasAttribute('x-bind:name')
+          || sel.closest('template') || sel.closest('[x-for]');
+      }
+
+      function enhance(sel){
+        if (skip(sel)) return;
+        sel.dataset.zlEnhanced = '1';
+
+        var wrap = document.createElement('div');
+        wrap.className = 'zl-dd ' + sel.className;      // inherit box + width/layout classes
+        sel.parentNode.insertBefore(wrap, sel);
+        sel.classList.add('zl-dd-native');
+        wrap.appendChild(sel);
+
+        var label = document.createElement('span'); label.className = 'zl-dd-label';
+        var chev  = document.createElement('span'); chev.className = 'zl-dd-chev'; chev.innerHTML = CHEV;
+        wrap.appendChild(label); wrap.appendChild(chev);
+
+        var panel = document.createElement('div'); panel.className = 'zl-dd-panel';
+        Array.prototype.forEach.call(sel.options, function(opt, i){
+          var it = document.createElement('button');
+          it.type = 'button'; it.className = 'zl-dd-opt'; it.dataset.i = i;
+          var t = document.createElement('span'); t.textContent = opt.textContent;
+          it.appendChild(t);
+          it.insertAdjacentHTML('beforeend', CHECK);
+          it.addEventListener('click', function(e){ e.stopPropagation(); pick(i); });
+          panel.appendChild(it);
+        });
+        wrap.appendChild(panel);
+
+        function render(){
+          var o = sel.options[sel.selectedIndex];
+          label.textContent = o ? o.textContent : '';
+          Array.prototype.forEach.call(panel.children, function(c){
+            c.classList.toggle('on', +c.dataset.i === sel.selectedIndex);
+          });
+        }
+        function pick(i){
+          if (sel.selectedIndex !== i){ sel.selectedIndex = i; sel.dispatchEvent(new Event('change', {bubbles:true})); }
+          render(); close();
+        }
+        function open(){ if(openWrap && openWrap!==wrap) openWrap.classList.remove('open'); wrap.classList.add('open'); openWrap = wrap; }
+        function close(){ wrap.classList.remove('open'); if(openWrap===wrap) openWrap = null; }
+
+        wrap.addEventListener('click', function(e){ if(e.target.closest('.zl-dd-panel')) return; wrap.classList.contains('open') ? close() : open(); });
+        sel.addEventListener('change', render);   // keep in sync if something changes the select programmatically
+        render();
+      }
+
+      function enhanceAll(root){ (root||document).querySelectorAll('select:not([data-zl-enhanced])').forEach(enhance); }
+
+      document.addEventListener('click', function(e){ if(openWrap && !openWrap.contains(e.target)) openWrap.classList.remove('open'), openWrap=null; });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape' && openWrap){ openWrap.classList.remove('open'); openWrap=null; } });
+
+      if (document.readyState !== 'loading') enhanceAll(); else document.addEventListener('DOMContentLoaded', function(){ enhanceAll(); });
+      window.zlEnhanceSelects = enhanceAll;
+    })();
+    </script>
     @stack('scripts')
 </body>
 
