@@ -34,8 +34,8 @@
     <form method="POST" action="{{ route('admin.coupons.wheel') }}" class="grid md:grid-cols-2 gap-4">
       @csrf
       <label class="flex items-center gap-3 md:col-span-2">
-        <span class="zl-switch"><input type="checkbox" name="enabled" value="1" {{ $wheel['enabled'] ? 'checked' : '' }} onchange="this.form.querySelector('[name=enabled_hidden]').disabled=this.checked"><span class="zl-slider"></span></span>
-        <input type="hidden" name="enabled" value="0" {{ $wheel['enabled'] ? 'disabled' : '' }} class="enabled_hidden">
+        <input type="hidden" name="enabled" value="0">
+        <span class="zl-switch"><input type="checkbox" name="enabled" value="1" {{ $wheel['enabled'] ? 'checked' : '' }}><span class="zl-slider"></span></span>
         <span class="text-sm font-semibold text-gray-700">Show the prize wheel on the storefront</span>
       </label>
       <div>
