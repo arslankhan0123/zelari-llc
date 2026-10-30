@@ -148,6 +148,10 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     });
 
     // ZT_ADMIN_ANCHOR
+    Route::prefix('seo')->name('seo.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('index');
+        Route::post('/run', [\App\Http\Controllers\Admin\SeoController::class, 'run'])->name('run');
+    });
     Route::prefix('seller-tools')->name('sellertools.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\SellerToolsController::class, 'index'])->name('index');
         Route::post('/toggle', [\App\Http\Controllers\Admin\SellerToolsController::class, 'toggle'])->name('toggle');
