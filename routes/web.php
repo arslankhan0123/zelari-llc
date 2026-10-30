@@ -27,6 +27,10 @@ use Illuminate\Support\Facades\Route;
 // ── Storefront ──────────────────────────────────────────────────────────────
 Route::get('/', [ShopController::class, 'home'])->name('home');
 Route::get('/sitemap.xml', [\App\Http\Controllers\Shop\SitemapController::class, 'index'])->name('sitemap');
+Route::get('/feed/google.xml', fn () => response(\App\Support\ProductFeed::google(), 200)->header('Content-Type', 'application/xml; charset=UTF-8'))->name('feed.google');
+Route::get('/feed/meta.csv', fn () => response(\App\Support\ProductFeed::meta(), 200)->header('Content-Type', 'text/csv; charset=UTF-8'))->name('feed.meta');
+Route::post('/newsletter/subscribe', [\App\Http\Controllers\Shop\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe')->middleware('throttle:10,1');
+Route::get('/newsletter/unsubscribe/{token}', [\App\Http\Controllers\Shop\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 
 
 
@@ -148,6 +152,13 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     });
 
     // ZT_ADMIN_ANCHOR
+    Route::prefix('marketing')->name('marketing.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\MarketingController::class, 'index'])->name('index');
+        Route::post('/plan', [\App\Http\Controllers\Admin\MarketingController::class, 'plan'])->name('plan');
+        Route::post('/email', [\App\Http\Controllers\Admin\MarketingController::class, 'email'])->name('email');
+        Route::post('/email/send', [\App\Http\Controllers\Admin\MarketingController::class, 'send'])->name('email.send');
+        Route::post('/email/test', [\App\Http\Controllers\Admin\MarketingController::class, 'test'])->name('email.test');
+    });
     Route::prefix('seo')->name('seo.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('index');
         Route::post('/run', [\App\Http\Controllers\Admin\SeoController::class, 'run'])->name('run');

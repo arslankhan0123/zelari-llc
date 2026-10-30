@@ -26,8 +26,8 @@ class Product extends Model
         parent::boot();
 
         // Keep /sitemap.xml instantly fresh when the catalog changes
-        static::saved(fn () => cache()->forget('sitemap.xml'));
-        static::deleted(fn () => cache()->forget('sitemap.xml'));
+        static::saved(function () { cache()->forget('sitemap.xml'); cache()->forget('feed.google'); cache()->forget('feed.meta'); });
+        static::deleted(function () { cache()->forget('sitemap.xml'); cache()->forget('feed.google'); cache()->forget('feed.meta'); });
         static::creating(function ($p) {
             if (empty($p->slug)) {
                 $p->slug = Str::slug($p->name);
