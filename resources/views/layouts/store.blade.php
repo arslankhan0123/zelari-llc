@@ -8,7 +8,7 @@
 <script>window.ZCUR={code:@json($zc['code']),symbol:@json($zc['symbol']),rate:{{ (float) $zc['rate'] }},decimals:{{ (int) $zc['decimals'] }}};
 window.zmoney=function(n){var c=window.ZCUR,v=(Number(n)||0)*c.rate,s=v.toLocaleString('en-US',{minimumFractionDigits:c.decimals,maximumFractionDigits:c.decimals});return (c.symbol.length<=2&&!/^[A-Za-z]+$/.test(c.symbol))?c.symbol+s:c.symbol+' '+s};</script>
 <title>@yield('title', 'Shop') · {{ zstore('name','Zelari') }}</title>
-<meta name="description" content="@yield('meta_description', zstore('name','Zelari').' — '.zstore('tagline','a smarter way to shop').'. Curated products, honest prices, fast nationwide delivery.')">
+<meta name="description" content="@yield('meta_description', zstore('name','Zelari').' — '.zstore('tagline','a smarter way to shop').'. Curated products, honest prices, fast worldwide delivery.')">
 
 @if(zbrand_custom('icon'))
 <link rel="icon" href="{{ zbrand('icon') }}">
@@ -463,8 +463,8 @@ body.drawer-open .drawer{transform:none}
     <div class="topbar-loc"><i class="fa-solid fa-location-dot"></i><span>{{ zstore('address') }}</span></div>
     <div class="topbar-marquee">
       <span>
-        <b>Welcome to {{ zstore('name','Zelari') }}!</b> {{ zfree_over() > 0 ? 'Free delivery on orders over '.zprice(zfree_over()) : 'Free delivery on every order' }}<i class="sep"></i><em>New arrivals</em> added every week<i class="sep"></i>Weekend deals refresh every Friday<i class="sep"></i>Cash on delivery available nationwide<i class="sep"></i>7-day easy returns on every order<i class="sep"></i>
-        <b>Welcome to {{ zstore('name','Zelari') }}!</b> {{ zfree_over() > 0 ? 'Free delivery on orders over '.zprice(zfree_over()) : 'Free delivery on every order' }}<i class="sep"></i><em>New arrivals</em> added every week<i class="sep"></i>Weekend deals refresh every Friday<i class="sep"></i>Cash on delivery available nationwide<i class="sep"></i>7-day easy returns on every order<i class="sep"></i>
+        <b>Welcome to {{ zstore('name','Zelari') }}!</b> {{ zfree_over() > 0 ? 'Free delivery on orders over '.zprice(zfree_over()) : 'Free delivery on every order' }}<i class="sep"></i><em>New arrivals</em> added every week<i class="sep"></i>Weekend deals refresh every Friday<i class="sep"></i>Cash on delivery available worldwide<i class="sep"></i>7-day easy returns on every order<i class="sep"></i>
+        <b>Welcome to {{ zstore('name','Zelari') }}!</b> {{ zfree_over() > 0 ? 'Free delivery on orders over '.zprice(zfree_over()) : 'Free delivery on every order' }}<i class="sep"></i><em>New arrivals</em> added every week<i class="sep"></i>Weekend deals refresh every Friday<i class="sep"></i>Cash on delivery available worldwide<i class="sep"></i>7-day easy returns on every order<i class="sep"></i>
       </span>
     </div>
   </div>
@@ -712,7 +712,7 @@ body.drawer-open .drawer{transform:none}
     <div class="f-main">
       <div class="f-brand">
         <a href="{{ route('home') }}" class="logo lg">@if(zbrand_custom('logo'))<img src="{{ zbrand('logo') }}" alt="{{ zstore('name','Zelari') }}">@else{!! zlogo('logo-tagline.svg') !!}@endif</a>
-        <p>{{ zstore('tagline') ? zstore('tagline').'. ' : '' }}We curate quality products, keep prices honest, and deliver fast nationwide — with cash on delivery available everywhere.</p>
+        <p>{{ zstore('tagline') ? zstore('tagline').'. ' : '' }}We curate quality products, keep prices honest, and deliver fast worldwide — with cash on delivery available in many countries.</p>
         @if(zstore('address'))<div class="fl"><i class="fa-solid fa-location-dot"></i> {{ zstore('address') }}</div>@endif
         @if(zstore('email'))<div class="fl"><i class="fa-solid fa-envelope"></i> <a href="mailto:{{ zstore('email') }}">{{ zstore('email') }}</a></div>@endif
       </div>

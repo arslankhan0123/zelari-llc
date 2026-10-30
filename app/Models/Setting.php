@@ -45,7 +45,7 @@ class Setting extends Model
             'ship_delivery_days'     => '2–5',    // e.g. "2–5" (business days)
             'ship_pack_hours'        => '24',
             'ship_return_days'       => '7',
-            'ship_coverage'          => 'nationwide',
+            'ship_coverage'          => 'worldwide',
             // Deal-of-the-week countdown banner (home page)
             'deal_enabled'           => '1',
             'deal_eyebrow'           => 'Deal of the week',

@@ -310,7 +310,7 @@ if (!function_exists('zcontent')) {
             '{days}'     => zship('delivery_days', '2–5'),
             '{hours}'    => zship('pack_hours', '24'),
             '{free}'     => zfree_over() > 0 ? zprice(zfree_over()) : 'every order',
-            '{coverage}' => zship('coverage', 'nationwide'),
+            '{coverage}' => zship('coverage', 'worldwide'),
         ]);
     }
 }
@@ -326,7 +326,7 @@ if (!function_exists('zfaqs')) {
             if ($q !== '' && $a !== '') $out[] = [$q, $a];
         }
         if ($out) return $out;
-        $days = zship('delivery_days', '2–5'); $hrs = zship('pack_hours', '24'); $ret = zship('return_days', '7'); $cov = zship('coverage', 'nationwide');
+        $days = zship('delivery_days', '2–5'); $hrs = zship('pack_hours', '24'); $ret = zship('return_days', '7'); $cov = zship('coverage', 'worldwide');
         $free = zfree_over();
         return [
             ['How long does delivery take?', "Orders are packed within {$hrs} hours and delivered in {$days} business days {$cov}. You'll get a call from the rider before arrival."],

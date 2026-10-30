@@ -54,7 +54,7 @@
                     </div>
                     <div>
                         <label class="form-label">Coverage</label>
-                        <input type="text" name="ship_coverage" value="{{ old('ship_coverage', $s['ship_coverage'] ?? 'nationwide') }}" placeholder="nationwide / across the world" class="form-input">
+                        <input type="text" name="ship_coverage" value="{{ old('ship_coverage', $s['ship_coverage'] ?? 'worldwide') }}" placeholder="nationwide / across the world" class="form-input">
                     </div>
                 </div>
             <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-brand-grad">
