@@ -54,6 +54,14 @@
         <label class="block text-xs font-bold text-gray-500 mb-1">Minimum spend to use won coupons (USD)</label>
         <input name="min_spend" type="number" min="0" step="0.01" value="{{ $wheel['minSpend'] }}" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
       </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 mb-1">How often can a user spin?</label>
+        <select name="spin_limit" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          <option value="once" {{ ($wheel['spinLimit'] ?? 'once') === 'once' ? 'selected' : '' }}>Once per account (one lifetime spin)</option>
+          <option value="daily" {{ ($wheel['spinLimit'] ?? 'once') === 'daily' ? 'selected' : '' }}>Once per day</option>
+          <option value="unlimited" {{ ($wheel['spinLimit'] ?? 'once') === 'unlimited' ? 'selected' : '' }}>Unlimited (any time)</option>
+        </select>
+      </div>
       <div class="md:col-span-2">
         <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg">Save wheel settings</button>
       </div>

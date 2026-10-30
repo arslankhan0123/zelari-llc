@@ -87,13 +87,44 @@ class Marketing
         return count($segments) - 1;
     }
 
-    /** Has this user already spun? (one spin per account) */
+    /** Has this user already spun? (lifetime — used for display). */
     public static function alreadySpun(User $user): bool
     {
         try {
             return WheelEntry::where('user_id', $user->id)->exists();
         } catch (\Throwable $e) {
             return false;
+        }
+    }
+
+    /** How often a user may spin: 'once' | 'daily' | 'unlimited'. */
+    public static function spinLimit(): string
+    {
+        $v = (string) Setting::get('wheel_spin_limit', 'once');
+        return in_array($v, ['once', 'daily', 'unlimited'], true) ? $v : 'once';
+    }
+
+    /**
+     * Can this user spin right now, per the configured limit?
+     * Returns null when allowed, or a message explaining why not.
+     */
+    public static function spinBlockedReason(User $user): ?string
+    {
+        try {
+            $limit = self::spinLimit();
+            if ($limit === 'unlimited') {
+                return null;
+            }
+            if ($limit === 'daily') {
+                $today = WheelEntry::where('user_id', $user->id)
+                    ->whereDate('created_at', now()->toDateString())->exists();
+                return $today ? 'You have already spun today. Come back tomorrow for another spin!' : null;
+            }
+            // once (default) — one spin per account, ever
+            return WheelEntry::where('user_id', $user->id)->exists()
+                ? 'You have already claimed your spin. One prize per account.' : null;
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 

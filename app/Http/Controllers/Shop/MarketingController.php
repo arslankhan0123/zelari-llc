@@ -112,8 +112,8 @@ class MarketingController extends Controller
         if (!$user) {
             return response()->json(['ok' => false, 'message' => 'Please log in to spin and claim your coupon.', 'login' => true], 401);
         }
-        if (Marketing::alreadySpun($user)) {
-            return response()->json(['ok' => false, 'message' => 'You have already claimed your spin. One prize per account.'], 422);
+        if ($reason = Marketing::spinBlockedReason($user)) {
+            return response()->json(['ok' => false, 'message' => $reason], 422);
         }
 
         $result = Marketing::spin($user, (string) $request->ip());

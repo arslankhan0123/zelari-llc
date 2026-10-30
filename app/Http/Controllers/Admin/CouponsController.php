@@ -34,6 +34,7 @@ class CouponsController extends Controller
                 'subtitle'   => Setting::get('wheel_subtitle', 'Enter your email and spin the wheel for an exclusive coupon code.'),
                 'expiryDays' => (int) Setting::get('wheel_expiry_days', 7),
                 'minSpend'   => (float) Setting::get('wheel_min_spend', 0),
+                'spinLimit'  => \App\Support\Marketing::spinLimit(),
             ],
             'segments' => Marketing::segments(),
             'isCustomSegments' => \App\Models\Setting::get('wheel_segments', '') !== '',
@@ -100,6 +101,7 @@ class CouponsController extends Controller
             'subtitle'    => 'nullable|string|max:255',
             'expiry_days' => 'nullable|integer|min:1|max:365',
             'min_spend'   => 'nullable|numeric|min:0',
+            'spin_limit'  => 'required|in:once,daily,unlimited',
         ]);
 
         Setting::setMany([
@@ -108,6 +110,7 @@ class CouponsController extends Controller
             'wheel_subtitle'    => $data['subtitle'] ?? '',
             'wheel_expiry_days' => (string) ($data['expiry_days'] ?? 7),
             'wheel_min_spend'   => (string) ($data['min_spend'] ?? 0),
+            'wheel_spin_limit'  => $data['spin_limit'],
         ]);
 
         return back()->with('success', 'Prize wheel settings saved.');
