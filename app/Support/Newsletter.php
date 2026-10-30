@@ -59,8 +59,10 @@ class Newsletter
             'image' => $p->display_image,
             'price' => zprice((float) ($p->sale_price ?: $p->purchase_price)),
             'was'   => ($p->sale_price && $p->sale_price < $p->purchase_price) ? zprice((float) $p->purchase_price) : null,
+            'rating'  => (int) round((float) ($p->approved_reviews_avg_rating ?? 0)),
+            'reviews' => (int) ($p->approved_reviews_count ?? 0),
         ];
-        $base = fn () => Product::where('status', 'active')->whereNotNull('slug');
+        $base = fn () => Product::where('status', 'active')->whereNotNull('slug')->withAvg('approvedReviews', 'rating')->withCount('approvedReviews');
         $deals = $base()->whereNotNull('sale_price')->whereColumn('sale_price', '<', 'purchase_price')->latest()->take(4)->get()->map($map)->all();
         $fresh = $base()->latest()->take(4)->get()->map($map)->all();
         return ['deals' => $deals, 'fresh' => $fresh];
