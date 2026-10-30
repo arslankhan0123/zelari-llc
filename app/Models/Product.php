@@ -24,6 +24,10 @@ class Product extends Model
     protected static function boot()
     {
         parent::boot();
+
+        // Keep /sitemap.xml instantly fresh when the catalog changes
+        static::saved(fn () => cache()->forget('sitemap.xml'));
+        static::deleted(fn () => cache()->forget('sitemap.xml'));
         static::creating(function ($p) {
             if (empty($p->slug)) {
                 $p->slug = Str::slug($p->name);

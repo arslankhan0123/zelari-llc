@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 // ── Storefront ──────────────────────────────────────────────────────────────
 Route::get('/', [ShopController::class, 'home'])->name('home');
+Route::get('/sitemap.xml', [\App\Http\Controllers\Shop\SitemapController::class, 'index'])->name('sitemap');
 
 
 
