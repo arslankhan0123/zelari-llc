@@ -59,6 +59,25 @@
 #paypalButtons{min-height:48px}
 .payopt .brands span{font-size:10px;font-weight:800;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink-2);background:#fff}
 </style>
+<style>
+.co-coupon{margin:6px 0 2px}
+.co-coupon .coupon{display:flex;gap:8px}
+.co-coupon .coupon input{flex:1;min-width:0;border:1.5px solid var(--line-2);border-radius:11px;padding:0 14px;height:46px;outline:0;font-size:14px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;background:#fff;transition:border-color .15s,box-shadow .15s}
+.co-coupon .coupon input::placeholder{text-transform:none;font-weight:500;color:var(--muted)}
+.co-coupon .coupon input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(var(--shadow-rgb),.12)}
+.co-coupon .coupon button{flex:0 0 auto;border:0;background:var(--grad);color:#fff;font-weight:800;font-family:inherit;font-size:13.5px;letter-spacing:.03em;padding:0 22px;height:46px;border-radius:11px;cursor:pointer;transition:filter .15s,transform .15s}
+.co-coupon .coupon button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.co-coupon .coupon button:disabled{opacity:.6;cursor:wait;transform:none}
+.coupon-on{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #bbe3c8;background:#f2fbf5;border-radius:12px;padding:9px 14px}
+.cpn-tag{font-size:13.5px;color:#15803d;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.cpn-tag b{font-weight:800;letter-spacing:.03em}
+.coupon-on button{border:0;background:none;color:#15803d;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}
+.coupon-on button:hover{color:var(--sale)}
+.cpn-msg{font-size:12.5px;font-weight:600;margin-top:7px;min-height:15px}
+.cpn-msg.ok{color:#15803d}.cpn-msg.err{color:var(--sale)}
+.coupon-login{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);border:1.5px dashed var(--line-2);border-radius:12px;padding:10px 14px}
+.coupon-login i,.coupon-login b{color:var(--p)}.coupon-login:hover{border-color:var(--p)}
+</style>
 @endpush
 
 @section('content')
@@ -127,7 +146,24 @@
           </div>
         </div>
 
-        @php $subtotal = array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cart)); $shipping = zshipping($subtotal); @endphp
+        @php
+          $subtotal = array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cart));
+          $shipping = zshipping($subtotal);
+          $zCoupon = null; $zDisc = 0.0; $zFreeship = false;
+          if (session('coupon') && $subtotal > 0 && auth()->check()) {
+              try {
+                  $rate = (float) (\App\Support\Currency::all()['USD']['rate'] ?? 1);
+                  $cr = \App\Support\Marketing::validateCoupon(session('coupon'), $subtotal * ($rate>0?$rate:1), auth()->id());
+                  if ($cr['ok']) {
+                      $zCoupon = session('coupon');
+                      if ($cr['freeship']) { $zFreeship = true; }
+                      else { $zDisc = \App\Support\Marketing::discountBase($cr, (float) $subtotal); }
+                  }
+              } catch (\Throwable $e) {}
+          }
+          $zShip  = $zFreeship ? 0 : $shipping;
+          $zTotal = max(0, $subtotal - $zDisc) + $zShip;
+        @endphp
         <aside class="sum reveal" data-delay="2">
           <h3>Order Summary</h3>
           <div class="sitems">
@@ -140,11 +176,24 @@
             </div>
             @endforeach
           </div>
+          <div class="co-coupon">
+            @auth
+            <div class="coupon" id="cpnForm" style="{{ $zCoupon ? 'display:none' : '' }}"><input type="text" id="cpnInput" placeholder="Coupon code" maxlength="40" autocomplete="off"><button type="button" id="cpnBtn">Apply</button></div>
+            <div class="coupon-on" id="cpnApplied" style="{{ $zCoupon ? '' : 'display:none' }}">
+              <span class="cpn-tag"><i class="fa-solid fa-ticket"></i> <b id="cpnCode">{{ $zCoupon }}</b> applied</span>
+              <button type="button" id="cpnRemove" title="Remove coupon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="cpn-msg" id="cpnMsg"></div>
+            @else
+            <a href="{{ route('login') }}" class="coupon-login"><i class="fa-solid fa-ticket"></i> Have a coupon? <b>Log in to apply it</b></a>
+            @endauth
+          </div>
           <hr>
-          <div class="row2"><span>Subtotal</span><b>{{ zprice($subtotal) }}</b></div>
-          <div class="row2"><span>Shipping</span><b style="color:{{ $shipping>0 ? 'var(--ink)' : 'var(--ok)' }}">{{ $shipping>0 ? zprice($shipping) : 'Free' }}</b></div>
+          <div class="row2"><span>Subtotal</span><b id="sumSub">{{ zprice($subtotal) }}</b></div>
+          <div class="row2"><span>Shipping</span><b id="sumShip" style="color:{{ $zShip>0 ? 'var(--ink)' : 'var(--ok)' }}">{{ $zShip>0 ? zprice($zShip) : 'Free' }}</b></div>
+          <div class="row2" id="sumDiscRow" style="{{ $zDisc>0 ? '' : 'display:none' }}"><span>Discount</span><b id="sumDisc" style="color:var(--ok)">&minus; {{ zprice($zDisc) }}</b></div>
           <hr>
-          <div class="tot"><span>Total</span><b>{{ zprice($subtotal+$shipping) }}</b></div>
+          <div class="tot"><span>Total</span><b id="sumTotal">{{ zprice($zTotal) }}</b></div>
           <button type="submit" class="btn-g place" id="placeBtn" {{ empty($methods) ? 'disabled' : '' }}><i class="fa-solid fa-lock"></i> <span id="placeTxt">Place Order</span></button>
           <div id="ppPlaceNote" style="display:none;margin-top:16px;padding:12px 14px;border-radius:12px;background:#fff7e6;border:1px solid #ffe3a3;color:#7a5200;font-size:13px;font-weight:600;text-align:center"><i class="fa-brands fa-paypal"></i> Complete your order with the PayPal button in the Payment Method section.</div>
           <div class="secure"><i class="fa-solid fa-shield-halved"></i> Prices & stock are re-verified on our server</div>
@@ -252,6 +301,42 @@
         showErr(error.message||'Payment failed.'); setBusy(false); return;
       }
     }catch(e){ showErr(e.message); setBusy(false); }
+  });
+})();
+</script>
+<script>
+(function(){
+  const token=document.querySelector('meta[name=csrf-token]').content;
+  const form=document.getElementById('cpnForm'); if(!form) return;
+  const inp=document.getElementById('cpnInput'), btn=document.getElementById('cpnBtn'),
+        applied=document.getElementById('cpnApplied'), codeEl=document.getElementById('cpnCode'), rm=document.getElementById('cpnRemove'), msg=document.getElementById('cpnMsg');
+  const shipEl=document.getElementById('sumShip'), discRow=document.getElementById('sumDiscRow'), discEl=document.getElementById('sumDisc'), totEl=document.getElementById('sumTotal');
+  const peA=document.getElementById('peAmount'), ppA=document.getElementById('ppAmount');
+  const fmt=n=>window.zmoney(n);
+  const setMsg=(t,c)=>{ msg.textContent=t||''; msg.className='cpn-msg'+(c?' '+c:''); };
+  function showShip(v){ if(v<=0){shipEl.textContent='Free';shipEl.style.color='var(--ok)';}else{shipEl.textContent=fmt(v);shipEl.style.color='var(--ink)';} }
+  function showDisc(v){ if(v>0){discRow.style.display='';discEl.innerHTML='&minus; '+fmt(v);}else{discRow.style.display='none';} }
+  function setTotal(v){ totEl.textContent=fmt(v); if(peA)peA.textContent=fmt(v); if(ppA)ppA.textContent=fmt(v); }
+  async function applyCoupon(){
+    const code=(inp.value||'').trim(); if(!code){setMsg('Enter a coupon code.','err');return;}
+    btn.disabled=true; setMsg('');
+    try{
+      const r=await fetch('{{ route('coupon.apply') }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json'},credentials:'same-origin',body:JSON.stringify({code})});
+      const j=await r.json();
+      if(!r.ok||!j.ok){ setMsg(j.message||'That coupon is not valid.','err'); btn.disabled=false; return; }
+      codeEl.textContent=code.toUpperCase(); form.style.display='none'; applied.style.display='flex';
+      showDisc(j.discountBase); showShip(j.shipAfter); setTotal(j.totalBase); setMsg(j.message,'ok');
+    }catch(err){ setMsg('Network error — please try again.','err'); btn.disabled=false; }
+  }
+  btn.addEventListener('click', applyCoupon);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); applyCoupon(); } });
+  rm.addEventListener('click', async ()=>{
+    try{
+      const r=await fetch('{{ route('coupon.remove') }}',{method:'POST',headers:{'X-CSRF-TOKEN':token,'Accept':'application/json'},credentials:'same-origin'});
+      const j=await r.json();
+      applied.style.display='none'; form.style.display='flex'; inp.value=''; btn.disabled=false;
+      showDisc(0); showShip(j.ship); setTotal(j.totalBase); setMsg('','');
+    }catch(err){ setMsg('Could not remove — please refresh.','err'); }
   });
 })();
 </script>

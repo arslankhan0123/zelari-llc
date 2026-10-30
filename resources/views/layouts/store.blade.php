@@ -291,6 +291,11 @@ button,input,select,textarea{font-family:inherit}
 .mega-promo b{font-size:15px}
 .mega-promo small{opacity:.85}
 .mega-promo a{background:#fff;color:var(--p);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:700}
+.tools-dd{min-width:215px;padding:6px}
+.tools-dd a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--ink-2);transition:.15s}
+.tools-dd a .ti{width:28px;height:28px;border-radius:8px;background:var(--surface);display:grid;place-items:center;font-size:13px;color:var(--p);flex-shrink:0}
+.tools-dd a:hover{background:var(--p-soft);color:var(--p)}
+.tools-dd a .n{margin-left:auto;font-size:10.5px;font-weight:800;background:var(--surface);color:var(--muted);padding:2px 8px;border-radius:999px}
 .deal-btn{margin-left:auto;display:inline-flex;align-items:center;gap:9px;background:rgba(252,211,77,.14);color:#fcd34d;border:1.5px solid rgba(252,211,77,.35);padding:0 18px;height:42px;border-radius:12px;font-weight:700;font-size:14px;transition:.2s;position:relative}
 .deal-btn i{animation:pulseGlow 2.2s infinite;border-radius:50%}
 .deal-btn:hover{background:var(--sale);border-color:var(--sale);color:#fff}
@@ -574,6 +579,25 @@ body.drawer-open .drawer{transform:none}
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
+        @if(\App\Support\PdfTools::enabled() || \App\Support\Calculators::enabled() || \App\Support\ImageTools::enabled() || \App\Support\Marketing::wheelEnabled())
+        <li class="nav-item">
+          <a href="{{ \App\Support\PdfTools::enabled() ? route('tools.index') : (\App\Support\Calculators::enabled() ? route('calculators.index') : (\App\Support\ImageTools::enabled() ? route('imgtools.index') : route('spinwheel.index'))) }}" class="{{ (request()->routeIs('tools.*')||request()->routeIs('calculators.*')||request()->routeIs('imgtools.*')||request()->routeIs('spinwheel.*'))?'active':'' }}">Tools <i class="fa-solid fa-chevron-down"></i></a>
+          <div class="dd tools-dd">
+            @if(\App\Support\PdfTools::enabled())
+            <a href="{{ route('tools.index') }}"><span class="ti"><i class="fa-solid fa-file-pdf"></i></span> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\Calculators::enabled())
+            <a href="{{ route('calculators.index') }}"><span class="ti"><i class="fa-solid fa-calculator"></i></span> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a>
+            @endif
+            @if(\App\Support\ImageTools::enabled())
+            <a href="{{ route('imgtools.index') }}"><span class="ti"><i class="fa-solid fa-image"></i></span> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a>
+            @endif
+            @if(\App\Support\Marketing::wheelEnabled())
+            <a href="{{ route('spinwheel.index') }}"><span class="ti"><i class="fa-solid fa-dharmachakra"></i></span> Spin &amp; Win</a>
+            @endif
+          </div>
+        </li>
+        @endif
       </ul>
 
       <a href="{{ route('shop.index',['on_sale'=>1]) }}" class="deal-btn"><i class="fa-solid fa-bolt"></i> Deal Today</a>
@@ -602,6 +626,26 @@ body.drawer-open .drawer{transform:none}
     <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> <span class="nav-flow">Sourcing</span></a>
     <a href="{{ route('about') }}"><i class="fa-solid fa-circle-info"></i> About</a>
     <a href="{{ route('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
+    <div style="padding:10px 18px;border-bottom:1px solid var(--surface)">
+      <button type="button" class="dcats-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+        <i class="fa-solid fa-screwdriver-wrench"></i> Tools
+        <i class="fa-solid fa-chevron-down arr"></i>
+      </button>
+      <div class="dcats-body">
+        @if(\App\Support\PdfTools::enabled())
+        <div class="ctree-item"><a href="{{ route('tools.index') }}"><i class="fa-solid fa-file-pdf"></i> PDF Tools <span class="n">{{ count(\App\Support\PdfTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\Calculators::enabled())
+        <div class="ctree-item"><a href="{{ route('calculators.index') }}"><i class="fa-solid fa-calculator"></i> Calculators <span class="n">{{ count(\App\Support\Calculators::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\ImageTools::enabled())
+        <div class="ctree-item"><a href="{{ route('imgtools.index') }}"><i class="fa-solid fa-image"></i> Image Tools <span class="n">{{ count(\App\Support\ImageTools::all()) }}</span></a></div>
+        @endif
+        @if(\App\Support\Marketing::wheelEnabled())
+        <div class="ctree-item"><a href="{{ route('spinwheel.index') }}"><i class="fa-solid fa-dharmachakra"></i> Spin &amp; Win</a></div>
+        @endif
+      </div>
+    </div>
     <a href="{{ route('cart.index') }}"><i class="fa-solid fa-cart-shopping"></i> Cart ({{ $cartCount ?? 0 }})</a>
     @auth
       <a href="{{ route('account.index') }}"><i class="fa-regular fa-id-badge"></i> My account</a>
@@ -908,6 +952,9 @@ body.drawer-open .drawer{transform:none}
   document.addEventListener('DOMContentLoaded',()=>{ zTilt(); zReveal(); document.querySelectorAll('[data-countdown]').forEach(zCountdown); });
 })();
 </script>
+@if(session('ztoast'))
+<script>document.addEventListener('DOMContentLoaded',()=>{ setTimeout(()=>{ if(window.zToast) zToast(@json(session('ztoast')),'info'); },300); });</script>
+@endif
 @stack('scripts')
 </body>
 </html>

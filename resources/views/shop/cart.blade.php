@@ -43,6 +43,17 @@
 .coupon{display:flex;border:1.5px solid var(--line-2);border-radius:12px;overflow:hidden;max-width:340px}
 .coupon input{flex:1;border:0;padding:0 14px;height:44px;outline:0;font-size:14px;min-width:0}
 .coupon button{border:0;background:var(--ink);color:#fff;font-weight:700;padding:0 18px;cursor:pointer}
+.coupon button:hover{background:var(--p)}
+.coupon-wrap{max-width:340px;width:100%}
+.coupon-on{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #bbe3c8;background:#f2fbf5;border-radius:12px;padding:10px 14px}
+.cpn-tag{font-size:13.5px;color:#15803d;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.cpn-tag b{font-weight:800;letter-spacing:.03em}
+.coupon-on button{border:0;background:none;color:#15803d;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}
+.coupon-on button:hover{color:var(--sale)}
+.cpn-msg{font-size:12.5px;font-weight:600;margin-top:7px;min-height:15px}
+.cpn-msg.ok{color:#15803d}.cpn-msg.err{color:var(--sale)}
+.coupon-login{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);border:1.5px dashed var(--line-2);border-radius:12px;padding:11px 16px}
+.coupon-login i{color:var(--p)}.coupon-login b{color:var(--p)}.coupon-login:hover{border-color:var(--p)}
 /* summary */
 .sum{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;position:sticky;top:calc(var(--head-h) + 70px)}
 @media(max-width:992px){.sum{position:static}}
@@ -72,7 +83,27 @@
 ]])
 
 <section class="cartp wrap">
-  @php $items = $cart ?? session('cart', []); $count = array_sum(array_column($items,'quantity')); $total = array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$items)); $free = zfree_over(); $shipFee = zshipping($total); @endphp
+  @php
+  $items = $cart ?? session('cart', []);
+  $count = array_sum(array_column($items,'quantity'));
+  $total = array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$items));
+  $free = zfree_over(); $shipFee = zshipping($total);
+  // applied coupon (session) → compute discount in base currency
+  $zCoupon = null; $zDisc = 0.0; $zFreeship = false;
+  if (session('coupon') && $total > 0) {
+      try {
+          $rate = (float) (\App\Support\Currency::all()['USD']['rate'] ?? 1);
+          $cr = \App\Support\Marketing::validateCoupon(session('coupon'), $total * ($rate>0?$rate:1), optional(auth()->user())->id);
+          if ($cr['ok']) {
+              $zCoupon = session('coupon');
+              if ($cr['freeship']) { $zFreeship = true; $zDisc = 0; }
+              else { $zDisc = \App\Support\Marketing::discountBase($cr, (float) $total); }
+          }
+      } catch (\Throwable $e) {}
+  }
+  $zShipShown = $zFreeship ? 0 : $shipFee;
+  $zTotal = max(0, $total - ($zFreeship ? 0 : $zDisc)) + $zShipShown;
+@endphp
 
   <div class="steps">
     <div class="step on"><i>1</i> Cart</div><span class="step-line"></span>
@@ -109,7 +140,18 @@
         </div>
         @endforeach
         <div class="cfoot">
-          <form class="coupon" onsubmit="event.preventDefault();zToast('Coupon will be applied at checkout','info')"><input placeholder="Coupon code"><button>Apply</button></form>
+          <div class="coupon-wrap">
+            @auth
+            <form class="coupon" id="cpnForm" style="{{ $zCoupon ? 'display:none' : '' }}"><input id="cpnInput" placeholder="Coupon code" maxlength="40" autocomplete="off"><button type="submit" id="cpnBtn">Apply</button></form>
+            <div class="coupon-on" id="cpnApplied" style="{{ $zCoupon ? '' : 'display:none' }}">
+              <span class="cpn-tag"><i class="fa-solid fa-ticket"></i> <b id="cpnCode">{{ $zCoupon }}</b> applied</span>
+              <button type="button" id="cpnRemove" title="Remove coupon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="cpn-msg" id="cpnMsg"></div>
+            @else
+            <a href="{{ route('login') }}" class="coupon-login"><i class="fa-solid fa-ticket"></i> Have a coupon? <b>Log in to apply it</b></a>
+            @endauth
+          </div>
           <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
             <a href="{{ route('shop.index') }}" class="btn-o"><i class="fa-solid fa-arrow-left"></i> Continue shopping</a>
             <a href="{{ route('cart.clear') }}" style="color:var(--sale);font-weight:700;font-size:13.5px" onclick="return confirm('Clear the entire cart?')"><i class="fa-regular fa-trash-can"></i> Clear cart</a>
@@ -121,10 +163,10 @@
     <aside class="sum reveal" data-delay="1">
       <h3>Order Summary</h3>
       <div class="row2"><span>Items (<span id="sumCount">{{ $count }}</span>)</span><b id="sumSub">{{ zprice($total) }}</b></div>
-      <div class="row2"><span>Shipping</span><b id="sumShip" style="color:{{ $shipFee <= 0 ?'var(--ok)':'var(--ink)' }}">{{ $shipFee <= 0 ? 'Free' : zprice($shipFee) }}</b></div>
-      <div class="row2"><span>Discount</span><b>— {{ zprice(0) }}</b></div>
+      <div class="row2"><span>Shipping</span><b id="sumShip" style="color:{{ $zShipShown <= 0 ?'var(--ok)':'var(--ink)' }}">{{ $zShipShown <= 0 ? 'Free' : zprice($zShipShown) }}</b></div>
+      <div class="row2" id="sumDiscRow" style="{{ $zDisc > 0 ? '' : 'display:none' }}"><span>Discount</span><b id="sumDisc" style="color:var(--ok)">&minus; {{ zprice($zDisc) }}</b></div>
       <hr>
-      <div class="tot"><span>Total</span><b id="sumTotal">{{ zprice($total) }}</b></div>
+      <div class="tot"><span>Total</span><b id="sumTotal">{{ zprice($zTotal) }}</b></div>
       @if($free > 0)
       <div class="ship-bar" id="shipBar" data-free="{{ $free }}" data-fee="{{ zshipping(0) }}">
         <span class="ship-msg">@if($total >= $free)<i class="fa-solid fa-circle-check" style="color:var(--ok)"></i> You've unlocked <b>free delivery</b>!
@@ -188,6 +230,45 @@
     let tmr; input.addEventListener('input',()=>{ clearTimeout(tmr); tmr=setTimeout(()=>{ const v=Math.max(0,parseInt(input.value)||0); update(f,v); },600); });
     input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); clearTimeout(tmr); update(f, Math.max(0,parseInt(input.value)||0)); } });
     f.addEventListener('submit',e=>{ e.preventDefault(); update(f, Math.max(0,parseInt(input.value)||0)); });
+  });
+})();
+</script>
+<script>
+(function(){
+  const token=document.querySelector('meta[name=csrf-token]').content;
+  const form=document.getElementById('cpnForm'), inp=document.getElementById('cpnInput'), btn=document.getElementById('cpnBtn'),
+        applied=document.getElementById('cpnApplied'), codeEl=document.getElementById('cpnCode'), rm=document.getElementById('cpnRemove'),
+        msg=document.getElementById('cpnMsg');
+  const shipEl=document.getElementById('sumShip'), discRow=document.getElementById('sumDiscRow'), discEl=document.getElementById('sumDisc'), totEl=document.getElementById('sumTotal');
+  if(!form) return;
+  const fmt=n=>window.zmoney(n);
+  function setMsg(t,cls){ msg.textContent=t||''; msg.className='cpn-msg'+(cls?(' '+cls):''); }
+  function showShip(v){ if(v<=0){ shipEl.textContent='Free'; shipEl.style.color='var(--ok)'; } else { shipEl.textContent=fmt(v); shipEl.style.color='var(--ink)'; } }
+  function showDisc(v){ if(v>0){ discRow.style.display=''; discEl.innerHTML='&minus; '+fmt(v); } else { discRow.style.display='none'; } }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const code=(inp.value||'').trim(); if(!code){ setMsg('Enter a coupon code.','err'); return; }
+    btn.disabled=true; setMsg('');
+    try{
+      const r=await fetch('{{ route('coupon.apply') }}',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json'},credentials:'same-origin',body:JSON.stringify({code:code})});
+      const j=await r.json();
+      if(!r.ok||!j.ok){ setMsg(j.message||'That coupon is not valid.','err'); btn.disabled=false; return; }
+      codeEl.textContent=code.toUpperCase();
+      form.style.display='none'; applied.style.display='flex';
+      showDisc(j.discountBase); showShip(j.shipAfter); totEl.textContent=fmt(j.totalBase);
+      setMsg(j.message,'ok');
+    }catch(err){ setMsg('Network error — please try again.','err'); btn.disabled=false; }
+  });
+
+  rm.addEventListener('click', async function(){
+    try{
+      const r=await fetch('{{ route('coupon.remove') }}',{method:'POST',headers:{'X-CSRF-TOKEN':token,'Accept':'application/json'},credentials:'same-origin'});
+      const j=await r.json();
+      applied.style.display='none'; form.style.display='flex'; inp.value=''; btn.disabled=false;
+      showDisc(0); showShip(j.ship); totEl.textContent=fmt(j.totalBase);
+      setMsg('','');
+    }catch(err){ setMsg('Could not remove — please refresh.','err'); }
   });
 })();
 </script>

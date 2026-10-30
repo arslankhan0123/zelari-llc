@@ -465,6 +465,71 @@
             margin-bottom: 6px;
         }
 
+        /* ───── Generic dropdown (select) styling — reused across every admin page ───── */
+        body select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27none%27%20viewBox%3D%270%200%2024%2024%27%20stroke%3D%27%2394a3b8%27%20stroke-width%3D%272%27%3E%3Cpath%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20d%3D%27M19%209l-7%207-7-7%27/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 16px 16px !important;
+            padding-right: 38px !important;
+            cursor: pointer;
+        }
+        /* selects that don't already use .form-input still get a consistent box */
+        body select:not(.form-input) {
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1e293b;
+            background-color: #fff;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        body select:hover { border-color: #cbd5e1; }
+        body select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12);
+        }
+        body select option { color: #1e293b; background: #fff; }
+
+        /* ───── Custom dropdown (enhances native <select>) — reused on every page ───── */
+        .zl-dd {
+            position: relative; display: inline-flex; align-items: center; cursor: pointer; box-sizing: border-box;
+            min-width: 150px; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+            background: #fff; font-size: 14px; color: #1e293b; font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .zl-dd:hover { border-color: #cbd5e1; }
+        .zl-dd.open { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--shadow-rgb), .12); }
+        .zl-dd-native {
+            position: absolute !important; width: 1px; height: 1px;
+            opacity: 0; pointer-events: none; margin: 0; padding: 0 !important; border: 0;
+            background-image: none !important;
+        }
+        .zl-dd .zl-dd-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        .zl-dd .zl-dd-chev { flex: none; display: inline-flex; color: #94a3b8; margin-left: 8px; transition: transform .2s; }
+        .zl-dd.open .zl-dd-chev { transform: rotate(180deg); }
+        .zl-dd-panel {
+            position: absolute; left: 0; top: calc(100% + 6px); min-width: 100%; width: max-content; max-width: 320px;
+            z-index: 60; background: #fff; border: 1px solid #eef2f7; border-radius: 12px;
+            box-shadow: 0 16px 40px -12px rgba(16,24,40,.25); padding: 6px; max-height: 300px; overflow: auto;
+            opacity: 0; transform: translateY(-6px); pointer-events: none;
+            transition: opacity .15s ease, transform .15s ease;
+        }
+        .zl-dd.open .zl-dd-panel { opacity: 1; transform: none; pointer-events: auto; }
+        .zl-dd-opt {
+            width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 9px 12px; border: 0; background: none; border-radius: 8px;
+            font-size: 13.5px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
+        }
+        .zl-dd-opt:hover { background: #f1f5f9; }
+        .zl-dd-opt.on { background: var(--brand-grad); color: #fff; }
+        .zl-dd-opt .zl-dd-check { width: 15px; height: 15px; flex: none; opacity: 0; }
+        .zl-dd-opt.on .zl-dd-check { opacity: 1; }
+
 
         /* Brand overrides for Tailwind's indigo utilities used throughout the admin pages.
            Scoped under body so they beat the CDN utilities without !important. */
@@ -695,6 +760,7 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
+        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*') || request()->routeIs('admin.coupons.*')) ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
@@ -737,7 +803,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px)">
+        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px);overflow-x:hidden">
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -849,6 +915,44 @@
                 <span class="nav-label flex-1 text-left">Sourcing</span>
                 <span data-badge="sourcing_new" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$newSourcing) style="display:none" @endif>{{ $newSourcing }}</span>
             </a>
+
+            <!-- Tools -->
+            <div>
+                <button @click="toolsOpen = !toolsOpen"
+                    class="nav-item w-full {{ (request()->routeIs('admin.pdftools.*')||request()->routeIs('admin.calcs.*')||request()->routeIs('admin.imgtools.*')||request()->routeIs('admin.coupons.*')) ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085" />
+                    </svg>
+                    <span class="nav-label flex-1 text-left">Tools</span>
+                    <svg :class="{ 'rotate-180': toolsOpen }" class="nav-label w-4 h-4 transition-transform" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div class="submenu" :style="toolsOpen ? 'max-height:320px' : 'max-height:0'">
+                    <a href="{{ route('admin.pdftools.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.pdftools.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        PDF Tools
+                    </a>
+                    <a href="{{ route('admin.calcs.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.calcs.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Calculators
+                    </a>
+                    <a href="{{ route('admin.imgtools.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.imgtools.index') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Image Tools
+                    </a>
+                    <a href="{{ route('admin.coupons.index') }}"
+                        class="sub-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        Spin Wheel
+                    </a>
+                </div>
+            </div>
 
             @php
                 try { \App\Models\ChatMessage::ensureTable(); $unreadChats = \App\Models\ChatMessage::where('sender', 'user')->where('read_by_agent', false)->count(); }
@@ -1015,10 +1119,22 @@
                 </a>
                 @endif
 
-                <a href="{{ route('admin.settings.index') }}" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    Settings
-                </a>
+                @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
+                <div x-data="{ sub: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
+                    <button type="button" @click="sub = !sub" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}" style="width:100%">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span style="flex:1;text-align:left">Settings</span>
+                        <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': sub }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="sub" x-cloak>
+                        @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
+                        <a href="{{ route('admin.settings.show', $sk) }}" class="acct-item {{ $curSec === $sk ? 'on' : '' }}" style="padding-left:30px;font-size:13px">
+                            <span class="rounded-full bg-current" style="width:6px;height:6px;flex:none;opacity:.5"></span>
+                            {{ $sl }}
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
 
                 <a href="{{ route('home') }}" target="_blank" rel="noopener" class="acct-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
@@ -1335,6 +1451,75 @@
     })();
     </script>
 
+    <script>
+    /* Progressive dropdown enhancer — turns native <select> into a styled custom dropdown,
+       matching the Settings design, on every admin page. Keeps the real <select> in the DOM
+       (hidden) so form submission + change listeners keep working. */
+    (function(){
+      var CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>';
+      var CHECK = '<svg class="zl-dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+      var openWrap = null;
+
+      function skip(sel){
+        return sel.multiple || sel.size > 1 || sel.dataset.zlEnhanced
+          || sel.hasAttribute('x-model') || sel.hasAttribute(':name') || sel.hasAttribute('x-bind:name')
+          || sel.closest('template') || sel.closest('[x-for]');
+      }
+
+      function enhance(sel){
+        if (skip(sel)) return;
+        sel.dataset.zlEnhanced = '1';
+
+        var wrap = document.createElement('div');
+        wrap.className = 'zl-dd ' + sel.className;      // inherit box + width/layout classes
+        sel.parentNode.insertBefore(wrap, sel);
+        sel.classList.add('zl-dd-native');
+        wrap.appendChild(sel);
+
+        var label = document.createElement('span'); label.className = 'zl-dd-label';
+        var chev  = document.createElement('span'); chev.className = 'zl-dd-chev'; chev.innerHTML = CHEV;
+        wrap.appendChild(label); wrap.appendChild(chev);
+
+        var panel = document.createElement('div'); panel.className = 'zl-dd-panel';
+        Array.prototype.forEach.call(sel.options, function(opt, i){
+          var it = document.createElement('button');
+          it.type = 'button'; it.className = 'zl-dd-opt'; it.dataset.i = i;
+          var t = document.createElement('span'); t.textContent = opt.textContent;
+          it.appendChild(t);
+          it.insertAdjacentHTML('beforeend', CHECK);
+          it.addEventListener('click', function(e){ e.stopPropagation(); pick(i); });
+          panel.appendChild(it);
+        });
+        wrap.appendChild(panel);
+
+        function render(){
+          var o = sel.options[sel.selectedIndex];
+          label.textContent = o ? o.textContent : '';
+          Array.prototype.forEach.call(panel.children, function(c){
+            c.classList.toggle('on', +c.dataset.i === sel.selectedIndex);
+          });
+        }
+        function pick(i){
+          if (sel.selectedIndex !== i){ sel.selectedIndex = i; sel.dispatchEvent(new Event('change', {bubbles:true})); }
+          render(); close();
+        }
+        function open(){ if(openWrap && openWrap!==wrap) openWrap.classList.remove('open'); wrap.classList.add('open'); openWrap = wrap; }
+        function close(){ wrap.classList.remove('open'); if(openWrap===wrap) openWrap = null; }
+
+        wrap.addEventListener('click', function(e){ if(e.target.closest('.zl-dd-panel')) return; wrap.classList.contains('open') ? close() : open(); });
+        sel.addEventListener('change', render);   // keep in sync if something changes the select programmatically
+        render();
+      }
+
+      function enhanceAll(root){ (root||document).querySelectorAll('select:not([data-zl-enhanced])').forEach(enhance); }
+
+      document.addEventListener('click', function(e){ if(openWrap && !openWrap.contains(e.target)) openWrap.classList.remove('open'), openWrap=null; });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape' && openWrap){ openWrap.classList.remove('open'); openWrap=null; } });
+
+      if (document.readyState !== 'loading') enhanceAll(); else document.addEventListener('DOMContentLoaded', function(){ enhanceAll(); });
+      window.zlEnhanceSelects = enhanceAll;
+    })();
+    </script>
     @stack('scripts')
 </body>
 

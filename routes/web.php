@@ -26,9 +26,26 @@ use Illuminate\Support\Facades\Route;
 
 // ── Storefront ──────────────────────────────────────────────────────────────
 Route::get('/', [ShopController::class, 'home'])->name('home');
+
+
+
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/product/{slug}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/brands', [ShopController::class, 'brands'])->name('brands');
+Route::get('/pdf-tools', [\App\Http\Controllers\Shop\ToolsController::class, 'index'])->name('tools.index');
+Route::redirect('/tools', '/pdf-tools');
+Route::get('/pdf-tools/convert-status/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'status'])->name('tools.convertStatus');
+Route::post('/pdf-tools/convert/{slug}', [\App\Http\Controllers\Shop\ToolsConvertController::class, 'convert'])->name('tools.convert');
+Route::get('/pdf-tools/{slug}', [\App\Http\Controllers\Shop\ToolsController::class, 'show'])->name('tools.show');
+Route::get('/calculators', [\App\Http\Controllers\Shop\CalculatorsController::class, 'index'])->name('calculators.index');
+Route::get('/calculators/{slug}', [\App\Http\Controllers\Shop\CalculatorsController::class, 'show'])->name('calculators.show');
+Route::get('/image-tools', [\App\Http\Controllers\Shop\ImageToolsController::class, 'index'])->name('imgtools.index');
+Route::get('/image-tools/{slug}', [\App\Http\Controllers\Shop\ImageToolsController::class, 'show'])->name('imgtools.show');
+Route::post('/coupon/apply', [\App\Http\Controllers\Shop\MarketingController::class, 'applyCoupon'])->name('coupon.apply');
+Route::post('/coupon/remove', [\App\Http\Controllers\Shop\MarketingController::class, 'removeCoupon'])->name('coupon.remove');
+Route::get('/spin-wheel', [\App\Http\Controllers\Shop\MarketingController::class, 'page'])->name('spinwheel.index');
+Route::post('/wheel/spin', [\App\Http\Controllers\Shop\MarketingController::class, 'spin'])->name('wheel.spin');
+Route::get('/tools/{slug}', fn (string $slug) => redirect()->route('tools.show', $slug));
 Route::post('/chatbot', [\App\Http\Controllers\Shop\ChatbotController::class, 'message'])->name('chatbot.message')->middleware('throttle:40,1');
 Route::get('/chatbot/poll', [\App\Http\Controllers\Shop\ChatbotController::class, 'poll'])->name('chatbot.poll')->middleware('throttle:120,1');
 Route::post('/product/{slug}/review', [ShopReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
@@ -91,6 +108,35 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     });
 
     Route::get('/notifications', [\App\Http\Controllers\Admin\LiveChatController::class, 'notifications'])->name('notifications.index');
+
+    Route::prefix('pdf-tools')->name('pdftools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PdfToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\PdfToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\PdfToolsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('calculators')->name('calcs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CalculatorsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\CalculatorsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\CalculatorsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('image-tools')->name('imgtools.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ImageToolsController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\ImageToolsController::class, 'toggle'])->name('toggle');
+        Route::post('/master', [\App\Http\Controllers\Admin\ImageToolsController::class, 'master'])->name('master');
+    });
+
+    Route::prefix('coupons')->name('coupons.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CouponsController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\CouponsController::class, 'store'])->name('store');
+        Route::post('/{coupon}/toggle', [\App\Http\Controllers\Admin\CouponsController::class, 'toggle'])->name('toggle');
+        Route::delete('/{coupon}', [\App\Http\Controllers\Admin\CouponsController::class, 'destroy'])->name('destroy');
+        Route::delete('/entry/{entry}', [\App\Http\Controllers\Admin\CouponsController::class, 'destroyEntry'])->name('entry.destroy');
+        Route::post('/wheel', [\App\Http\Controllers\Admin\CouponsController::class, 'wheel'])->name('wheel');
+        Route::post('/segments', [\App\Http\Controllers\Admin\CouponsController::class, 'segments'])->name('segments');
+        Route::get('/export-emails', [\App\Http\Controllers\Admin\CouponsController::class, 'exportEmails'])->name('export');
+    });
 
     Route::prefix('chats')->name('chats.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\LiveChatController::class, 'index'])->name('index');
@@ -170,7 +216,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::put('/content/{section}', [ContentController::class, 'update'])->name('content.update');
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings/{section}', [SettingController::class, 'index'])->name('settings.show')->where('section', 'branding|email|store|payments');
+    Route::post('/settings/email', [SettingController::class, 'updateEmail'])->name('settings.email');
+    Route::post('/settings/store', [SettingController::class, 'updateStore'])->name('settings.store');
     Route::post('/settings/test-email', [SettingController::class, 'test'])->name('settings.test');
     Route::put('/settings/payments', [SettingController::class, 'updatePayments'])->name('settings.payments');
     Route::post('/settings/branding', [SettingController::class, 'updateBranding'])->name('settings.branding');

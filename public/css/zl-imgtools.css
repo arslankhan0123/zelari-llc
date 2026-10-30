@@ -1,0 +1,57 @@
+/* Image tools — tool page */
+.im-back{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:18px}
+.im-back:hover{color:var(--p)}
+.im-head{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.im-head .ic{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;color:#fff;font-size:22px;flex:none}
+.im-head h1{font-size:clamp(21px,2.6vw,28px);font-weight:800;letter-spacing:-.5px;margin:0 0 4px}
+.im-head p{color:var(--muted);font-size:14px;margin:0;line-height:1.55}
+.im-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:18px}
+.im-drop{border:2px dashed var(--line-2);border-radius:14px;padding:38px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.2s;cursor:pointer}
+.im-drop:hover,.im-drop.on{border-color:var(--p);background:rgba(37,56,114,.03)}
+.im-drop i{font-size:30px;color:var(--p)}
+.im-drop b{font-size:15.5px}
+.im-drop span{font-size:12.5px;color:var(--muted)}
+.im-pick{margin-top:8px;border:0;background:var(--grad);color:#fff;font-weight:700;font-family:inherit;font-size:14px;padding:11px 26px;border-radius:11px;cursor:pointer;transition:.2s}
+.im-pick:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.im-files{display:flex;flex-direction:column;gap:8px}
+.im-file{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13px}
+.im-file .fi{color:var(--p)}
+.im-file b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.im-file .sz{color:var(--muted);font-size:12px;flex:none}
+.im-file .rm{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px}
+.im-file .rm:hover{color:#e5322d}
+.im-stagewrap{display:grid;place-items:center;background:repeating-conic-gradient(#f1f3f7 0 25%,#fff 0 50%) 0 0/22px 22px;border:1px solid var(--line);border-radius:13px;padding:14px;overflow:auto}
+#imStage{max-width:100%;border-radius:6px;box-shadow:0 10px 30px -14px rgba(16,24,40,.35);touch-action:none}
+.im-opts{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;border:1px solid var(--line);background:#fafbfd;border-radius:13px;padding:14px 16px}
+.im-opt{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.im-opt label{font-weight:700}
+.im-opt input[type=number],.im-opt input[type=text],.im-opt select{border:1.5px solid var(--line-2);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13px;outline:0;background:#fff}
+.im-opt input[type=number]{width:90px}
+.im-opt input[type=text]{width:180px}
+.im-opt input[type=number]:focus,.im-opt input[type=text]:focus,.im-opt select:focus{border-color:var(--p)}
+.im-opt input[type=range]{accent-color:var(--p);width:150px}
+.im-opt input[type=color]{width:34px;height:30px;border:1px solid var(--line-2);border-radius:7px;padding:1px;background:#fff;cursor:pointer}
+.im-opt .val{min-width:40px;text-align:right;font-weight:800;color:var(--p)}
+.im-btn{border:1.5px solid var(--line-2);background:#fff;border-radius:9px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;transition:.15s}
+.im-btn:hover{border-color:var(--p);color:var(--p)}
+.im-btn.on{background:var(--grad);color:#fff;border-color:transparent}
+.im-result{border:1px solid #bbe3c8;background:#f2fbf5;border-radius:13px;padding:14px 16px;font-size:13.5px;line-height:1.7}
+.im-result b{color:#15803d}
+.im-result .pick-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.im-result .sw{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);flex:none}
+.im-result code{background:#fff;border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-size:13px;font-weight:700}
+.im-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.im-note{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.im-note i{color:#15803d}
+.im-go{border:0;background:var(--grad);color:#fff;font-weight:800;font-family:inherit;font-size:15px;padding:13px 34px;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:.2s}
+.im-go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.im-go:disabled{opacity:.6;cursor:wait;transform:none}
+.im-more{margin-top:34px}
+.im-more h2{font-size:19px;font-weight:800;margin:0 0 14px}
+@media(max-width:640px){.im-card{padding:16px}.im-foot{justify-content:center}.im-opt input[type=text]{width:140px}}
+
+/* Detail page stays calm — no entrance / idle / shine animations on the "More image tools" cards */
+.im-more .tl-card{animation:none!important;transform:none!important;transition:transform .2s,border-color .2s,box-shadow .2s}
+.im-more .tl-card::before,.im-more .tl-card::after{display:none!important;animation:none!important}
+.im-more .tl-card .ic,.im-more .tl-card .ic i{animation:none!important;transform:none!important}
+.im-more .tl-card:hover{transform:translateY(-4px)!important;border-color:var(--p);box-shadow:0 18px 40px -22px rgba(16,24,40,.38)}
