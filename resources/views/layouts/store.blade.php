@@ -22,7 +22,19 @@ window.zmoney=function(n){var c=window.ZCUR,v=(Number(n)||0)*c.rate,s=v.toLocale
 @endif
 <meta name="theme-color" content="{{ ztheme('brand_dark') }}">
 @include('partials.theme-vars')
-<meta property="og:image" content="{{ asset('images/logo.png') }}">
+{{-- SEO: canonical + social tags (auto-managed) --}}
+<link rel="canonical" href="{{ url()->current() }}">
+<meta name="robots" content="@yield('meta_robots', 'index, follow')">
+<meta property="og:type" content="@yield('og_type', 'website')">
+<meta property="og:site_name" content="{{ zstore('name','Zelari') }}">
+<meta property="og:title" content="@yield('title', 'Shop') · {{ zstore('name','Zelari') }}">
+<meta property="og:description" content="@yield('meta_description', zstore('name','Zelari').' — '.zstore('tagline','a smarter way to shop').'. Curated products, honest prices, fast worldwide delivery.')">
+<meta property="og:url" content="{{ url()->current() }}">
+<meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="@yield('title', 'Shop') · {{ zstore('name','Zelari') }}">
+<meta name="twitter:description" content="@yield('meta_description', zstore('name','Zelari').' — fast worldwide delivery.')">
+<meta name="twitter:image" content="@yield('og_image', asset('images/logo.png'))">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">

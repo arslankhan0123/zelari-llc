@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\SeoAudit;
+use App\Support\SeoFix;
 
 class SeoController extends Controller
 {
@@ -22,4 +23,13 @@ class SeoController extends Controller
 
         return redirect()->route('admin.seo.index', ['done' => 1]);
     }
+    public function fix()
+    {
+        @set_time_limit(180);
+        $f = SeoFix::run();
+        SeoAudit::run();
+
+        return redirect()->route('admin.seo.index', ['fixed' => $f['slugs']]);
+    }
+
 }
