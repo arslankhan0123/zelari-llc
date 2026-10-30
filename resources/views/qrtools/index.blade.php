@@ -70,7 +70,7 @@
 @push('scripts')
 <script>
 (function(){
-  const cards=[...document.querySelectorAll('.tl-card')];
+  const cards=[...document.querySelectorAll('.tl-card')]; cards.forEach((k,i)=>k.style.setProperty('--i',i));
   document.querySelectorAll('.tl-card.js-soon').forEach(k=>k.addEventListener('click',e=>{
     e.preventDefault();
     zToast('<b>'+k.dataset.name+'</b> is coming soon — we are working on it!','info');
