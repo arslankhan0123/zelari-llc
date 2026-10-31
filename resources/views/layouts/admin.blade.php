@@ -31,6 +31,7 @@
         /* ── Sidebar ─────────────────────────── */
         #sidebar {
             width: var(--sidebar-w);
+            display: flex;
             background: linear-gradient(160deg, #0f0c29 0%, #1a1750 50%, #24243e 100%);
             transition: width .3s cubic-bezier(.4, 0, .2, 1);
             position: fixed;
@@ -43,8 +44,9 @@
         }
 
         #sidebar.collapsed {
-            width: 72px;
+            width: 64px;
         }
+        #sidebar.collapsed .side-menu { display: none; }
 
         #sidebar.collapsed .nav-label,
         #sidebar.collapsed .brand-text,
@@ -79,6 +81,34 @@
             padding: 9px 0;
         }
         #sidebar.collapsed .nav-item.active .nav-icon { color: #fff !important; filter: drop-shadow(0 0 6px rgba(255,255,255,.55)); }
+
+        [x-cloak] { display: none !important; }
+        /* Module switcher (Dashboard / Ecommerce / HRM) */
+        .module-switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 5px; margin: 2px 10px 6px; border-radius: 12px; background: rgba(255,255,255,.055); }
+        .ms-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 2px; border-radius: 9px; color: rgba(255,255,255,.6); font-size: 10.5px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all .18s ease; border: 0; background: transparent; }
+        .ms-tab:hover { color: #fff; background: rgba(255,255,255,.07); }
+        .ms-tab.ms-on { color: #fff; background: linear-gradient(135deg, rgba(99,102,241,.45), rgba(139,92,246,.22)); box-shadow: 0 2px 10px -3px rgba(99,102,241,.6); }
+        .ms-ico { width: 19px; height: 19px; }
+        #sidebar.collapsed .module-switch { grid-template-columns: 1fr; margin: 2px 8px 6px; gap: 2px; }
+        #sidebar.collapsed .ms-lbl { display: none; }
+        #sidebar.collapsed .ms-tab { padding: 8px 2px; }
+
+        /* ── Module rail + menu (two-tier) ── */
+        .side-rail { width: 64px; flex: none; height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 82px; background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.06); }
+        .rail-logo { width: 40px; height: 40px; border-radius: 12px; background: #fff; padding: 5px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.3); flex: none; }
+        .rail-item { width: 52px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 12px; color: rgba(255,255,255,.6); font-size: 9.5px; font-weight: 600; text-decoration: none; cursor: pointer; border: 0; background: transparent; transition: all .18s ease; flex: none; }
+        .rail-item svg { width: 21px; height: 21px; }
+        .rail-item:hover { color: #fff; background: rgba(255,255,255,.08); }
+        .rail-item.on { color: #fff; background: linear-gradient(135deg, rgba(99,102,241,.5), rgba(139,92,246,.28)); box-shadow: 0 3px 12px -3px rgba(99,102,241,.7); }
+        .rail-lbl { line-height: 1; }
+        .side-menu { flex: 1; min-width: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .rail-acct { position: relative; flex: none; }
+        .rail-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 0; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.35); }
+        .rail-acct-pop { position: fixed; left: 70px; bottom: 14px; width: 214px; background: #1a1750; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; box-shadow: 0 14px 44px rgba(0,0,0,.55); padding: 6px; z-index: 80; }
+        .rail-acct-head { padding: 8px 12px 10px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 4px; }
+        .rail-acct-pop a, .rail-acct-pop button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border-radius: 8px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 500; text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; transition: background .15s; }
+        .rail-acct-pop a:hover, .rail-acct-pop button:hover { background: rgba(255,255,255,.08); color: #fff; }
+        .rail-acct-pop svg { width: 16px; height: 16px; flex: none; }
 
         /* Sidebar brand logo glow */
         .brand-logo {
@@ -179,10 +209,17 @@
 
         /* Sidebar user bottom */
         .sidebar-user {
-            border-top: 1px solid rgba(255, 255, 255, .07);
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-top: 1px solid rgba(255, 255, 255, .08);
             padding: 10px 12px;
-            position: relative;
+            background: rgba(13, 10, 34, .94);
+            backdrop-filter: blur(6px);
+            z-index: 45;
         }
+        #sidebar.collapsed .acct-menu { left: 70px; right: auto; width: 224px; }
 
         .brand-text { min-width: 0; }
 
@@ -280,7 +317,7 @@
         }
 
         #main-wrap.sidebar-collapsed {
-            margin-left: 72px;
+            margin-left: 64px;
         }
 
         /* ── Header ──────────────────────────── */
@@ -779,14 +816,39 @@
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
-        custOpen: @yield('cust_open', 'false')
+        custOpen: @yield('cust_open', 'false'),
+        activeModule: '{{ request()->routeIs('dashboard') ? 'dashboard' : (request()->routeIs('admin.hrm.*') ? 'hrm' : 'ecommerce') }}'
       }" @resize.window="sidebarOpen = window.innerWidth > 768">
 
     <!-- Mobile overlay -->
     <div class="mobile-overlay" :class="{ 'block': sidebarMobile }" @click="sidebarMobile=false"></div>
 
     <!-- ════════ SIDEBAR ════════ -->
-    <aside id="sidebar" :class="{ 'collapsed': !sidebarOpen && window.innerWidth > 768, 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
+    <aside id="sidebar" :class="{ 'collapsed': (!sidebarOpen || activeModule==='dashboard') && window.innerWidth > 768, 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
+
+        <!-- Module rail -->
+        <div class="side-rail">
+            <a href="{{ route('admin.dashboard') }}" class="rail-logo" title="{{ zstore('name','Zelari') }}"><img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-contain"></a>
+            <a href="{{ route('dashboard') }}" class="rail-item {{ request()->routeIs('dashboard') ? 'on' : '' }}" title="Dashboard">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="rail-lbl">Home</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" @click="activeModule='ecommerce'" class="rail-item {{ (!request()->routeIs('dashboard') && !request()->routeIs('admin.hrm.*')) ? 'on' : '' }}" :class="{ 'on': activeModule==='ecommerce' }" title="Ecommerce">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="rail-lbl">Shop</span>
+            </a>
+            <a href="{{ route('admin.hrm.index') }}" @click="activeModule='hrm'" class="rail-item {{ request()->routeIs('admin.hrm.*') ? 'on' : '' }}" :class="{ 'on': activeModule==='hrm' }" title="HRM">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
+                <span class="rail-lbl">HRM</span>
+            </a>
+            <div style="margin-top:auto"></div>
+            <button type="button" @click="sidebarOpen=!sidebarOpen" class="rail-item" title="Toggle menu" x-show="window.innerWidth>768">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="sidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'"/></svg>
+            </button>
+            
+        </div>
+
+        <div class="side-menu">
 
         <!-- Aurora blobs -->
         <div class="sb-blob sb-blob-1"></div>
@@ -812,15 +874,13 @@
             </button>
         </div>
 
-        <!-- Nav label -->
-        <div class="nav-label px-5 mb-0 mt-1">
-            <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Main</span>
-        </div>
-
         <!-- Navigation -->
         <nav class="px-2 space-y-px overflow-y-auto" style="height:calc(100vh - 150px);overflow-x:hidden">
 
-            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+          <!-- ECOMMERCE MENU -->
+          <div x-show="activeModule==='ecommerce'" x-cloak>
+
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -1150,9 +1210,57 @@
                 <span class="nav-label">All Payments</span>
             </a>
 
+            <!-- System -->
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">System</span></div>
+
+            @if(auth()->user()?->isSuperAdmin())
+            <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span class="nav-label">Users &amp; Roles</span>
+            </a>
+            @endif
+
+            @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
+            <div x-data="{ setOpen: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
+                <button type="button" @click="setOpen=!setOpen" class="nav-item w-full {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="nav-label flex-1 text-left">Settings</span>
+                    <svg :class="{ 'rotate-180': setOpen }" class="nav-label w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="submenu" :style="setOpen ? 'max-height:240px' : 'max-height:0'">
+                    @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
+                    <a href="{{ route('admin.settings.show', $sk) }}" class="sub-item {{ $curSec === $sk ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        {{ $sl }}
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+
+          </div><!-- /ECOMMERCE MENU -->
+
+          <!-- HRM MENU (placeholder) -->
+          <div x-show="activeModule==='hrm'" x-cloak>
+            <div class="nav-label px-5 mb-0 mt-1"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">HRM</span></div>
+            <a href="{{ route('admin.hrm.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                <span class="nav-label">Overview</span>
+            </a>
+            @foreach(['Employees','Attendance','Payroll','Leave','Departments','Reports'] as $hi)
+            <span class="nav-item" style="opacity:.45;cursor:default">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span class="nav-label flex-1 text-left">{{ $hi }}</span>
+                <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white/55">SOON</span>
+            </span>
+            @endforeach
+          </div><!-- /HRM MENU -->
+
         </nav>
 
         <!-- Sidebar bottom user + account menu -->
+        
+        </div><!-- /side-menu -->
+
         <div class="sidebar-user" @keydown.escape.window="acctOpen = false">
 
             <!-- Menu (opens above the trigger) -->
@@ -1173,29 +1281,7 @@
                     My Profile
                 </a>
 
-                @if(auth()->user()?->isSuperAdmin())
-                <a href="{{ route('admin.users.index') }}" class="acct-item {{ request()->routeIs('admin.users.*') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    Users &amp; Roles
-                </a>
-                @endif
-
-                @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
-                <div x-data="{ sub: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
-                    <button type="button" @click="sub = !sub" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}" style="width:100%">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span style="flex:1;text-align:left">Settings</span>
-                        <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': sub }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div x-show="sub" x-cloak>
-                        @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
-                        <a href="{{ route('admin.settings.show', $sk) }}" class="acct-item {{ $curSec === $sk ? 'on' : '' }}" style="padding-left:30px;font-size:13px">
-                            <span class="rounded-full bg-current" style="width:6px;height:6px;flex:none;opacity:.5"></span>
-                            {{ $sl }}
-                        </a>
-                        @endforeach
-                    </div>
-                </div>
+                
 
                 <a href="{{ route('home') }}" target="_blank" rel="noopener" class="acct-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
@@ -1230,7 +1316,7 @@
     </aside>
 
     <!-- ════════ MAIN WRAPPER ════════ -->
-    <div id="main-wrap" :class="{ 'sidebar-collapsed': !sidebarOpen && window.innerWidth > 768 }">
+    <div id="main-wrap" :class="{ 'sidebar-collapsed': (!sidebarOpen || activeModule==='dashboard') && window.innerWidth > 768 }">
 
         <!-- ── TOP BAR ── -->
         <header id="topbar">
@@ -1411,7 +1497,7 @@
     <script>
     (function(){
       const URL_COUNTS='{{ route('admin.chats.notify') }}';
-      const LINKS={chats:'{{ route('admin.chats.index') }}',messages:'{{ route('admin.messages.index') }}',orders:'{{ \Illuminate\Support\Facades\Route::has('admin.orders.index') ? route('admin.orders.index') : url('/admin/orders') }}',sourcing:'{{ \Illuminate\Support\Facades\Route::has('admin.sourcing.index') ? route('admin.sourcing.index') : url('/admin/sourcing') }}'};
+      const LINKS={chats:'{{ route('admin.chats.index') }}',messages:'{{ route('admin.messages.index') }}',orders:'{{ route('admin.orders.index') }}',sourcing:'{{ route('admin.sourcing.index') }}'};
       const META={chats:['💬','New live chat message','A visitor is waiting in Live Chat'],messages:['✉️','New contact message','Someone sent a message'],orders:['🛒','New order received!','Open Orders to process it'],sourcing:['📦','New sourcing request','Open Sourcing to review it']};
 
       /* ── sound: WebAudio chime; if the browser hasn't been clicked yet, the

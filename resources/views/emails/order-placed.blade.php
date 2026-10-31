@@ -122,7 +122,7 @@
   {{-- CTA --}}
   <tr><td class="pad" bgcolor="#ffffff" style="background:#ffffff;padding:0 32px 32px;" align="center">
     @if($forAdmin)
-      <a href="{{ url('/admin/orders/'.$order->id) }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Open order in admin</span></a>
+      <a href="{{ route('admin.orders.show', $order->id) }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Open order in admin</span></a>
     @else
       <a href="{{ url('/shop') }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Continue shopping</span></a>
     @endif

@@ -103,7 +103,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 });
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\Admin\HomeController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -112,7 +112,10 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Admin Routes ────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->name('admin.')->group(function () {
+
+    // Ecommerce dashboard (the detailed store dashboard)
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
@@ -300,6 +303,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{order}', [OrderController::class, 'update'])->name('update');
         Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy');
     });
+});
+
+
+// HRM module (placeholder shell)
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/hrm')->name('admin.hrm.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\HrmController::class, 'index'])->name('index');
 });
 
 require __DIR__ . '/auth.php';
