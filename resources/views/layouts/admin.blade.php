@@ -21,7 +21,7 @@
         }
 
         :root {
-            --sidebar-w: 260px;
+            --sidebar-w: 288px;
             /* Aliases → config/theme.php via partials/theme-vars */
             --indigo: var(--brand);
             --indigo-dark: var(--brand-dark);
@@ -133,7 +133,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 5px 12px;
+            padding: 7px 12px;
             margin: 0 8px;
             border-radius: 9px;
             cursor: pointer;
@@ -187,7 +187,7 @@
             display: flex;
             align-items: center;
             gap: 9px;
-            padding: 4px 14px 4px 42px;
+            padding: 6px 14px 6px 42px;
             margin: 0 8px;
             border-radius: 8px;
             color: rgba(255, 255, 255, .5);
@@ -875,7 +875,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="px-2 space-y-px overflow-y-auto" style="height:calc(100vh - 150px);overflow-x:hidden">
+        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 150px);overflow-x:hidden">
 
           <!-- ECOMMERCE MENU -->
           <div x-show="activeModule==='ecommerce'" x-cloak>
