@@ -54,7 +54,10 @@
 
         #sidebar.collapsed .nav-item {
             justify-content: center;
-            padding: 12px;
+            padding: 9px 0;
+            margin: 0;
+            width: 100%;
+            border-left: 0 !important;
         }
 
         #sidebar.collapsed .submenu {
@@ -62,8 +65,20 @@
         }
 
         #sidebar.collapsed .collapse-arrow {
-            display: none;
+            display: block !important;
+            margin: 0 auto;
         }
+        #sidebar.collapsed .brand-row {
+            flex-direction: column;
+            padding: 14px 0 10px;
+            gap: 10px;
+        }
+        #sidebar.collapsed .brand-row .brand-logo { margin: 0 auto; }
+        #sidebar.collapsed .nav-item.active {
+            border-left: 0;
+            padding: 9px 0;
+        }
+        #sidebar.collapsed .nav-item.active .nav-icon { color: #fff !important; filter: drop-shadow(0 0 6px rgba(255,255,255,.55)); }
 
         /* Sidebar brand logo glow */
         .brand-logo {
@@ -88,12 +103,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 13px;
-            margin: 1px 8px;
+            padding: 5px 12px;
+            margin: 0 8px;
             border-radius: 9px;
             cursor: pointer;
             color: rgba(255, 255, 255, .65);
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 500;
             text-decoration: none;
             transition: all .22s ease;
@@ -120,8 +135,8 @@
         }
 
         .nav-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             flex-shrink: 0;
         }
 
@@ -142,8 +157,8 @@
             display: flex;
             align-items: center;
             gap: 9px;
-            padding: 6px 14px 6px 44px;
-            margin: 1px 8px;
+            padding: 4px 14px 4px 42px;
+            margin: 0 8px;
             border-radius: 8px;
             color: rgba(255, 255, 255, .5);
             font-size: 12.5px;
@@ -230,7 +245,7 @@
             border-radius: 9px;
             background: none;
             color: rgba(255, 255, 255, .72);
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 600;
             font-family: inherit;
             text-align: left;
@@ -523,7 +538,7 @@
         .zl-dd-opt {
             width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
             padding: 9px 12px; border: 0; background: none; border-radius: 8px;
-            font-size: 13.5px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
+            font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
         }
         .zl-dd-opt:hover { background: #f1f5f9; }
         .zl-dd-opt.on { background: var(--brand-grad); color: #fff; }
@@ -760,7 +775,7 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
-        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*') || request()->routeIs('admin.coupons.*')) ? 'true' : 'false' }},
+        toolsOpen: {{ request()->routeIs('admin.pdftools.*','admin.calcs.*','admin.imgtools.*','admin.texttools.*','admin.devtools.*','admin.qrtools.*','admin.colortools.*','admin.randomtools.*','admin.sellertools.*','admin.coupons.*') ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
@@ -778,7 +793,7 @@
         <div class="sb-blob sb-blob-2"></div>
 
         <!-- Brand -->
-        <div class="flex items-center gap-3 px-4 py-4 relative">
+        <div class="brand-row flex items-center gap-3 px-4 py-2.5 relative">
             <div class="brand-logo w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
                 <img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-contain">
             </div>
@@ -798,12 +813,12 @@
         </div>
 
         <!-- Nav label -->
-        <div class="nav-label px-5 mb-0.5 mt-1.5">
+        <div class="nav-label px-5 mb-0 mt-1">
             <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Main</span>
         </div>
 
         <!-- Navigation -->
-        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px);overflow-x:hidden">
+        <nav class="px-2 space-y-px overflow-y-auto" style="height:calc(100vh - 150px);overflow-x:hidden">
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -814,7 +829,7 @@
             </a>
 
             <!-- Catalog group -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Catalog</span>
             </div>
 
@@ -1005,7 +1020,7 @@
             </a>
 
             <a href="{{ route('admin.chats.index') }}" class="nav-item {{ request()->routeIs('admin.chats.*') ? 'active' : '' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">Live Chat</span>
@@ -1041,7 +1056,7 @@
             </a>
 
             <!-- Orders group -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Commerce</span>
             </div>
 
@@ -1110,7 +1125,7 @@
             </div>
 
             <!-- Website -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Website</span>
             </div>
             <a href="{{ route('admin.content.index') }}"
@@ -1123,7 +1138,7 @@
             </a>
 
             <!-- Payments -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Payments</span>
             </div>
             <a href="{{ route('admin.payments.index') }}"
