@@ -837,10 +837,12 @@
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 <span class="rail-lbl">Shop</span>
             </a>
+            @unless(auth()->user()?->isVendor())
             <a href="{{ route('admin.hrm.index') }}" @click="activeModule='hrm'" class="rail-item {{ request()->routeIs('admin.hrm.*') ? 'on' : '' }}" :class="{ 'on': activeModule==='hrm' }" title="HRM">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
                 <span class="rail-lbl">HRM</span>
             </a>
+            @endunless
             <div style="margin-top:auto"></div>
             <button type="button" @click="sidebarOpen=!sidebarOpen" class="rail-item" title="Toggle menu" x-show="window.innerWidth>768">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="sidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'"/></svg>
@@ -888,11 +890,43 @@
                 <span class="nav-label">Dashboard</span>
             </a>
 
+            {{-- Vendor-only menu --}}
+            @if(auth()->user()?->isVendor() && auth()->user()->vendor?->isApproved())
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">My Store</span></div>
+            <a href="{{ route('admin.products.index') }}" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <span class="nav-label">My Products</span>
+            </a>
+            @endif
+
+            {{-- Admin-only menu --}}
+            @unless(auth()->user()?->isVendor())
+
+            <!-- Marketplace -->
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Marketplace</span></div>
+@can('vendors.list')
+            <a href="{{ route('admin.vendors.index') }}" class="nav-item {{ request()->routeIs('admin.vendors.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="nav-label flex-1">Vendors</span>
+                @php try { $pendingVendors = \App\Models\Vendor::where('status','pending')->count(); } catch (\Throwable $e) { $pendingVendors = 0; } @endphp
+                @if($pendingVendors)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingVendors }}</span>@endif
+            </a>
+            @endcan
+@can('approvals.list')
+            <a href="{{ route('admin.approvals.index') }}" class="nav-item {{ request()->routeIs('admin.approvals.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label flex-1">Approvals</span>
+                @php try { $pendingProducts = \App\Models\Product::where('approval_status','pending')->count(); } catch (\Throwable $e) { $pendingProducts = 0; } @endphp
+                @if($pendingProducts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingProducts }}</span>@endif
+            </a>
+            @endcan
+
             <!-- Catalog group -->
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Catalog</span>
             </div>
 
+            @can('categories.list')
             <!-- Categories -->
             <div>
                 <button @click="catOpen = !catOpen"
@@ -920,7 +954,9 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
+            @can('manufacturers.list')
             <!-- Manufacturers -->
             <div>
                 <button @click="manuOpen = !manuOpen"
@@ -948,7 +984,9 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
+            @can('products.list')
             <!-- Products -->
             <div>
                 <button @click="prodOpen = !prodOpen"
@@ -976,12 +1014,14 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             <!-- Reviews -->
             @php
                 try { $newSourcing = \App\Models\SourcingRequest::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $newSourcing = 0; }
             @endphp
+@can('sourcing.list')
             <a href="{{ route('admin.sourcing.index') }}" class="nav-item {{ request()->routeIs('admin.sourcing.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -990,7 +1030,9 @@
                 <span class="nav-label flex-1 text-left">Sourcing</span>
                 <span data-badge="sourcing_new" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$newSourcing) style="display:none" @endif>{{ $newSourcing }}</span>
             </a>
+            @endcan
 
+            @can('tools.list')
             <!-- Tools -->
             <div>
                 <button @click="toolsOpen = !toolsOpen"
@@ -1058,27 +1100,33 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             @php
                 try { \App\Models\ChatMessage::ensureTable(); $unreadChats = \App\Models\ChatMessage::where('sender', 'user')->where('read_by_agent', false)->count(); }
                 catch (\Throwable $e) { $unreadChats = 0; }
             @endphp
             <!-- SEO -->
+@can('seo.list')
             <a href="{{ route('admin.seo.index') }}" class="nav-item {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">SEO</span>
             </a>
+            @endcan
 
             <!-- Marketing -->
+@can('marketing.list')
             <a href="{{ route('admin.marketing.index') }}" class="nav-item {{ request()->routeIs('admin.marketing.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">Marketing</span>
             </a>
+            @endcan
 
+@can('chats.list')
             <a href="{{ route('admin.chats.index') }}" class="nav-item {{ request()->routeIs('admin.chats.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -1086,11 +1134,13 @@
                 <span class="nav-label flex-1 text-left">Live Chat</span>
                 <span data-badge="chats" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$unreadChats) style="display:none" @endif>{{ $unreadChats }}</span>
             </a>
+            @endcan
 
             @php
                 try { $unreadMessages = \App\Models\ContactMessage::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $unreadMessages = 0; }
             @endphp
+@can('messages.list')
             <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1099,11 +1149,13 @@
                 <span class="nav-label flex-1 text-left">Messages</span>
                 <span data-badge="messages" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$unreadMessages) style="display:none" @endif>{{ $unreadMessages }}</span>
             </a>
+            @endcan
 
             @php
                 try { $pendingReviews = \App\Models\Review::where('status', 'pending')->count(); }
                 catch (\Throwable $e) { $pendingReviews = 0; }
             @endphp
+@can('reviews.list')
             <a href="{{ route('admin.reviews.index') }}" class="nav-item {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1114,12 +1166,14 @@
                     <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingReviews }}</span>
                 @endif
             </a>
+            @endcan
 
             <!-- Orders group -->
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Commerce</span>
             </div>
 
+            @can('orders.list')
             <!-- Orders -->
             @php
                 try { $pendingOrders = \App\Models\Order::where('status', 'pending')->count(); }
@@ -1155,7 +1209,9 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
+            @can('customers.list')
             <!-- Customers -->
             <div>
                 <button @click="custOpen = !custOpen"
@@ -1183,6 +1239,7 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             <!-- Website -->
             <div class="nav-label px-5 mb-0 mt-1.5">
@@ -1213,13 +1270,18 @@
             <!-- System -->
             <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">System</span></div>
 
-            @if(auth()->user()?->isSuperAdmin())
+            @can('users.list')
+            <a href="{{ route('admin.roles.index') }}" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">Roles</span>
+            </a>
             <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 <span class="nav-label">Users &amp; Roles</span>
             </a>
-            @endif
+            @endcan
 
+            @can('settings.list')
             @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
             <div x-data="{ setOpen: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
                 <button type="button" @click="setOpen=!setOpen" class="nav-item w-full {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
@@ -1236,7 +1298,9 @@
                     @endforeach
                 </div>
             </div>
+            @endcan
 
+            @endunless
           </div><!-- /ECOMMERCE MENU -->
 
           <!-- HRM MENU (placeholder) -->

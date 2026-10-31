@@ -29,7 +29,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Customers (role User) land on the storefront; admins on the dashboard
-        return redirect()->intended($request->user()->isAdmin() ? route('dashboard', absolute: false) : route('home', absolute: false));
+        $u = $request->user();
+        if ($u->isVendor()) {
+            $to = route('admin.dashboard', absolute: false);
+        } elseif ($u->isMasterAdmin() || $u->isAdmin() || ($u->role && count($u->role->permissionStrings()) > 0)) {
+            $to = route('dashboard', absolute: false);
+        } else {
+            $to = route('home', absolute: false);
+        }
+        return redirect()->intended($to);
     }
 
     /**

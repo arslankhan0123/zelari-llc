@@ -15,9 +15,13 @@ class EnsureAdmin
         if (!$user) {
             return redirect()->route('login');
         }
-        $ok = $level === 'super' ? $user->isSuperAdmin() : $user->isAdmin();
+        $ok = match ($level) {
+            'master' => $user->isMasterAdmin(),       // platform owner only
+            'staff'  => $user->isAdmin(),              // master + admin (NOT vendor)
+            default  => $user->isMasterAdmin() || ($user->role && count($user->role->permissionStrings()) > 0), // panel: master + anyone with permissions
+        };
         if (!$ok) {
-            abort(403, 'You do not have access to the admin panel.');
+            abort(403, 'You do not have access to this area.');
         }
         return $next($request);
     }

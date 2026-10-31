@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Category;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -17,6 +18,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::defaultView('vendor.pagination.shopnest');
+
+        // ── RBAC gates: master admin passes everything; others by role permissions ──
+        Gate::before(fn ($user) => (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? true : null);
+        foreach (array_keys(config('permissions', [])) as $module) {
+            foreach (config("permissions.$module.actions", []) as $action) {
+                $perm = "$module.$action";
+                Gate::define($perm, fn ($user) => $user->hasPermission($perm));
+            }
+        }
 
         // Shared data for the storefront layout: category navigation + cart count
         View::composer('layouts.store', function ($view) {

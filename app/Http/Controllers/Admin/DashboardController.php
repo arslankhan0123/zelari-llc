@@ -16,6 +16,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->isVendor()) {
+            return $this->vendorIndex();
+        }
+
         $now        = now();
         $monthStart = $now->copy()->startOfMonth();
         $prevStart  = $now->copy()->subMonthNoOverflow()->startOfMonth();
@@ -99,6 +103,22 @@ class DashboardController extends Controller
     }
 
     /** % change, or null when there's nothing to compare against. */
+    protected function vendorIndex()
+    {
+        $vendor = auth()->user()->vendor;
+        $stats = ['products' => 0, 'approved' => 0, 'pending' => 0, 'rejected' => 0, 'active' => 0];
+        if ($vendor) {
+            $base = \App\Models\Product::where('vendor_id', $vendor->id);
+            $stats['products'] = (clone $base)->count();
+            $stats['approved'] = (clone $base)->where('approval_status', 'approved')->count();
+            $stats['pending']  = (clone $base)->where('approval_status', 'pending')->count();
+            $stats['rejected'] = (clone $base)->where('approval_status', 'rejected')->count();
+            $stats['active']   = (clone $base)->where('status', 'active')->count();
+        }
+        $recent = $vendor ? \App\Models\Product::where('vendor_id', $vendor->id)->latest()->take(6)->get() : collect();
+        return view('admin.vendor-dashboard', compact('vendor', 'stats', 'recent'));
+    }
+
     private function delta(float $now, float $prev): ?float
     {
         if ($prev <= 0) return $now > 0 ? null : 0.0;

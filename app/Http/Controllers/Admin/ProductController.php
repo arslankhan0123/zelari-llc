@@ -12,9 +12,24 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    /** Returns the vendor model if the logged-in user is a vendor, else null. */
+    protected function vendorScope()
+    {
+        $u = auth()->user();
+        return $u->isVendor() ? $u->vendor : null;
+    }
+
+    protected function guardOwned(Product $product): void
+    {
+        if ($v = $this->vendorScope()) {
+            abort_unless($product->vendor_id === $v->id, 403);
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'images'])->latest();
+        if ($v = $this->vendorScope()) { $query->where('vendor_id', $v->id); }
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -45,7 +60,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku|max:100',
             'purchase_price' => 'required|numeric|min:0',
@@ -73,6 +88,13 @@ class ProductController extends Controller
                 ->store('products/feature', 'public');
         }
 
+        if ($v = $this->vendorScope()) {
+            $validated['vendor_id']       = $v->id;
+            $validated['status']          = 'draft';
+            $validated['approval_status'] = 'pending';
+            $validated['submitted_at']    = now();
+        }
+
         $product = Product::create($validated);
 
         // Gallery images
@@ -93,12 +115,14 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $this->guardOwned($product);
         $product->load('category', 'images');
         return view('admin.products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
+        $this->guardOwned($product);
         $product->load('images');
         $categories    = Category::treeOrdered();
         $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
@@ -107,10 +131,11 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->guardOwned($product);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku,' . $product->id . '|max:100',
             'purchase_price' => 'required|numeric|min:0',
@@ -150,6 +175,13 @@ class ProductController extends Controller
             unset($validated['feature_image']);
         }
 
+        if ($this->vendorScope()) {
+            // vendor edits go back through approval
+            $validated['status']          = 'draft';
+            $validated['approval_status'] = 'pending';
+            $validated['submitted_at']    = now();
+        }
+
         $product->update($validated);
 
         // Remove selected gallery images
@@ -182,6 +214,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->guardOwned($product);
         // Delete images from storage
         if ($product->feature_image) {
             Storage::disk('public')->delete($product->feature_image);

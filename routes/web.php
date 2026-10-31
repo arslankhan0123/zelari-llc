@@ -104,6 +104,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
 Route::get('/dashboard', [\App\Http\Controllers\Admin\HomeController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+Route::post('/dashboard/task/{task}/toggle', [\App\Http\Controllers\Admin\HomeController::class, 'toggleTask'])->middleware(['auth', 'verified', 'admin:staff'])->name('dashboard.task.toggle');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -112,7 +113,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Admin Routes ────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')->name('admin.')->group(function () {
 
     // Ecommerce dashboard (the detailed store dashboard)
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -245,6 +246,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->nam
         Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy'])->name('destroy');
     });
 
+
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
@@ -270,7 +272,35 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->nam
         Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('admin:super')->prefix('users')->name('users.')->group(function () {
+    // Marketplace vendors
+    Route::prefix('vendors')->name('vendors.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorController::class, 'index'])->name('index');
+        Route::get('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'show'])->name('show');
+        Route::put('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'update'])->name('update');
+        Route::post('/{vendor}/approve', [\App\Http\Controllers\Admin\VendorController::class, 'approve'])->name('approve');
+        Route::post('/{vendor}/suspend', [\App\Http\Controllers\Admin\VendorController::class, 'suspend'])->name('suspend');
+        Route::post('/{vendor}/reject', [\App\Http\Controllers\Admin\VendorController::class, 'reject'])->name('reject');
+        Route::post('/{vendor}/reactivate', [\App\Http\Controllers\Admin\VendorController::class, 'reactivate'])->name('reactivate');
+        Route::delete('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'destroy'])->name('destroy');
+    });
+
+    // Vendor product approvals
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ApprovalController::class, 'index'])->name('index');
+        Route::post('/{product}/approve', [\App\Http\Controllers\Admin\ApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{product}/reject', [\App\Http\Controllers\Admin\ApprovalController::class, 'reject'])->name('reject');
+    });
+
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('store');
+        Route::get('/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
@@ -294,6 +324,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->nam
         Route::post('/{payment}/sync', [PaymentController::class, 'sync'])->name('sync');
     });
 
+
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/create', [OrderController::class, 'create'])->name('create');
@@ -309,6 +340,18 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/ecommerce')->nam
 // HRM module (placeholder shell)
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/hrm')->name('admin.hrm.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\HrmController::class, 'index'])->name('index');
+});
+
+// ── Vendor panel ──────────────────────────────────────────────────────────
+Route::prefix('vendor')->name('vendor.')->group(function () {
+    // Public application
+    Route::get('/register', [\App\Http\Controllers\Vendor\RegistrationController::class, 'show'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Vendor\RegistrationController::class, 'register'])->name('register.submit');
+
+    // Authenticated vendor area → unified admin panel (permission-scoped)
+    Route::middleware(['auth', 'vendor'])->group(function () {
+        Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('dashboard');
+    });
 });
 
 require __DIR__ . '/auth.php';

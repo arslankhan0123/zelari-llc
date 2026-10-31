@@ -7,12 +7,17 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\ContactMessage;
+use App\Models\BuildTask;
 
 class HomeController extends Controller
 {
     /** GET /dashboard — generic landing with a live overview */
     public function index()
     {
+        if (auth()->user()->isVendor()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $now = now();
         $monthStart = $now->copy()->startOfMonth();
 
@@ -52,6 +57,32 @@ class HomeController extends Controller
         $recent = collect();
         try { $recent = Order::with('customer')->latest()->take(6)->get(); } catch (\Throwable $e) {}
 
-        return view('admin.home', ['s' => $s, 'monthly' => $monthly, 'recent' => $recent]);
+        // Multi-vendor build roadmap (admins only)
+        $phases = collect();
+        try {
+            if (auth()->user()->isMasterAdmin() || auth()->user()->isAdmin()):
+            $phases = BuildTask::orderBy('sort')->get()->groupBy('phase')->map(function ($items) {
+                $done = $items->where('status', 'done')->count();
+                $total = $items->count();
+                return [
+                    'title' => $items->first()->phase_title,
+                    'items' => $items,
+                    'done'  => $done,
+                    'total' => $total,
+                    'pct'   => (int) round($done / max($total, 1) * 100),
+                ];
+            })->values();
+            endif;
+        } catch (\Throwable $e) {}
+
+        return view('admin.home', ['s' => $s, 'monthly' => $monthly, 'recent' => $recent, 'phases' => $phases]);
+    }
+
+    /** Cycle a build-task status: todo -> in_progress -> done -> todo */
+    public function toggleTask(BuildTask $task)
+    {
+        $next = ['todo' => 'in_progress', 'in_progress' => 'done', 'done' => 'todo'][$task->status] ?? 'todo';
+        $task->update(['status' => $next]);
+        return response()->json(['status' => $next]);
     }
 }

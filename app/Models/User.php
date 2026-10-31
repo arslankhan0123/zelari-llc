@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
@@ -43,8 +44,22 @@ class User extends Authenticatable
         return $this->role && in_array($this->role->slug, $slugs, true);
     }
 
-    public function isSuperAdmin(): bool { return $this->hasRole(Role::SUPER_ADMIN); }
-    public function isAdmin(): bool      { return $this->hasRole(Role::SUPER_ADMIN, Role::ADMIN); }
+    public function isMasterAdmin(): bool { return $this->hasRole(Role::MASTER_ADMIN); }
+    public function isSuperAdmin(): bool  { return $this->isMasterAdmin(); } // BC alias
+    public function isAdmin(): bool       { return $this->hasRole(Role::MASTER_ADMIN, Role::ADMIN); }
+    public function isVendor(): bool     { return $this->hasRole(Role::VENDOR, Role::VENDOR_STAFF); }
+
+    /** Permission check: master admin has everything; others go by their role. */
+    public function hasPermission(string $perm): bool
+    {
+        if ($this->isMasterAdmin()) return true;
+        return $this->role && $this->role->hasPermission($perm);
+    }
+
+    public function vendor(): HasOne
+    {
+        return $this->hasOne(Vendor::class);
+    }
 
     public function getRoleNameAttribute(): string
     {

@@ -77,12 +77,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category <span class="text-red-500">*</span></label>
                         @include('admin.partials.category-select', [
                             'items' => $categories,
                             'name' => 'category_id',
                             'selected' => old('category_id', $product->category_id),
-                            'placeholder' => '— No Category —',
+                            'placeholder' => '— Select a category —',
                             'triggerClass' => 'w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500',
                         ])
                     </div>
@@ -274,7 +274,10 @@
                 <!-- Status -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-3">
                     <h2 class="font-semibold text-gray-900 dark:text-white text-base">Status</h2>
-                    @foreach(['draft' => ['Draft', 'Saved but not visible'], 'active' => ['Active', 'Visible on storefront'], 'inactive' => ['Inactive', 'Hidden from storefront']] as $val => $info)
+                    @php $statusOpts = auth()->user()?->isVendor()
+                        ? ['draft' => ['Draft', 'Will be submitted for approval']]
+                        : ['draft' => ['Draft', 'Saved but not visible'], 'active' => ['Active', 'Visible on storefront'], 'inactive' => ['Inactive', 'Hidden from storefront']]; @endphp
+                    @foreach($statusOpts as $val => $info)
                     <label class="flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors
                         {{ old('status', $product->status) === $val ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
                         <input type="radio" name="status" value="{{ $val }}" {{ old('status', $product->status) === $val ? 'checked' : '' }}

@@ -221,5 +221,87 @@
     </div>
   </div>
 
+  {{-- Multi-Vendor Build Roadmap --}}
+  @isset($phases)
+  @php $allDone = $phases->sum('done'); $allTotal = $phases->sum('total'); $allPct = (int) round($allDone / max($allTotal,1) * 100); @endphp
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-8" x-data="{ open: 1 }">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          Multi-Vendor Build Roadmap
+        </h3>
+        <p class="text-xs text-gray-400 mt-0.5">Tap a status dot to cycle: To-do → In progress → Done</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-40 h-2 rounded-full bg-gray-100 overflow-hidden"><div id="rm-overall-bar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style="width:{{ $allPct }}%"></div></div>
+        <span id="rm-overall-txt" class="text-sm font-bold text-gray-700">{{ $allDone }}/{{ $allTotal }}</span>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      @foreach($phases as $pi => $ph)
+      <div class="border border-gray-100 rounded-xl overflow-hidden" data-phase="{{ $pi }}">
+        <button type="button" @click="open = open === {{ $pi }} ? null : {{ $pi }}" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left">
+          <svg class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0" :class="{ 'rotate-90': open === {{ $pi }} }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="font-semibold text-sm text-gray-800 flex-1">{{ $ph['title'] }}</span>
+          <span class="rm-count text-xs font-semibold text-gray-400">{{ $ph['done'] }}/{{ $ph['total'] }}</span>
+          <div class="w-20 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="rm-bar h-full rounded-full bg-emerald-500 transition-all" style="width:{{ $ph['pct'] }}%"></div></div>
+        </button>
+        <div x-show="open === {{ $pi }}" style="display:{{ $pi === 0 ? 'block' : 'none' }}">
+          <div class="px-4 pb-3 pt-1 divide-y divide-gray-50">
+            @foreach($ph['items'] as $t)
+            <div class="flex items-center gap-3 py-2 rm-task" data-status="{{ $t->status }}">
+              <button type="button" onclick="rmToggle(this)" data-id="{{ $t->id }}" class="rm-dot flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition" title="Change status">
+                <svg class="rm-check w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <span class="rm-title text-sm text-gray-700 flex-1">{{ $t->title }}</span>
+              <span class="rm-badge text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+            </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+
+  <script>
+  const RM_TOKEN = '{{ csrf_token() }}';
+  function rmPaint(row){
+    const st = row.dataset.status;
+    const dot = row.querySelector('.rm-dot'), check = row.querySelector('.rm-check');
+    const title = row.querySelector('.rm-title'), badge = row.querySelector('.rm-badge');
+    dot.className = 'rm-dot flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition cursor-pointer ' +
+      (st==='done' ? 'bg-emerald-500' : st==='in_progress' ? 'bg-amber-400' : 'border-2 border-gray-300 bg-white');
+    check.style.display = st==='done' ? 'block' : 'none';
+    title.className = 'rm-title text-sm flex-1 ' + (st==='done' ? 'text-gray-400 line-through' : 'text-gray-700');
+    const bmap = {done:['Done','bg-emerald-100 text-emerald-700'], in_progress:['In progress','bg-amber-100 text-amber-700'], todo:['To-do','bg-gray-100 text-gray-500']};
+    badge.textContent = bmap[st][0]; badge.className = 'rm-badge text-[10px] font-bold px-2 py-0.5 rounded-full ' + bmap[st][1];
+  }
+  function rmRecompute(){
+    let aDone=0, aTotal=0;
+    document.querySelectorAll('[data-phase]').forEach(ph=>{
+      const tasks = ph.querySelectorAll('.rm-task');
+      const done = [...tasks].filter(t=>t.dataset.status==='done').length;
+      aDone+=done; aTotal+=tasks.length;
+      ph.querySelector('.rm-count').textContent = done+'/'+tasks.length;
+      ph.querySelector('.rm-bar').style.width = Math.round(done/Math.max(tasks.length,1)*100)+'%';
+    });
+    document.getElementById('rm-overall-bar').style.width = Math.round(aDone/Math.max(aTotal,1)*100)+'%';
+    document.getElementById('rm-overall-txt').textContent = aDone+'/'+aTotal;
+  }
+  async function rmToggle(btn){
+    const row = btn.closest('.rm-task'); const id = btn.dataset.id;
+    try {
+      const r = await fetch('/dashboard/task/'+id+'/toggle', {method:'POST', headers:{'X-CSRF-TOKEN':RM_TOKEN,'Accept':'application/json'}});
+      const j = await r.json();
+      row.dataset.status = j.status; rmPaint(row); rmRecompute();
+    } catch(e){}
+  }
+  document.querySelectorAll('.rm-task').forEach(rmPaint);
+  </script>
+  @endisset
+
 </div>
 @endsection

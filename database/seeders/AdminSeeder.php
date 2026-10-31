@@ -23,16 +23,10 @@ class AdminSeeder extends Seeder
 
         $accounts = [
             [
-                'name'     => 'Super Admin',
+                'name'     => 'Master Admin',
                 'email'    => env('SEED_SUPERADMIN_EMAIL', 'arslan@zelari.com'),
                 'password' => env('SEED_SUPERADMIN_PASSWORD', 'XpbKn8AgTJ#SbMccn!09'),
-                'role'     => Role::SUPER_ADMIN,
-            ],
-            [
-                'name'     => 'Admin',
-                'email'    => env('SEED_ADMIN_EMAIL', 'admin@zelari.com'),
-                'password' => env('SEED_ADMIN_PASSWORD', 'Zl!Admin#2026-Qw7pX'),
-                'role'     => Role::ADMIN,
+                'role'     => Role::MASTER_ADMIN,
             ],
         ];
 
