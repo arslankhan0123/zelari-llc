@@ -897,6 +897,14 @@
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 <span class="nav-label">My Products</span>
             </a>
+            @can('orders.list')
+            <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span class="nav-label flex-1">Orders</span>
+                @php try { $vid = auth()->user()->vendor?->id; $vPending = $vid ? \App\Models\VendorOrder::where('vendor_id',$vid)->where('status','pending')->count() : 0; } catch (\Throwable $e) { $vPending = 0; } @endphp
+                @if($vPending)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending orders">{{ $vPending }}</span>@endif
+            </a>
+            @endcan
             @endif
 
             {{-- Admin-only menu --}}

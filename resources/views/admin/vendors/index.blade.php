@@ -80,21 +80,26 @@
                         <td><span class="badge-{{ $v->status_color }}">{{ ucfirst($v->status) }}</span></td>
                         <td class="text-sm text-gray-400">{{ $v->created_at->format('d M Y') }}</td>
                         <td>
-                            <div class="flex items-center justify-center gap-1.5">
-                                <a href="{{ route('admin.vendors.show',$v) }}" class="text-gray-400 hover:text-indigo-600" title="Review">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                </a>
+                            <x-row-actions module="vendors" :view="route('admin.vendors.show',$v)">
+                                @can('vendors.edit')
                                 @if($v->status !== 'approved')
                                 <form method="POST" action="{{ route('admin.vendors.approve',$v) }}">@csrf
-                                    <button class="text-emerald-500 hover:text-emerald-700" title="Approve"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button>
+                                    <button type="submit" title="Approve"
+                                            class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    </button>
                                 </form>
                                 @endif
                                 @if($v->status === 'approved' && $v->slug !== 'zelari')
                                 <form method="POST" action="{{ route('admin.vendors.suspend',$v) }}">@csrf
-                                    <button class="text-amber-500 hover:text-amber-700" title="Suspend"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
+                                    <button type="submit" title="Suspend"
+                                            class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 flex items-center justify-center text-amber-600 transition">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </button>
                                 </form>
                                 @endif
-                            </div>
+                                @endcan
+                            </x-row-actions>
                         </td>
                     </tr>
                     @endforeach

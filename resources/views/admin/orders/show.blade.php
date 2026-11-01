@@ -4,17 +4,20 @@
 
 @section('content')
 <div class="p-6 space-y-5">
+    @php $isVendor = auth()->user()?->isVendor(); $vo = $vendorOrder ?? null; @endphp
     <div class="flex items-center justify-between flex-wrap gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-800 font-mono">{{ $order->order_number }}</h1>
-            <p class="text-sm text-gray-400 mt-0.5">Placed {{ $order->created_at->format('M d, Y · h:i A') }}</p>
+            <p class="text-sm text-gray-400 mt-0.5">Placed {{ $order->created_at->format('M d, Y · h:i A') }}@if($vo) · your sub-order <span class="font-mono text-gray-500">{{ $vo->sub_number }}</span>@endif</p>
         </div>
         <div class="flex items-center gap-2">
+            @can('orders.edit')
             <a href="{{ route('admin.orders.edit', $order) }}"
                class="btn-primary flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 Update Status
             </a>
+            @endcan
             <a href="{{ route('admin.orders.index') }}" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Back
@@ -83,12 +86,45 @@
                     </tbody>
                 </table></div>
                 <div class="px-6 py-4 space-y-2 border-t border-gray-100">
+                    @if($vo)
+                    <div class="flex justify-between text-sm text-gray-500"><span>Your subtotal</span><span>{{ $order->money($vo->subtotal) }}</span></div>
+                    <div class="flex justify-between text-sm text-gray-500"><span>Commission ({{ rtrim(rtrim(number_format($vo->commission_rate,2),'0'),'.') }}%)</span><span>- {{ $order->money($vo->commission_amount) }}</span></div>
+                    <div class="flex justify-between text-base font-bold text-emerald-600 pt-2 border-t border-gray-100"><span>Your payout</span><span>{{ $order->money($vo->payout_amount) }}</span></div>
+                    @else
                     <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>{{ $order->money($order->subtotal) }}</span></div>
                     @if($order->discount > 0)<div class="flex justify-between text-sm text-emerald-600"><span>Discount</span><span>− {{ $order->money($order->discount) }}</span></div>@endif
                     @if($order->shipping_fee > 0)<div class="flex justify-between text-sm text-gray-500"><span>Shipping</span><span>{{ $order->money($order->shipping_fee) }}</span></div>@endif
                     <div class="flex justify-between text-base font-bold text-gray-800 pt-2 border-t border-gray-100"><span>Total</span><span>{{ $order->money($order->total) }}</span></div>
+                    @endif
                 </div>
             </div>
+
+            {{-- Per-vendor breakdown (admin only) --}}
+            @unless($isVendor)
+            @if($order->relationLoaded('vendorOrders') && $order->vendorOrders->count())
+            <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-700">Vendor Breakdown</h3>
+                    <span class="text-xs text-gray-400">{{ $order->vendorOrders->count() }} {{ \Illuminate\Support\Str::plural('vendor', $order->vendorOrders->count()) }}</span>
+                </div>
+                <div class="table-scroll"><table class="data-table">
+                    <thead><tr><th>Vendor</th><th>Sub #</th><th class="text-right">Subtotal</th><th class="text-right">Commission</th><th class="text-right">Payout</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach($order->vendorOrders as $sub)
+                        <tr>
+                            <td class="text-sm font-medium text-gray-800">{{ $sub->vendor->name ?? 'Vendor #'.$sub->vendor_id }}</td>
+                            <td class="font-mono text-xs text-gray-500">{{ $sub->sub_number }}</td>
+                            <td class="text-right text-gray-700 text-sm">{{ $order->money($sub->subtotal) }}</td>
+                            <td class="text-right text-gray-500 text-sm">{{ $order->money($sub->commission_amount) }}</td>
+                            <td class="text-right font-semibold text-emerald-600 text-sm">{{ $order->money($sub->payout_amount) }}</td>
+                            <td><span class="badge-{{ $sub->status_color }}">{{ ucfirst($sub->status) }}</span></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table></div>
+            </div>
+            @endif
+            @endunless
 
             {{-- Shipping info + IP location, side by side for verification --}}
             @php $match = $order->location_matches; @endphp
@@ -137,18 +173,21 @@
             <div class="bg-white rounded-2xl p-5 space-y-3" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Order Info</p>
                 @php $sc = $order->status_color; $pc = $order->payment_status_color; @endphp
-                <div class="flex justify-between items-center text-sm"><span class="text-gray-500">Status</span><span class="badge-{{ $sc }}">{{ ucfirst($order->status) }}</span></div>
+                <div class="flex justify-between items-center text-sm"><span class="text-gray-500">Status</span>@if($vo)<span class="badge-{{ $vo->status_color }}">{{ ucfirst($vo->status) }}</span>@else<span class="badge-{{ $sc }}">{{ ucfirst($order->status) }}</span>@endif</div>
+                @unless($isVendor)
                 <div class="flex justify-between items-center text-sm"><span class="text-gray-500">Payment</span><span class="badge-{{ $pc }}">{{ ucfirst($order->payment_status) }}</span></div>
                 <div class="flex justify-between items-center text-sm"><span class="text-gray-500">Method</span><span class="text-gray-700 font-medium">{{ $order->payment_label }}</span></div>
                 @if($order->paid_at)<div class="flex justify-between items-center text-sm"><span class="text-gray-500">Paid at</span><span class="text-gray-700 font-medium">{{ $order->paid_at->format('M d, Y · h:i A') }}</span></div>@endif
                 @if($order->payment_intent_id)<div class="flex justify-between items-center text-sm gap-2"><span class="text-gray-500 shrink-0">Stripe ref</span><a href="https://dashboard.stripe.com/{{ str_starts_with((string) \App\Support\Payments::stripePublishableKey(), 'pk_test_') ? 'test/' : '' }}payments/{{ $order->payment_intent_id }}" target="_blank" rel="noopener" class="font-mono text-xs text-indigo-600 hover:underline truncate">{{ $order->payment_intent_id }}</a></div>@endif
+                @endunless
                 <div class="flex justify-between items-center text-sm"><span class="text-gray-500">Currency</span><span class="text-gray-700 font-medium">{{ $order->currency_code ?? '—' }} <span class="text-gray-400">({{ $order->currency_symbol }})</span></span></div>
                 @if($order->currency_code && $order->currency_code !== config('currencies.base'))
                 <p class="text-[11px] text-gray-400 leading-snug">Charged as shown to the customer at checkout. Rate used: 1 {{ config('currencies.base') }} = {{ rtrim(rtrim(number_format((float) $order->exchange_rate, 6), '0'), '.') }} {{ $order->currency_code }}.</p>
                 @endif
             </div>
 
-            @php $pay = $order->payment; @endphp
+            @php $pay = $isVendor ? null : $order->payment; @endphp
+            @unless($isVendor)
             @if($pay && ($pay->card_last4 || $pay->provider === 'stripe'))
             <div class="bg-white rounded-2xl p-5" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
                 <div class="flex items-center justify-between mb-3"><p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Card used</p><a href="{{ route('admin.payments.show', $pay) }}" class="text-xs text-indigo-600 hover:underline">Details →</a></div>
@@ -166,6 +205,7 @@
                 @if($pay->failure_message)<p class="text-xs text-red-500 mt-2">{{ $pay->failure_message }}</p>@endif
             </div>
             @endif
+            @endunless
 
             @if($order->customer)
             <div class="bg-white rounded-2xl p-5" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
@@ -189,6 +229,7 @@
             </div>
             @endif
 
+            @can('orders.delete')
             <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Delete this order permanently?')">
                 @csrf @method('DELETE')
                 <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 text-sm rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition">
@@ -196,6 +237,7 @@
                     Delete Order
                 </button>
             </form>
+            @endcan
         </div>
     </div>
 </div>

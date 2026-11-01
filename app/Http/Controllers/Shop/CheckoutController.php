@@ -253,6 +253,7 @@ class CheckoutController extends Controller
                 ]);
 
                 $order->items()->createMany($lineItems);
+                \App\Models\VendorOrder::splitFromOrder($order);
                 Payments::openAttempt($order);
 
                 if ($couponModel) {

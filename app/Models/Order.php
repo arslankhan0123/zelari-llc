@@ -68,6 +68,10 @@ class Order extends Model {
         return $this->hasMany(OrderItem::class);
     }
 
+    public function vendorOrders(): HasMany {
+        return $this->hasMany(VendorOrder::class);
+    }
+
     public function payments(): HasMany {
         return $this->hasMany(Payment::class)->latest();
     }
