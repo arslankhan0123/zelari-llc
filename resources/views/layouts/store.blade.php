@@ -595,6 +595,7 @@ body.drawer-open .drawer{transform:none}
         </li>
         --}}
         <li class="nav-item"><a href="{{ route('brands') }}" class="{{ request()->routeIs('brands')?'active':'' }}"><span class="nav-flow">Brands</span></a></li>
+        <li class="nav-item"><a href="{{ route('shop.vendors') }}" class="{{ request()->routeIs('shop.vendors') || request()->routeIs('shop.vendor') ?'active':'' }}"><span class="nav-flow">Vendors</span></a></li>
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
@@ -660,6 +661,7 @@ body.drawer-open .drawer{transform:none}
     <a href="{{ route('shop.index') }}"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
     <a href="{{ route('shop.index',['on_sale'=>1]) }}"><i class="fa-solid fa-bolt"></i> Deal Today</a>
     <a href="{{ route('brands') }}"><i class="fa-solid fa-award"></i> <span class="nav-flow">Brands</span></a>
+    <a href="{{ route('shop.vendors') }}"><i class="fa-solid fa-store"></i> <span class="nav-flow">Vendors</span></a>
     <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> <span class="nav-flow">Sourcing</span></a>
     <a href="{{ route('about') }}"><i class="fa-solid fa-circle-info"></i> About</a>
     <a href="{{ route('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>

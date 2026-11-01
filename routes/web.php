@@ -373,4 +373,8 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
     });
 });
 
+// ── Public vendors directory + storefront ──────────────────────────────────
+Route::get('/vendors', [\App\Http\Controllers\Shop\VendorStoreController::class, 'index'])->name('shop.vendors');
+Route::get('/vendor/{slug}', [\App\Http\Controllers\Shop\VendorStoreController::class, 'show'])->name('shop.vendor');
+
 require __DIR__ . '/auth.php';

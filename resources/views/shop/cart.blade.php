@@ -86,6 +86,7 @@
   @php
   $items = $cart ?? session('cart', []);
   $count = array_sum(array_column($items,'quantity'));
+  $cartVendors = \App\Models\Product::whereIn('id', array_keys($items))->with('vendor:id,name,slug')->get()->keyBy('id');
   $total = array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$items));
   $free = zfree_over(); $shipFee = zshipping($total);
   // applied coupon (session) → compute discount in base currency
@@ -123,6 +124,8 @@
             <a href="{{ route('shop.show',$it['slug']) }}" class="cimg"><img src="{{ $img }}" alt=""></a>
             <div style="min-width:0">
               <a href="{{ route('shop.show',$it['slug']) }}" class="cname">{{ $it['name'] }}</a>
+              @php $cv = optional($cartVendors->get($pid))->vendor; @endphp
+              @if($cv)<div style="font-size:12px;color:var(--faint);margin-top:2px">Sold by <a href="{{ route('shop.vendor',$cv->slug) }}" style="color:var(--brand);font-weight:600;text-decoration:none">{{ $cv->name }}</a></div>@endif
               <div class="cunit">{{ zprice($it['price']) }} each @if(($it['max_quantity'] ?? 0) <= 5)· <span style="color:var(--warn)">only {{ $it['max_quantity'] }} left</span>@endif</div>
             </div>
           </div>

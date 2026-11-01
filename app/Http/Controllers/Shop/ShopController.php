@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Vendor;
 use App\Models\Manufacturer;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -111,6 +112,14 @@ class ShopController extends Controller
             $query->where('manufacturer_id', $selectedBrand->id);
         }
 
+        // Vendor filter (marketplace storefront / discovery)
+        $selectedVendor = $request->filled('vendor')
+            ? Vendor::where('slug', $request->vendor)->where('status', Vendor::APPROVED)->first()
+            : null;
+        if ($selectedVendor) {
+            $query->where('vendor_id', $selectedVendor->id);
+        }
+
         // In stock only
         if ($request->boolean('in_stock')) {
             $query->where('quantity', '>', 0);
@@ -165,14 +174,14 @@ class ShopController extends Controller
             ->selectRaw('MIN(COALESCE(sale_price, purchase_price)) as min_p, MAX(COALESCE(sale_price, purchase_price)) as max_p')
             ->first();
 
-        return view('shop.index', compact('products', 'categories', 'selectedCategory', 'priceBounds', 'moreProducts', 'parentCategory'));
+        return view('shop.index', compact('products', 'categories', 'selectedCategory', 'priceBounds', 'moreProducts', 'parentCategory', 'selectedVendor'));
     }
 
     public function show(string $slug)
     {
         $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['category.parent', 'images'])
+            ->with(['category.parent', 'images', 'vendor'])
             ->firstOrFail();
 
         $related = Product::where('status', 'active')

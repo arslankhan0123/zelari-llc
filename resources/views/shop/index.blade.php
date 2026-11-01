@@ -90,6 +90,19 @@
           <label class="chk"><input type="checkbox" name="on_sale" value="1" {{ request('on_sale')?'checked':'' }} onchange="this.form.submit()"> On sale</label>
           <button type="submit" class="btn-g" style="width:100%;margin-top:10px;padding:11px">Apply filters</button>
         </div>
+
+        @php $storeVendors = \App\Models\Vendor::where('status', \App\Models\Vendor::APPROVED)->orderBy('name')->get(['id','name','slug']); @endphp
+        @if($storeVendors->count() > 1)
+        <div class="fcard">
+          <h5>Vendor <i class="fa-solid fa-store"></i></h5>
+          <select name="vendor" onchange="this.form.submit()" style="width:100%;padding:10px 12px;border:1.5px solid var(--line-2);border-radius:10px;background:#fff;font-size:13.5px;color:var(--ink)">
+            <option value="">All vendors</option>
+            @foreach($storeVendors as $v)
+            <option value="{{ $v->slug }}" {{ request('vendor')===$v->slug ? 'selected' : '' }}>{{ $v->name }}</option>
+            @endforeach
+          </select>
+        </div>
+        @endif
       </form>
 
       <div class="side-promo"><span>Weekend special</span><b>Up to 50% off</b><span>on selected items</span><br><a href="{{ route('shop.index',['on_sale'=>1]) }}" style="display:inline-block;margin-top:12px;background:#fff;color:var(--p);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:700">Shop deals</a><span class="e">⚡</span></div>
@@ -97,7 +110,7 @@
 
     {{-- ─── Products ─── --}}
     <div>
-      @php $hasFilters = request()->hasAny(['category','min_price','max_price','q','in_stock','on_sale']); @endphp
+      @php $hasFilters = request()->hasAny(['category','min_price','max_price','q','in_stock','on_sale','vendor']); @endphp
       @if($hasFilters)
       <div class="chips">
         @if(request('q'))<a href="{{ route('shop.index', request()->except(['q','page'])) }}">Search: "{{ request('q') }}" <i class="fa-solid fa-xmark"></i></a>@endif
@@ -105,6 +118,7 @@
         @if(request('min_price')||request('max_price'))<a href="{{ route('shop.index', request()->except(['min_price','max_price','page'])) }}">{{ zcur()['symbol'] }}{{ request('min_price',0) }} – {{ request('max_price','∞') }} <i class="fa-solid fa-xmark"></i></a>@endif
         @if(request('in_stock'))<a href="{{ route('shop.index', request()->except(['in_stock','page'])) }}">In stock <i class="fa-solid fa-xmark"></i></a>@endif
         @if(request('on_sale'))<a href="{{ route('shop.index', request()->except(['on_sale','page'])) }}">On sale <i class="fa-solid fa-xmark"></i></a>@endif
+        @if($selectedVendor ?? null)<a href="{{ route('shop.index', request()->except(['vendor','page'])) }}">{{ $selectedVendor->name }} <i class="fa-solid fa-xmark"></i></a>@endif
         <a href="{{ route('shop.index') }}" class="clear">Clear all</a>
       </div>
       @endif

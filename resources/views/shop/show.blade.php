@@ -176,6 +176,9 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
     <div>
       @if($product->category)<a href="{{ route('shop.index',['category'=>$product->category->slug]) }}" class="pd-cat"><i class="fa-solid {{ zcat_icon($product->category->name) }}"></i> {{ $product->category->name }}</a>@endif
       <h1>{{ $product->name }}</h1>
+      @if($product->vendor && $product->vendor->status === \App\Models\Vendor::APPROVED)
+      <p style="margin:-4px 0 10px;font-size:13.5px;color:var(--muted)">Sold by <a href="{{ route('shop.vendor', $product->vendor->slug) }}" style="color:var(--brand);font-weight:700;text-decoration:none">{{ $product->vendor->name }}</a></p>
+      @endif
       <div class="pd-rate">
         <span class="stars">@for($i=1;$i<=5;$i++)<i class="fa-solid fa-star {{ $i>$starsN?'off':'' }}"></i>@endfor</span>
         <span>@if($revCount){{ number_format((float) $product->reviews_avg, 1) }} ({{ $revCount }} {{ Str::plural('review', $revCount) }})@else<a href="#reviews" style="color:inherit">No reviews yet</a>@endif</span><span class="sep"></span>
