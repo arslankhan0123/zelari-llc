@@ -80,7 +80,7 @@ Route::get('/wishlist', [\App\Http\Controllers\Shop\WishlistController::class, '
 Route::post('/wishlist/toggle', [\App\Http\Controllers\Shop\WishlistController::class, 'toggle'])->name('wishlist.toggle')->middleware('throttle:60,1');
 Route::post('/wishlist/clear', [\App\Http\Controllers\Shop\WishlistController::class, 'clear'])->name('wishlist.clear');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::get('/cart/remove/{productId}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/cart/remove/{productId}', [CartController::class, 'remove'])->where('productId', '[0-9:]+')->name('cart.remove');
 Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
 // ── Checkout ────────────────────────────────────────────────────────────────
@@ -369,6 +369,44 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::get('/', [\App\Http\Controllers\Admin\TaxController::class, 'index'])->name('index');
         Route::put('/', [\App\Http\Controllers\Admin\TaxController::class, 'update'])->name('update');
     });
+
+    // ── Phase 7: Operations ───────────────────────────────────────────
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SupplierController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SupplierController::class, 'store'])->name('store');
+        Route::put('/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'update'])->name('update');
+        Route::delete('/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('index');
+        Route::post('/adjust', [\App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('adjust');
+    });
+
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TicketController::class, 'index'])->name('index');
+        Route::get('/canned', [\App\Http\Controllers\Admin\CannedReplyController::class, 'index'])->name('canned');
+        Route::post('/canned', [\App\Http\Controllers\Admin\CannedReplyController::class, 'store'])->name('canned.store');
+        Route::put('/canned/{canned}', [\App\Http\Controllers\Admin\CannedReplyController::class, 'update'])->name('canned.update');
+        Route::delete('/canned/{canned}', [\App\Http\Controllers\Admin\CannedReplyController::class, 'destroy'])->name('canned.destroy');
+        Route::get('/create', [\App\Http\Controllers\Admin\TicketController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\TicketController::class, 'store'])->name('store');
+        Route::get('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply', [\App\Http\Controllers\Admin\TicketController::class, 'reply'])->name('reply');
+        Route::put('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('returns')->name('returns.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReturnController::class, 'index'])->name('index');
+        Route::get('/{return}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('show');
+        Route::put('/{return}', [\App\Http\Controllers\Admin\ReturnController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+        Route::get('/export/sales', [\App\Http\Controllers\Admin\ReportController::class, 'exportSales'])->name('export.sales');
+        Route::get('/export/segments', [\App\Http\Controllers\Admin\ReportController::class, 'exportSegments'])->name('export.segments');
+    });
 });
 
 
@@ -392,5 +430,7 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
 // ── Public vendors directory + storefront ──────────────────────────────────
 Route::get('/vendors', [\App\Http\Controllers\Shop\VendorStoreController::class, 'index'])->name('shop.vendors');
 Route::get('/vendor/{slug}', [\App\Http\Controllers\Shop\VendorStoreController::class, 'show'])->name('shop.vendor');
+Route::get('/download/{item}', [\App\Http\Controllers\Shop\DownloadController::class, 'download'])->name('shop.download');
+Route::post('/order/{order}/return', [\App\Http\Controllers\Shop\ReturnRequestController::class, 'store'])->name('shop.return.store');
 
 require __DIR__ . '/auth.php';

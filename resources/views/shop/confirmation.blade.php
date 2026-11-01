@@ -127,7 +127,15 @@
       @php $img = $it->product?->display_image ?? zcat_image(null,(int)$it->product_id,200); $realI = $it->product?->has_real_image; @endphp
       <div class="oitem">
         <div class="im"><img src="{{ $img }}" alt=""></div>
-        <div><b>{{ $it->product_name }}</b><small>{{ zorder_price($order, $it->unit_price) }} × {{ $it->quantity }}@if($it->product_sku) · {{ $it->product_sku }}@endif</small></div>
+        <div><b>{{ $it->product_name }}</b><small>{{ zorder_price($order, $it->unit_price) }} × {{ $it->quantity }}@if($it->product_sku) · {{ $it->product_sku }}@endif</small>
+          @if($it->product && $it->product->download_file && $it->product->isDigital())
+            @if($order->payment_status === 'paid')
+              <a href="{{ route('shop.download', $it) }}" style="display:inline-block;margin-top:4px;font-size:12.5px;font-weight:700;color:var(--brand)"><i class="fa-solid fa-download"></i> Download</a>
+            @else
+              <small style="color:var(--faint)">Download available once payment is confirmed</small>
+            @endif
+          @endif
+        </div>
         <div class="pr">{{ zorder_price($order, $it->subtotal) }}</div>
       </div>
       @endforeach
@@ -172,6 +180,28 @@
       <p class="rvp-foot"><i class="fa-regular fa-circle-question"></i> You'll be asked for order <b>{{ $order->order_number }}</b> and this email, so we can mark your review as a verified purchase.</p>
     </div>
     @endif
+
+    {{-- Return / refund request --}}
+    <div style="margin-top:28px;border:1px solid var(--line);border-radius:var(--r);padding:20px" x-data="{ open:false }">
+      @if(session('return_success'))<div style="background:#f2fbf5;border:1px solid #bbe3c8;color:#15803d;border-radius:12px;padding:10px 14px;font-size:13.5px;margin-bottom:12px">{{ session('return_success') }}</div>@endif
+      @if(session('return_error'))<div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:12px;padding:10px 14px;font-size:13.5px;margin-bottom:12px">{{ session('return_error') }}</div>@endif
+      <button type="button" @click="open=!open" style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ink);background:none;border:0;cursor:pointer">
+        <i class="fa-solid fa-rotate-left" style="color:var(--p)"></i> Request a return or refund
+      </button>
+      <div x-show="open" x-cloak style="margin-top:14px">
+        <form method="POST" action="{{ route('shop.return.store', $order) }}" style="display:grid;gap:10px;max-width:520px">
+          @csrf
+          <input type="email" name="email" value="{{ $order->customer_email }}" placeholder="Order email" required style="border:1.5px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:14px">
+          <select name="type" required style="border:1.5px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:14px">
+            <option value="return">Return item(s)</option>
+            <option value="exchange">Exchange item(s)</option>
+            <option value="refund">Refund</option>
+          </select>
+          <textarea name="reason" rows="3" placeholder="Tell us what went wrong…" required style="border:1.5px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:14px;resize:none"></textarea>
+          <button class="btn-g" style="justify-self:start"><i class="fa-solid fa-paper-plane"></i> Submit request</button>
+        </form>
+      </div>
+    </div>
 
     <div class="acts">
       <a href="{{ route('shop.index') }}" class="btn-g"><i class="fa-solid fa-bag-shopping"></i> Continue Shopping</a>

@@ -14,6 +14,13 @@ use League\Csv\Writer;
 
 class ImportExportController extends Controller
 {
+    /** The logged-in user's vendor, or null for staff/admin. */
+    protected function vendorScope()
+    {
+        $u = auth()->user();
+        return ($u && $u->isVendor()) ? $u->vendor : null;
+    }
+
     /* ───────────────────────────────────────────
      |  EXPORT  –  products as CSV
      |  Every product field + full category info
@@ -45,7 +52,11 @@ class ImportExportController extends Controller
 
     public function export()
     {
-        $products = Product::with(['category.parent', 'images'])->orderBy('id')->get();
+        $query = Product::with(['category.parent', 'images'])->orderBy('id');
+        if ($v = $this->vendorScope()) {
+            $query->where('vendor_id', $v->id);
+        }
+        $products = $query->get();
 
         $headers = [
             'Content-Type'        => 'text/csv; charset=UTF-8',
@@ -240,11 +251,13 @@ class ImportExportController extends Controller
 
                 // ── 3. Product: update when it already exists, never duplicate ──
                 $sku = $record['sku'] ?? '';
+                $vendor = $this->vendorScope();
 
-                // Match by SKU first, then by name (case-insensitive)
-                $existing = $sku !== '' ? Product::where('sku', $sku)->first() : null;
+                // Match by SKU first, then by name (case-insensitive) — within the vendor's own products
+                $base = fn () => $vendor ? Product::where('vendor_id', $vendor->id) : Product::query();
+                $existing = $sku !== '' ? $base()->where('sku', $sku)->first() : null;
                 if (!$existing) {
-                    $existing = Product::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
+                    $existing = $base()->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
                 }
                 $existingStatus = $existing?->status;
 
@@ -258,6 +271,13 @@ class ImportExportController extends Controller
                     'description'       => ($record['description'] ?? '') !== '' ? $record['description'] : null,
                     'status'            => $this->normalizeStatus($record['status'] ?? '', $existingStatus, $row, $errors),
                 ];
+                if ($vendor) {
+                    // Vendor imports land as their own products, pending approval.
+                    $productData['vendor_id']       = $vendor->id;
+                    $productData['status']          = 'draft';
+                    $productData['approval_status'] = 'pending';
+                    $productData['submitted_at']    = now();
+                }
                 if ($sku !== '') {
                     $productData['sku'] = $sku;
                 }

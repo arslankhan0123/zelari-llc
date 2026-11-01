@@ -157,25 +157,39 @@ class CheckoutController extends Controller
                     if (!$product || $product->status !== 'active') {
                         throw new \Exception("\"{$item['name']}\" is no longer available.");
                     }
-                    if ($product->quantity < $item['quantity']) {
-                        throw new \Exception("Only {$product->quantity} unit(s) of \"{$product->name}\" are in stock.");
+
+                    $variation = null;
+                    if (!empty($item['variation_id'])) {
+                        $variation = \App\Models\ProductVariation::lockForUpdate()
+                            ->where('id', $item['variation_id'])->where('product_id', $product->id)->first();
+                        if (!$variation) {
+                            throw new \Exception("\"{$item['name']}\" is no longer available.");
+                        }
                     }
 
-                    $unitPrice = (float) ($product->sale_price ?? $product->purchase_price);
+                    $stock = $variation ? (int) $variation->quantity : (int) $product->quantity;
+                    if ($stock < $item['quantity']) {
+                        throw new \Exception("Only {$stock} unit(s) of \"{$item['name']}\" are in stock.");
+                    }
+
+                    $unitPrice = $variation ? $variation->effectivePrice() : (float) ($product->sale_price ?? $product->purchase_price);
                     $lineSub   = $unitPrice * $item['quantity'];
                     $subtotal += $lineSub;
 
                     $lineItems[] = [
                         'product_id'   => $product->id,
-                        'product_name' => $product->name,
-                        'product_sku'  => $product->sku,
+                        'product_name' => $item['name'] ?? $product->name,
+                        'product_sku'  => $variation ? ($variation->sku ?: $product->sku) : $product->sku,
                         'unit_price'   => $unitPrice,
                         'quantity'     => $item['quantity'],
                         'subtotal'     => $lineSub,
                     ];
 
-                    // Decrement stock
-                    $product->decrement('quantity', $item['quantity']);
+                    if ($variation) {
+                        $variation->decrement('quantity', $item['quantity']);
+                    } else {
+                        $product->decrement('quantity', $item['quantity']);
+                    }
                 }
 
                 // Shipping engine: per-vendor rate -> zone method -> global flat (Phase 5)

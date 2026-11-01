@@ -18,8 +18,9 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-            'quantity'   => 'required|integer|min:1|max:100',
+            'product_id'   => 'required|integer|exists:products,id',
+            'variation_id' => 'nullable|integer|exists:product_variations,id',
+            'quantity'     => 'required|integer|min:1|max:100',
         ]);
 
         $product = Product::where('id', $request->product_id)
@@ -28,8 +29,21 @@ class CartController extends Controller
 
         $qty = (int) $request->quantity;
 
-        if ($product->quantity <= 0) {
-            $msg = "Sorry, \"{$product->name}\" is out of stock.";
+        // Resolve a chosen variation, if any
+        $variation = null;
+        if ($request->filled('variation_id')) {
+            $variation = \App\Models\ProductVariation::where('id', $request->variation_id)
+                ->where('product_id', $product->id)->where('enabled', true)->first();
+        }
+        $effStock = $variation ? (int) $variation->quantity : (int) $product->quantity;
+        $effPrice = $variation ? $variation->effectivePrice() : (float) ($product->sale_price ?? $product->purchase_price);
+        $effImage = ($variation && $variation->image) ? $variation->image : $product->feature_image;
+        $label    = $variation ? $variation->label() : null;
+        $dispName = $product->name . ($label ? " ($label)" : '');
+        $key      = $variation ? ($product->id . ':' . $variation->id) : (string) $product->id;
+
+        if ($effStock <= 0) {
+            $msg = "Sorry, \"{$dispName}\" is out of stock.";
             if ($request->wantsJson()) {
                 return response()->json(['message' => $msg], 422);
             }
@@ -37,30 +51,31 @@ class CartController extends Controller
         }
 
         $cart   = session('cart', []);
-        $key    = (string) $product->id;
         $notice = null;
 
         if (isset($cart[$key])) {
             $wanted = $cart[$key]['quantity'] + $qty;
-            $newQty = min($wanted, $product->quantity);
-            if ($wanted > $product->quantity) {
-                $notice = "You asked for {$wanted}, but only {$product->quantity} available — quantity set to {$product->quantity}.";
+            $newQty = min($wanted, $effStock);
+            if ($wanted > $effStock) {
+                $notice = "You asked for {$wanted}, but only {$effStock} available — quantity set to {$effStock}.";
             }
             $cart[$key]['quantity']     = $newQty;
-            $cart[$key]['max_quantity'] = $product->quantity;
+            $cart[$key]['max_quantity'] = $effStock;
         } else {
-            if ($qty > $product->quantity) {
-                $notice = "You asked for {$qty}, but only {$product->quantity} available — quantity set to {$product->quantity}.";
-                $qty = $product->quantity;
+            if ($qty > $effStock) {
+                $notice = "You asked for {$qty}, but only {$effStock} available — quantity set to {$effStock}.";
+                $qty = $effStock;
             }
             $cart[$key] = [
-                'product_id'   => $product->id,
-                'name'         => $product->name,
-                'slug'         => $product->slug,
-                'price'        => (float) ($product->sale_price ?? $product->purchase_price),
-                'image'        => $product->feature_image,
-                'quantity'     => $qty,
-                'max_quantity' => $product->quantity,
+                'product_id'      => $product->id,
+                'variation_id'    => $variation?->id,
+                'variation_label' => $label,
+                'name'            => $dispName,
+                'slug'            => $product->slug,
+                'price'           => $effPrice,
+                'image'           => $effImage,
+                'quantity'        => $qty,
+                'max_quantity'    => $effStock,
             ];
         }
 
@@ -85,7 +100,7 @@ class CartController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
+            'product_id' => 'required|string',   // cart key: "<productId>" or "<productId>:<variationId>"
             'quantity'   => 'required|integer|min:0|max:100',
         ]);
 
@@ -95,7 +110,13 @@ class CartController extends Controller
         $notice    = null;
         $removed   = false;
         $final     = 0;
-        $stock     = (int) (Product::where('id', $request->product_id)->value('quantity') ?? 0);
+
+        if (str_contains($key, ':')) {
+            [$pid, $vid] = explode(':', $key, 2);
+            $stock = (int) (\App\Models\ProductVariation::where('id', $vid)->value('quantity') ?? 0);
+        } else {
+            $stock = (int) (Product::where('id', $key)->value('quantity') ?? 0);
+        }
 
         if (isset($cart[$key])) {
             if ($requested === 0 || $stock <= 0) {
@@ -136,7 +157,7 @@ class CartController extends Controller
     }
 
     /** DELETE /cart/remove/{productId} */
-    public function remove(int $productId)
+    public function remove(string $productId)
     {
         $cart = session('cart', []);
         unset($cart[(string) $productId]);

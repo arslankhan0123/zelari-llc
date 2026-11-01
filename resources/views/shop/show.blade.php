@@ -186,10 +186,30 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       </div>
 
       <div class="pd-price">
-        <b>{{ zprice($product->price) }}</b>
+        <b id="pdPrice">{{ zprice($product->price) }}</b>
         @if($product->compare_price)<s>{{ zprice($product->compare_price) }}</s><span class="save">Save {{ zprice($product->compare_price-$product->price) }}</span>@endif
       </div>
       <div class="pd-tax">Inclusive of all taxes · {{ zfree_over() > 0 ? 'Free delivery over '.zprice(zfree_over()) : 'Free delivery' }}</div>
+
+      @php $hasVars = $product->variations->isNotEmpty();
+            $variationsData = $product->variations->map(fn($v)=>['id'=>$v->id,'options'=>$v->options,'price'=>$v->effectivePrice(),'qty'=>$v->quantity,'enabled'=>$v->enabled])->values();
+      @endphp
+      @if($hasVars)
+      <div id="variationPicker" style="margin:14px 0">
+        @foreach(($product->variant_attributes ?? []) as $attr => $values)
+        <div style="margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">{{ $attr }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            @foreach($values as $val)
+            <button type="button" class="vopt" data-attr="{{ $attr }}" data-val="{{ $val }}"
+              style="padding:7px 14px;border:1.5px solid var(--line-2);border-radius:10px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">{{ $val }}</button>
+            @endforeach
+          </div>
+        </div>
+        @endforeach
+        <p id="varMsg" style="font-size:12.5px;color:var(--faint);margin-top:4px">Select options to continue.</p>
+      </div>
+      @endif
 
       @if($product->short_description)<div class="pd-short">{{ trim(html_entity_decode(strip_tags($product->short_description), ENT_QUOTES, 'UTF-8')) }}</div>@endif
 
@@ -201,6 +221,7 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
       <form action="{{ route('cart.add') }}" method="POST" class="js-atc" id="atcForm">
         @csrf
         <input type="hidden" name="product_id" value="{{ $product->id }}">
+        <input type="hidden" name="variation_id" id="variationId" value="">
         <div class="qty-row">
           <div class="qty">
             <button type="button" onclick="chg(-1)">−</button>
@@ -438,6 +459,41 @@ textarea.rv-input{resize:vertical;min-height:110px;line-height:1.6}
 @push('scripts')
 <script>
 function chg(d){const i=document.getElementById('qtyIn');const max=parseInt(i.max)||100;i.value=Math.min(max,Math.max(1,(parseInt(i.value)||1)+d));}
+
+// ── Variations ──
+(function(){
+  const picker=document.getElementById('variationPicker');
+  if(!picker) return;
+  const VARIATIONS = @json($variationsData ?? []);
+  const fmt = p => '{{ zcur()['symbol'] }}' + (p * {{ (float) (zcur()['rate'] ?: 1) }}).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const sel = {};
+  const priceEl=document.getElementById('pdPrice'), msg=document.getElementById('varMsg'),
+        hid=document.getElementById('variationId'), qtyIn=document.getElementById('qtyIn'),
+        addBtn=document.querySelector('#atcForm .atc'), buyBtn=document.querySelector('#atcForm .buy');
+  const attrCount = new Set([...picker.querySelectorAll('.vopt')].map(b=>b.dataset.attr)).size;
+  function setBtns(on){ [addBtn,buyBtn].forEach(b=>{ if(!b)return; b.disabled=!on; b.style.opacity=on?'':'.5'; b.style.pointerEvents=on?'':'none'; }); }
+  function match(){
+    return VARIATIONS.find(v=> Object.keys(sel).length===attrCount && Object.entries(v.options).every(([k,val])=>sel[k]===val));
+  }
+  function refresh(){
+    const v=match();
+    if(!v){ setBtns(false); hid.value=''; msg.textContent='Select options to continue.'; return; }
+    if(!v.enabled || v.qty<=0){ setBtns(false); hid.value=''; msg.textContent='This option is out of stock.'; return; }
+    hid.value=v.id; priceEl.textContent=fmt(v.price);
+    if(qtyIn){ qtyIn.max=Math.min(v.qty,100); if(parseInt(qtyIn.value)>v.qty) qtyIn.value=v.qty; }
+    msg.textContent = v.qty<=5 ? ('Only '+v.qty+' left') : 'In stock';
+    setBtns(true);
+  }
+  picker.querySelectorAll('.vopt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const a=btn.dataset.attr;
+      picker.querySelectorAll('.vopt[data-attr="'+a+'"]').forEach(b=>{ b.style.borderColor='var(--line-2)'; b.style.background='#fff'; b.style.color=''; });
+      btn.style.borderColor='var(--brand)'; btn.style.background='var(--brand-soft,#eef)'; btn.style.color='var(--brand)';
+      sel[a]=btn.dataset.val; refresh();
+    });
+  });
+  setBtns(false);
+})();
 function setImg(u,t){const m=document.getElementById('mainImg'); if(!m) return; m.style.opacity=0; setTimeout(()=>{m.src=u;m.style.opacity=1;},150); document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('on')); t.classList.add('on');}
 function tab(b,id){document.querySelectorAll('.tabs-nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');}
 

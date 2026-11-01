@@ -181,7 +181,7 @@ class ShopController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['category.parent', 'images', 'vendor'])
+            ->with(['category.parent', 'images', 'vendor', 'variations'])
             ->firstOrFail();
 
         $related = Product::where('status', 'active')

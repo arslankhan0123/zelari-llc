@@ -890,40 +890,14 @@
                 <span class="nav-label">Dashboard</span>
             </a>
 
-            {{-- Vendor-only menu --}}
-            @if(auth()->user()?->isVendor() && auth()->user()->vendor?->isApproved())
-            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">My Store</span></div>
-            <a href="{{ route('admin.products.index') }}" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                <span class="nav-label">My Products</span>
-            </a>
-            @can('orders.list')
-            <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <span class="nav-label flex-1">Orders</span>
-                @php try { $vid = auth()->user()->vendor?->id; $vPending = $vid ? \App\Models\VendorOrder::where('vendor_id',$vid)->where('status','pending')->count() : 0; } catch (\Throwable $e) { $vPending = 0; } @endphp
-                @if($vPending)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending orders">{{ $vPending }}</span>@endif
-            </a>
-            @endcan
-            @can('earnings.list')
-            <a href="{{ route('admin.earnings.index') }}" class="nav-item {{ request()->routeIs('admin.earnings.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                <span class="nav-label">Earnings</span>
-            </a>
-            @endcan
-            @can('payouts.list')
-            <a href="{{ route('admin.payouts.index') }}" class="nav-item {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                <span class="nav-label">Payouts</span>
-            </a>
-            @endcan
-            @endif
-
-            {{-- Admin-only menu --}}
-            @unless(auth()->user()?->isVendor())
+            {{-- Unified, permission-based menu (vendors see only what they're granted; unapproved vendors see only the dashboard) --}}
+            @php $menuUser = auth()->user(); $menuOk = $menuUser && (!$menuUser->isVendor() || optional($menuUser->vendor)->isApproved()); @endphp
+            @if($menuOk)
 
             <!-- Marketplace -->
+            @canany(['vendors.list','approvals.list','commissions.list','earnings.list','payouts.list','shipping.list','tax.list'])
             <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Marketplace</span></div>
+            @endcanany
 @can('vendors.list')
             <a href="{{ route('admin.vendors.index') }}" class="nav-item {{ request()->routeIs('admin.vendors.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -973,10 +947,51 @@
             </a>
             @endcan
 
+            <!-- Operations -->
+            @canany(['inventory.list','suppliers.list','tickets.list','returns.list','reports.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Operations</span></div>
+            @endcanany
+@can('inventory.list')
+            <a href="{{ route('admin.inventory.index') }}" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <span class="nav-label flex-1">Inventory</span>
+            </a>
+            @endcan
+@can('suppliers.list')
+            <a href="{{ route('admin.suppliers.index') }}" class="nav-item {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-4m-6 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"/></svg>
+                <span class="nav-label flex-1">Suppliers</span>
+            </a>
+            @endcan
+@can('tickets.list')
+            <a href="{{ route('admin.tickets.index') }}" class="nav-item {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                <span class="nav-label flex-1">Support Tickets</span>
+                @php try { $openTickets = \App\Models\SupportTicket::where('status','open')->count(); } catch (\Throwable $e) { $openTickets = 0; } @endphp
+                @if($openTickets)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openTickets }}</span>@endif
+            </a>
+            @endcan
+@can('returns.list')
+            <a href="{{ route('admin.returns.index') }}" class="nav-item {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"/></svg>
+                <span class="nav-label flex-1">Returns</span>
+                @php try { $openReturns = \App\Models\ReturnRequest::where('status','requested')->count(); } catch (\Throwable $e) { $openReturns = 0; } @endphp
+                @if($openReturns)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openReturns }}</span>@endif
+            </a>
+            @endcan
+@can('reports.list')
+            <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span class="nav-label flex-1">Reports</span>
+            </a>
+            @endcan
+
             <!-- Catalog group -->
+            @canany(['categories.list','manufacturers.list','products.list','sourcing.list','tools.list','seo.list','marketing.list','chats.list','messages.list','reviews.list'])
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Catalog</span>
             </div>
+            @endcanany
 
             @can('categories.list')
             <!-- Categories -->
@@ -1221,9 +1236,11 @@
             @endcan
 
             <!-- Orders group -->
+            @canany(['orders.list','customers.list'])
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Commerce</span>
             </div>
+            @endcanany
 
             @can('orders.list')
             <!-- Orders -->
@@ -1254,11 +1271,13 @@
                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="{{ $pendingOrders }} pending orders">{{ $pendingOrders }}</span>
                         @endif
                     </a>
+                    @can('orders.create')
                     <a href="{{ route('admin.orders.create') }}"
                         class="sub-item {{ request()->routeIs('admin.orders.create') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         New Order
                     </a>
+                    @endcan
                 </div>
             </div>
             @endcan
@@ -1294,6 +1313,7 @@
             @endcan
 
             <!-- Website -->
+            @can('content.list')
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Website</span>
             </div>
@@ -1305,8 +1325,10 @@
                 </svg>
                 <span class="nav-label">Website Content</span>
             </a>
+            @endcan
 
             <!-- Payments -->
+            @can('payments.list')
             <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Payments</span>
             </div>
@@ -1318,9 +1340,12 @@
                 </svg>
                 <span class="nav-label">All Payments</span>
             </a>
+            @endcan
 
             <!-- System -->
+            @canany(['settings.list','users.list'])
             <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">System</span></div>
+            @endcanany
 
             @can('users.list')
             <a href="{{ route('admin.roles.index') }}" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
@@ -1352,7 +1377,7 @@
             </div>
             @endcan
 
-            @endunless
+            @endif
           </div><!-- /ECOMMERCE MENU -->
 
           <!-- HRM MENU (placeholder) -->

@@ -69,6 +69,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,draft',
+            'type' => 'nullable|in:physical,digital,downloadable,bundled',
             'feature_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -109,8 +110,62 @@ class ProductController extends Controller
             }
         }
 
+        $this->syncCatalogDepth($product, $request);
+
         return redirect()->route('admin.products.index')
             ->with('success', "Product \"{$product->name}\" created successfully!");
+    }
+
+    /** Persist product type, download file, variations, bundle items and the derived attribute set. */
+    protected function syncCatalogDepth(Product $product, Request $request): void
+    {
+        if ($request->hasFile('download_file')) {
+            $product->download_file = $request->file('download_file')->store('products/downloads', 'public');
+        }
+
+        // Variations (editing replaces the set)
+        $rows = json_decode((string) $request->input('variations_json', '[]'), true) ?: [];
+        $product->variations()->delete();
+        $attrs = [];
+        foreach ($rows as $r) {
+            $optStr = trim((string) ($r['options'] ?? ''));
+            if ($optStr === '') continue;
+            $options = [];
+            foreach (explode(',', $optStr) as $pair) {
+                $pp = explode(':', $pair, 2);
+                if (count($pp) === 2) {
+                    $k = trim($pp[0]); $val = trim($pp[1]);
+                    if ($k !== '' && $val !== '') { $options[$k] = $val; $attrs[$k][$val] = true; }
+                }
+            }
+            if (empty($options)) continue;
+            $product->variations()->create([
+                'options'    => $options,
+                'price'      => (float) ($r['price'] ?? 0),
+                'sale_price' => (($r['sale_price'] ?? '') === '' || ($r['sale_price'] ?? null) === null) ? null : (float) $r['sale_price'],
+                'quantity'   => (int) ($r['quantity'] ?? 0),
+                'sku'        => ($r['sku'] ?? null) ?: null,
+                'enabled'    => true,
+            ]);
+        }
+        $product->variant_attributes = empty($attrs) ? null : array_map(fn ($vals) => array_keys($vals), $attrs);
+
+        // Bundle items
+        $product->bundleItems()->delete();
+        if ($product->type === 'bundled') {
+            foreach (preg_split('/\r\n|\r|\n/', (string) $request->input('bundle_skus', '')) as $line) {
+                $line = trim($line);
+                if ($line === '') continue;
+                $qty = 1;
+                if (preg_match('/^(.*?)\s*x\s*(\d+)$/i', $line, $m)) { $line = trim($m[1]); $qty = max(1, (int) $m[2]); }
+                $comp = Product::where('sku', $line)->first();
+                if ($comp && $comp->id !== $product->id) {
+                    $product->bundleItems()->create(['product_id' => $comp->id, 'quantity' => $qty]);
+                }
+            }
+        }
+
+        $product->save();
     }
 
     public function show(Product $product)
@@ -123,7 +178,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $this->guardOwned($product);
-        $product->load('images');
+        $product->load('images', 'variations', 'bundleItems.component');
         $categories    = Category::treeOrdered();
         $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
         return view('admin.products.edit', compact('product', 'categories', 'manufacturers'));
@@ -144,6 +199,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,draft',
+            'type' => 'nullable|in:physical,digital,downloadable,bundled',
             'feature_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -207,6 +263,8 @@ class ProductController extends Controller
                 ]);
             }
         }
+
+        $this->syncCatalogDepth($product, $request);
 
         return redirect()->route('admin.products.index')
             ->with('success', "Product \"{$product->name}\" updated successfully!");

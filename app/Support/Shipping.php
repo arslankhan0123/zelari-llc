@@ -19,9 +19,21 @@ class Shipping
      */
     public static function quote(array $items, ?string $country = null): array
     {
+        // Only physical goods ship; digital/downloadable items are excluded.
+        $ids  = array_filter(array_map(fn ($i) => $i['product_id'] ?? null, $items));
+        $meta = Product::whereIn('id', $ids)->get(['id', 'vendor_id', 'type'])->keyBy('id');
+        $ships = fn ($it) => !isset($meta[$it['product_id'] ?? 0])
+            || !in_array($meta[$it['product_id']]->type, ['digital', 'downloadable'], true);
+
+        $shipItems = array_filter($items, $ships);
+
         $grandSub = 0.0;
-        foreach ($items as $it) {
+        foreach ($shipItems as $it) {
             $grandSub += (float) ($it['subtotal'] ?? 0);
+        }
+
+        if (empty($shipItems)) {
+            return ['total' => 0.0, 'lines' => []];   // all-digital order
         }
 
         $configured = ShippingZone::where('enabled', true)->exists()
@@ -32,13 +44,9 @@ class Shipping
             return ['total' => $fee, 'lines' => [['label' => 'Shipping', 'fee' => $fee]]];
         }
 
-        // Resolve each product's vendor once.
-        $ids = array_filter(array_map(fn ($i) => $i['product_id'] ?? null, $items));
-        $vendorOf = Product::whereIn('id', $ids)->pluck('vendor_id', 'id');
-
         $byVendor = []; // vendor_id (0 = none) => subtotal
-        foreach ($items as $it) {
-            $vid = (int) ($vendorOf[$it['product_id'] ?? 0] ?? 0);
+        foreach ($shipItems as $it) {
+            $vid = (int) (optional($meta[$it['product_id'] ?? 0])->vendor_id ?? 0);
             $byVendor[$vid] = ($byVendor[$vid] ?? 0) + (float) ($it['subtotal'] ?? 0);
         }
 
