@@ -413,6 +413,15 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::put('/', [\App\Http\Controllers\Admin\VendorProfileController::class, 'update'])->name('update');
     });
 
+    Route::prefix('agents')->name('agents.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SalesAgentController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SalesAgentController::class, 'store'])->name('store');
+        Route::get('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'show'])->name('show');
+        Route::put('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'update'])->name('update');
+        Route::delete('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'destroy'])->name('destroy');
+        Route::post('/{agent}/payout', [\App\Http\Controllers\Admin\SalesAgentController::class, 'payout'])->name('payout');
+    });
+
     Route::prefix('staff')->name('staff.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('store');
@@ -499,5 +508,7 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
+
 
 

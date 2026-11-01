@@ -251,10 +251,21 @@ class CheckoutController extends Controller
                     ]
                 );
 
+                // ── Sales agent attribution (referral code) ──────────────
+                $salesAgent = null; $agentCommission = 0.0;
+                if ($agentCode = strtoupper(trim((string) $request->input('agent_code')))) {
+                    $salesAgent = \App\Models\SalesAgent::where('code', $agentCode)->where('active', true)->first();
+                    if ($salesAgent) {
+                        $agentCommission = round((float) $subtotal * (float) $salesAgent->commission_rate / 100, 2);
+                    }
+                }
+
                 // ── Create the order ─────────────────────────────────────
                 $order = Order::create([
                     'order_number'     => 'ORD-' . strtoupper(Str::random(8)),
                     'customer_id'      => $customer->id,
+                    'sales_agent_id'   => $salesAgent?->id,
+                    'agent_commission' => $agentCommission,
                     'user_id'          => $request->user()?->id, // logged-in account, if any (guests stay null)
                     'customer_email'   => $request->email,
                     'status'           => 'pending',

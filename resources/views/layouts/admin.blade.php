@@ -940,6 +940,12 @@
                 @if($pendingPayouts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending payouts">{{ $pendingPayouts }}</span>@endif
             </a>
             @endcan
+@can('agents.list')
+            <a href="{{ route('admin.agents.index') }}" class="nav-item {{ request()->routeIs('admin.agents.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a3 3 0 10-2.83-4"/></svg>
+                <span class="nav-label flex-1">Sales Agents</span>
+            </a>
+            @endcan
 @if(auth()->user()->vendorId())
     @can('store.list')
             <a href="{{ route('admin.store.index') }}" class="nav-item {{ request()->routeIs('admin.store.*') ? 'active' : '' }}">

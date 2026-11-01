@@ -40,6 +40,7 @@ $modules = [
     'reports'       => 'Reports',
     'staff'         => 'Vendor Staff',
     'store'         => 'Store Settings',
+    'agents'        => 'Sales Agents',
     'automations'   => 'Automations',
     'campaigns'     => 'Campaigns',
     'loyalty'       => 'Loyalty & Referrals',
