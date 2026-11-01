@@ -38,6 +38,7 @@ $modules = [
     'tickets'       => 'Support Tickets',
     'returns'       => 'Returns & Refunds',
     'reports'       => 'Reports',
+    'staff'         => 'Vendor Staff',
     'payments'      => 'Payments',
     'content'       => 'Website Content',
     'tools'         => 'Tools',

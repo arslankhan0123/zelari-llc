@@ -11,7 +11,9 @@ class TicketController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SupportTicket::with('assignee')->withCount('replies')->latest();
+        $vid = auth()->user()->vendorId();
+        $query = SupportTicket::with('assignee')->withCount('replies')->latest()
+            ->when($vid, fn ($q) => $q->whereHas('order.items', fn ($i) => $i->where('vendor_id', $vid)));
         if ($request->filled('status')) $query->where('status', $request->status);
         if ($request->filled('priority')) $query->where('priority', $request->priority);
         $tickets = $query->paginate(15)->withQueryString();
@@ -55,6 +57,9 @@ class TicketController extends Controller
 
     public function show(SupportTicket $ticket)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($ticket->order)->items()->where('vendor_id', $vid)->exists(), 403);
+        }
         $ticket->load('replies', 'assignee', 'order');
         $staff  = User::orderBy('name')->get(['id', 'name']);
         $canned = CannedReply::orderBy('title')->get();
@@ -63,6 +68,9 @@ class TicketController extends Controller
 
     public function reply(Request $request, SupportTicket $ticket)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($ticket->order)->items()->where('vendor_id', $vid)->exists(), 403);
+        }
         $data = $request->validate([
             'body'   => 'required|string|max:5000',
             'status' => 'nullable|in:open,pending,closed',
@@ -79,6 +87,9 @@ class TicketController extends Controller
 
     public function update(Request $request, SupportTicket $ticket)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($ticket->order)->items()->where('vendor_id', $vid)->exists(), 403);
+        }
         $data = $request->validate([
             'status'      => 'required|in:open,pending,closed',
             'priority'    => 'required|in:low,normal,high,urgent',

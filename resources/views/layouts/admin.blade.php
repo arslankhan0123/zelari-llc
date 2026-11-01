@@ -889,10 +889,16 @@
                 </svg>
                 <span class="nav-label">Dashboard</span>
             </a>
-
             {{-- Unified, permission-based menu (vendors see only what they're granted; unapproved vendors see only the dashboard) --}}
             @php $menuUser = auth()->user(); $menuOk = $menuUser && (!$menuUser->isVendor() || optional($menuUser->vendor)->isApproved()); @endphp
             @if($menuOk)
+            @can('staff.list')
+            <a href="{{ route('admin.staff.index') }}" class="nav-item {{ request()->routeIs('admin.staff.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="nav-label">Staff</span>
+            </a>
+            @endcan
+
 
             <!-- Marketplace -->
             @canany(['vendors.list','approvals.list','commissions.list','earnings.list','payouts.list','shipping.list','tax.list'])
@@ -967,7 +973,7 @@
             <a href="{{ route('admin.tickets.index') }}" class="nav-item {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
                 <span class="nav-label flex-1">Support Tickets</span>
-                @php try { $openTickets = \App\Models\SupportTicket::where('status','open')->count(); } catch (\Throwable $e) { $openTickets = 0; } @endphp
+                @php try { $sbVid = auth()->user()->vendorId(); $openTickets = \App\Models\SupportTicket::where('status','open')->when($sbVid, fn($q)=>$q->whereHas('order.items', fn($i)=>$i->where('vendor_id',$sbVid)))->count(); } catch (\Throwable $e) { $openTickets = 0; } @endphp
                 @if($openTickets)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openTickets }}</span>@endif
             </a>
             @endcan
@@ -975,7 +981,7 @@
             <a href="{{ route('admin.returns.index') }}" class="nav-item {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"/></svg>
                 <span class="nav-label flex-1">Returns</span>
-                @php try { $openReturns = \App\Models\ReturnRequest::where('status','requested')->count(); } catch (\Throwable $e) { $openReturns = 0; } @endphp
+                @php try { $sbVid = auth()->user()->vendorId(); $openReturns = \App\Models\ReturnRequest::where('status','requested')->when($sbVid, fn($q)=>$q->whereHas('order.items', fn($i)=>$i->where('vendor_id',$sbVid)))->count(); } catch (\Throwable $e) { $openReturns = 0; } @endphp
                 @if($openReturns)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openReturns }}</span>@endif
             </a>
             @endcan
@@ -1245,7 +1251,12 @@
             @can('orders.list')
             <!-- Orders -->
             @php
-                try { $pendingOrders = \App\Models\Order::where('status', 'pending')->count(); }
+                try {
+                    $sbVid = auth()->user()->vendorId();
+                    $pendingOrders = $sbVid
+                        ? \App\Models\VendorOrder::where('vendor_id', $sbVid)->where('status', 'pending')->count()
+                        : \App\Models\Order::where('status', 'pending')->count();
+                }
                 catch (\Throwable $e) { $pendingOrders = 0; }
             @endphp
             <div>
@@ -1730,12 +1741,14 @@
       }
 
       /* poll from a Web Worker so background-tab timer throttling can't stop it */
+      @unless(auth()->user()->vendorId())
       tick();
       try{
         const blob=new Blob(['setInterval(function(){postMessage(1)},10000)'],{type:'text/javascript'});
         const w=new Worker(URL.createObjectURL(blob));
         w.onmessage=tick;
       }catch(_){ setInterval(tick,10000); }
+      @endunless
     })();
     </script>
 

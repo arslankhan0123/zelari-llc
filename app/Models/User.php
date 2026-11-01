@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 
-#[Fillable(['name', 'email', 'password', 'role_id', 'real_password'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'vendor_id', 'real_password'])]
 #[Hidden(['password', 'remember_token', 'real_password'])]
 class User extends Authenticatable
 {
@@ -48,6 +48,14 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool  { return $this->isMasterAdmin(); } // BC alias
     public function isAdmin(): bool       { return $this->hasRole(Role::MASTER_ADMIN, Role::ADMIN); }
     public function isVendor(): bool     { return $this->hasRole(Role::VENDOR, Role::VENDOR_STAFF); }
+    public function isVendorOwner(): bool { return $this->hasRole(Role::VENDOR); }
+    public function isVendorStaff(): bool { return $this->hasRole(Role::VENDOR_STAFF); }
+
+    /** The vendor this user belongs to (owner or staff), or null. Drives all vendor data scoping. */
+    public function vendorId(): ?int
+    {
+        return $this->isVendor() ? ($this->vendor_id ?: optional($this->getRelationValue('vendor'))->id) : null;
+    }
 
     /** Permission check: master admin has everything; others go by their role. */
     public function hasPermission(string $perm): bool
@@ -56,9 +64,9 @@ class User extends Authenticatable
         return $this->role && $this->role->hasPermission($perm);
     }
 
-    public function vendor(): HasOne
+    public function vendor(): BelongsTo
     {
-        return $this->hasOne(Vendor::class);
+        return $this->belongsTo(Vendor::class, 'vendor_id');
     }
 
     public function getRoleNameAttribute(): string

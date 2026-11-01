@@ -7,7 +7,7 @@
         <div><h1 class="text-2xl font-bold text-gray-800">Reports</h1><p class="text-sm text-gray-400 mt-0.5">Sales, products and customer segments.</p></div>
         <div class="flex gap-2">
             <a href="{{ route('admin.reports.export.sales') }}" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Export sales CSV</a>
-            <a href="{{ route('admin.reports.export.segments') }}" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Export segments CSV</a>
+            @unless(auth()->user()->vendorId())<a href="{{ route('admin.reports.export.segments') }}" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Export segments CSV</a>@endunless
         </div>
     </div>
 
@@ -49,6 +49,7 @@
                     @endforeach
                 </div>
             </div>
+            @unless(auth()->user()->vendorId())
             <div class="bg-white rounded-2xl p-6" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
                 <h3 class="font-semibold text-gray-700 mb-4">Customer segments</h3>
                 <div class="grid grid-cols-2 gap-3 text-sm">
@@ -58,6 +59,7 @@
                     <div class="flex justify-between"><span class="text-gray-500">Lapsed</span><b>{{ $segments['lapsed'] }}</b></div>
                 </div>
             </div>
+            @endunless
         </div>
     </div>
 </div>

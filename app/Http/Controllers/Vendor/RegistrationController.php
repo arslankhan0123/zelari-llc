@@ -40,7 +40,7 @@ class RegistrationController extends Controller
             'role_id'  => $vendorRoleId,
         ]);
 
-        Vendor::create([
+        $vendor = Vendor::create([
             'user_id'     => $user->id,
             'name'        => $data['store_name'],
             'email'       => $data['email'],
@@ -48,6 +48,7 @@ class RegistrationController extends Controller
             'description' => $data['description'] ?? null,
             'status'      => Vendor::PENDING,
         ]);
+        $user->forceFill(['vendor_id' => $vendor->id])->save();
 
         Auth::login($user);
 

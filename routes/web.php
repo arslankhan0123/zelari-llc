@@ -407,6 +407,12 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::get('/export/sales', [\App\Http\Controllers\Admin\ReportController::class, 'exportSales'])->name('export.sales');
         Route::get('/export/segments', [\App\Http\Controllers\Admin\ReportController::class, 'exportSegments'])->name('export.segments');
     });
+
+    Route::prefix('staff')->name('staff.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('store');
+        Route::delete('/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('destroy');
+    });
 });
 
 
