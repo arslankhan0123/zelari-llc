@@ -353,6 +353,22 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::post('/{payout}/reject', [\App\Http\Controllers\Admin\PayoutController::class, 'reject'])->name('reject');
         Route::post('/{payout}/pay', [\App\Http\Controllers\Admin\PayoutController::class, 'pay'])->name('pay');
     });
+
+    // ── Phase 5: Shipping & Tax ───────────────────────────────────────
+    Route::prefix('shipping')->name('shipping.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ShippingController::class, 'index'])->name('index');
+        Route::post('/zones', [\App\Http\Controllers\Admin\ShippingController::class, 'storeZone'])->name('zones.store');
+        Route::put('/zones/{zone}', [\App\Http\Controllers\Admin\ShippingController::class, 'updateZone'])->name('zones.update');
+        Route::delete('/zones/{zone}', [\App\Http\Controllers\Admin\ShippingController::class, 'destroyZone'])->name('zones.destroy');
+        Route::post('/zones/{zone}/methods', [\App\Http\Controllers\Admin\ShippingController::class, 'storeMethod'])->name('methods.store');
+        Route::put('/methods/{method}', [\App\Http\Controllers\Admin\ShippingController::class, 'updateMethod'])->name('methods.update');
+        Route::delete('/methods/{method}', [\App\Http\Controllers\Admin\ShippingController::class, 'destroyMethod'])->name('methods.destroy');
+    });
+
+    Route::prefix('tax')->name('tax.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TaxController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\TaxController::class, 'update'])->name('update');
+    });
 });
 
 

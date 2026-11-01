@@ -44,9 +44,13 @@ class VendorController extends Controller
     public function update(Request $request, Vendor $vendor)
     {
         $data = $request->validate([
-            'commission_rate' => 'required|numeric|min:0|max:100',
-            'admin_notes'     => 'nullable|string|max:2000',
+            'commission_rate'    => 'required|numeric|min:0|max:100',
+            'shipping_flat'      => 'nullable|numeric|min:0',
+            'shipping_free_over' => 'nullable|numeric|min:0',
+            'admin_notes'        => 'nullable|string|max:2000',
         ]);
+        $data['shipping_flat']      = ($data['shipping_flat'] ?? '') === '' ? null : $data['shipping_flat'];
+        $data['shipping_free_over'] = ($data['shipping_free_over'] ?? '') === '' ? null : $data['shipping_free_over'];
         $vendor->update($data);
         return back()->with('success', 'Vendor updated.');
     }

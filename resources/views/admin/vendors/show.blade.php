@@ -48,6 +48,17 @@
                     <input type="number" step="0.01" min="0" max="100" name="commission_rate" value="{{ old('commission_rate',$vendor->commission_rate) }}" class="form-input w-full mt-1 text-sm">
                     <p class="text-[11px] text-gray-400 mt-1">Platform's cut on each sale by this vendor.</p>
                 </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Shipping flat ({{ \App\Support\Currency::base() }})</label>
+                        <input type="number" step="0.01" min="0" name="shipping_flat" value="{{ old('shipping_flat',$vendor->shipping_flat) }}" placeholder="Default" class="form-input w-full mt-1 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Free over ({{ \App\Support\Currency::base() }})</label>
+                        <input type="number" step="0.01" min="0" name="shipping_free_over" value="{{ old('shipping_free_over',$vendor->shipping_free_over) }}" placeholder="—" class="form-input w-full mt-1 text-sm">
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-400 -mt-2">Per-vendor delivery rate for this vendor's items. Leave flat blank to use shipping zones / global rate.</p>
                 <div>
                     <label class="text-sm font-medium text-gray-600">Internal notes</label>
                     <textarea name="admin_notes" rows="4" class="form-input w-full mt-1 text-sm" placeholder="Private notes…">{{ old('admin_notes',$vendor->admin_notes) }}</textarea>

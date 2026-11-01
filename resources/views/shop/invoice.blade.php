@@ -114,6 +114,7 @@
         <tr><td class="muted">Subtotal</td><td class="right b">{{ zorder_price($order, $order->subtotal) }}</td></tr>
         @if($order->discount > 0)<tr><td class="muted">Discount</td><td class="right b" style="color:#0d8f6a">− {{ zorder_price($order, $order->discount) }}</td></tr>@endif
         <tr><td class="muted">Shipping</td><td class="right b">{{ $order->shipping_fee > 0 ? zorder_price($order, $order->shipping_fee) : 'Free' }}</td></tr>
+        @if($order->tax > 0)<tr><td class="muted">Tax</td><td class="right b">{{ zorder_price($order, $order->tax) }}</td></tr>@endif
         <tr class="grand"><td>Total</td><td class="right">{{ zorder_price($order, $order->total) }}</td></tr>
       </table>
     </td>

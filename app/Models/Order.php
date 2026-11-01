@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model {
     protected $fillable = [
         'order_number','customer_id','user_id','customer_email','status','payment_status','payment_method',
-        'subtotal','discount','shipping_fee','total',
+        'subtotal','discount','shipping_fee','tax','total',
         'shipping_name','shipping_phone','shipping_address','shipping_city','notes',
         'currency_code','currency_symbol','exchange_rate','payment_intent_id','paid_at',
         'ip_address','ip_country_code','ip_country','ip_region','ip_city',
@@ -17,6 +17,7 @@ class Order extends Model {
         'subtotal'      => 'decimal:2',
         'discount'      => 'decimal:2',
         'shipping_fee'  => 'decimal:2',
+        'tax'           => 'decimal:2',
         'total'         => 'decimal:2',
         'exchange_rate' => 'float',
         'paid_at'       => 'datetime',

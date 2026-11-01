@@ -574,11 +574,11 @@ body.drawer-open .drawer{transform:none}
 
       <ul class="nav-main">
         <li class="nav-item"><a href="{{ route('home') }}" class="{{ request()->routeIs('home')?'active':'' }}">Home</a></li>
-        <li class="nav-item"><a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}">Shop</a></li>
+        <li class="nav-item"><a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}">Shop</a></li>
         {{-- Shop mega-dropdown (categories + Weekend Deals promo) — disabled for now.
              To bring it back: delete the plain <li> above and remove this comment wrapper.
         <li class="nav-item">
-          <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}">Shop <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}">Shop <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd shop-dd">
             @if(($navCategories ?? collect())->isNotEmpty())
               @include('shop.partials.cat-menu', ['items' => $navCategories, 'depth' => 0])
@@ -838,7 +838,7 @@ body.drawer-open .drawer{transform:none}
 {{-- ═════════════ MOBILE BOTTOM NAV ═════════════ --}}
 <nav class="mnav">
   <a href="{{ route('home') }}" class="{{ request()->routeIs('home')?'active':'' }}"><i class="fa-solid fa-house"></i>Home</a>
-  <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}"><i class="fa-solid fa-bag-shopping"></i>Shop</a>
+  <a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}"><i class="fa-solid fa-bag-shopping"></i>Shop</a>
   <a href="{{ route('cart.index') }}" class="{{ request()->routeIs('cart.*')?'active':'' }}"><i class="fa-solid fa-cart-shopping"></i>Cart<b class="cnt js-cart-count">{{ $cartCount ?? 0 }}</b></a>
   <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}"><i class="fa-regular fa-comment-dots"></i>Help</a>
 </nav>

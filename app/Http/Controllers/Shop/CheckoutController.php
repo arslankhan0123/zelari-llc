@@ -178,7 +178,8 @@ class CheckoutController extends Controller
                     $product->decrement('quantity', $item['quantity']);
                 }
 
-                $shippingFee = zshipping((float) $subtotal); // from Admin → Settings → Shipping
+                // Shipping engine: per-vendor rate -> zone method -> global flat (Phase 5)
+                $shippingFee = \App\Support\Shipping::total($lineItems, $geo['country_code'] ?? null);
 
                 // ── Coupon (re-validated server-side) ────────────────────
                 $discount    = 0.0;
@@ -207,7 +208,11 @@ class CheckoutController extends Controller
                     }
                 }
 
-                $total = max(0, $subtotal - $discount) + $shippingFee;
+                // Tax engine (Phase 5): exclusive adds on top, inclusive is already inside prices
+                $taxCalc = \App\Support\Tax::compute($lineItems);
+                $tax     = (float) $taxCalc['amount'];
+
+                $total = max(0, $subtotal - $discount) + $shippingFee + ($taxCalc['inclusive'] ? 0 : $tax);
 
                 // ── Find or create customer ──────────────────────────────
                 $customer = Customer::firstOrCreate(
@@ -234,6 +239,7 @@ class CheckoutController extends Controller
                     'subtotal'         => $subtotal,
                     'discount'         => round($discount, 2),
                     'shipping_fee'     => $shippingFee,
+                    'tax'              => $tax,
                     'total'            => $total,
                     'shipping_name'    => $request->name,
                     'shipping_phone'   => $request->phone,

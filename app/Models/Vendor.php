@@ -16,7 +16,7 @@ class Vendor extends Model
 
     protected $fillable = [
         'user_id', 'name', 'slug', 'email', 'phone', 'logo', 'banner',
-        'description', 'status', 'commission_rate', 'address', 'city',
+        'description', 'status', 'commission_rate', 'shipping_flat', 'shipping_free_over', 'address', 'city',
         'country', 'meta', 'admin_notes', 'approved_at',
     ];
 
@@ -24,6 +24,8 @@ class Vendor extends Model
         'meta'            => 'array',
         'approved_at'     => 'datetime',
         'commission_rate' => 'decimal:2',
+        'shipping_flat'    => 'decimal:2',
+        'shipping_free_over' => 'decimal:2',
     ];
 
     protected static function boot()
