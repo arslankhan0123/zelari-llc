@@ -103,7 +103,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 });
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-Route::get('/dashboard', [\App\Http\Controllers\Admin\HomeController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))->middleware(['auth', 'verified', 'admin'])->name('dashboard');
 Route::post('/dashboard/task/{task}/toggle', [\App\Http\Controllers\Admin\HomeController::class, 'toggleTask'])->middleware(['auth', 'verified', 'admin:staff'])->name('dashboard.task.toggle');
 
 Route::middleware('auth')->group(function () {
@@ -508,6 +508,7 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
 
 
 

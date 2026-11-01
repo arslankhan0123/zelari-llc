@@ -817,38 +817,14 @@
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
         custOpen: @yield('cust_open', 'false'),
-        activeModule: '{{ request()->routeIs('dashboard') ? 'dashboard' : (request()->routeIs('admin.hrm.*') ? 'hrm' : 'ecommerce') }}'
+        activeModule: 'ecommerce'
       }" @resize.window="sidebarOpen = window.innerWidth > 768">
 
     <!-- Mobile overlay -->
     <div class="mobile-overlay" :class="{ 'block': sidebarMobile }" @click="sidebarMobile=false"></div>
 
     <!-- ════════ SIDEBAR ════════ -->
-    <aside id="sidebar" :class="{ 'collapsed': (!sidebarOpen || activeModule==='dashboard') && window.innerWidth > 768, 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
-
-        <!-- Module rail -->
-        <div class="side-rail">
-            <a href="{{ route('admin.dashboard') }}" class="rail-logo" title="{{ zstore('name','Zelari') }}"><img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-contain"></a>
-            <a href="{{ route('dashboard') }}" class="rail-item {{ request()->routeIs('dashboard') ? 'on' : '' }}" title="Dashboard">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="rail-lbl">Home</span>
-            </a>
-            <a href="{{ route('admin.dashboard') }}" @click="activeModule='ecommerce'" class="rail-item {{ (!request()->routeIs('dashboard') && !request()->routeIs('admin.hrm.*')) ? 'on' : '' }}" :class="{ 'on': activeModule==='ecommerce' }" title="Ecommerce">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                <span class="rail-lbl">Shop</span>
-            </a>
-            @unless(auth()->user()?->isVendor())
-            <a href="{{ route('admin.hrm.index') }}" @click="activeModule='hrm'" class="rail-item {{ request()->routeIs('admin.hrm.*') ? 'on' : '' }}" :class="{ 'on': activeModule==='hrm' }" title="HRM">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
-                <span class="rail-lbl">HRM</span>
-            </a>
-            @endunless
-            <div style="margin-top:auto"></div>
-            <button type="button" @click="sidebarOpen=!sidebarOpen" class="rail-item" title="Toggle menu" x-show="window.innerWidth>768">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="sidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'"/></svg>
-            </button>
-            
-        </div>
+    <aside id="sidebar" :class="{ 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
 
         <div class="side-menu">
 
@@ -865,15 +841,6 @@
                 <div class="text-white font-bold text-lg leading-tight truncate max-w-[150px]">{{ zstore('name', 'Zelari') }}</div>
                 <div class="text-indigo-300 text-xs font-medium">Admin Panel</div>
             </div>
-            <!-- Collapse toggle (desktop) -->
-            <button class="collapse-arrow ml-auto text-white/40 hover:text-white/80 transition-colors hidden md:block"
-                @click="sidebarOpen = !sidebarOpen">
-                <svg :class="{ 'rotate-180': !sidebarOpen }" class="w-5 h-5 transition-transform" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-            </button>
         </div>
 
         <!-- Navigation -->
@@ -1540,7 +1507,7 @@
     </aside>
 
     <!-- ════════ MAIN WRAPPER ════════ -->
-    <div id="main-wrap" :class="{ 'sidebar-collapsed': (!sidebarOpen || activeModule==='dashboard') && window.innerWidth > 768 }">
+    <div id="main-wrap">
 
         <!-- ── TOP BAR ── -->
         <header id="topbar">

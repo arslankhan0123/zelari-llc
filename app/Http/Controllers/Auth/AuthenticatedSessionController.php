@@ -49,7 +49,7 @@ class AuthenticatedSessionController extends Controller
             return route('admin.dashboard', absolute: false);
         }
         if ($u->isMasterAdmin() || $u->isAdmin() || ($u->role && count($u->role->permissionStrings()) > 0)) {
-            return route('dashboard', absolute: false);
+            return route('admin.dashboard', absolute: false);
         }
         return route('home', absolute: false);
     }
