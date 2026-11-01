@@ -178,6 +178,7 @@ class CheckoutController extends Controller
 
                     $lineItems[] = [
                         'product_id'   => $product->id,
+                        'vendor_id'    => $product->vendor_id,
                         'product_name' => $item['name'] ?? $product->name,
                         'product_sku'  => $variation ? ($variation->sku ?: $product->sku) : $product->sku,
                         'unit_price'   => $unitPrice,
@@ -212,6 +213,16 @@ class CheckoutController extends Controller
                                     $shippingFee = 0.0; // free shipping — nothing taken off the subtotal
                                 } else {
                                     $discount = \App\Support\Marketing::discountBase($cRes, (float) $subtotal);
+                                    // Vendor-specific coupon: cap discount to that vendor's slice of the cart
+                                    if ($couponModel->vendor_id) {
+                                        $vendorSub = 0.0;
+                                        foreach ($lineItems as $li) {
+                                            if ((int) ($li['vendor_id'] ?? 0) === (int) $couponModel->vendor_id) {
+                                                $vendorSub += (float) $li['subtotal'];
+                                            }
+                                        }
+                                        $discount = min($discount, round($vendorSub, 2));
+                                    }
                                 }
                             } else {
                                 $couponModel = null;
@@ -572,6 +583,25 @@ class CheckoutController extends Controller
             if ($admin = Setting::get('mail_admin_address')) {
                 Mail::to($admin)->send(new OrderPlaced($order, true));
             }
+
+            // Notify each vendor who has items in this order (uses Settings SMTP).
+            try {
+                $order->loadMissing('vendorOrders.vendor');
+                foreach ($order->vendorOrders as $vo) {
+                    if (!$vo->vendor) continue;
+                    $count = $vo->items()->count();
+                    \App\Support\VendorNotify::send(
+                        $vo->vendor,
+                        'You have a new order',
+                        "You have a new order on " . Setting::get('site_name', 'Zelari') . ".\n\n"
+                        . "Order: {$vo->sub_number}\n"
+                        . "Items: {$count}\n"
+                        . "Your subtotal: " . number_format((float) $vo->subtotal, 2) . "\n\n"
+                        . "Open your vendor dashboard to fulfil it."
+                    );
+                }
+            } catch (\Throwable $e) { report($e); }
+
             Setting::recordMailResult(null);
         } catch (\Throwable $e) {
             report($e);

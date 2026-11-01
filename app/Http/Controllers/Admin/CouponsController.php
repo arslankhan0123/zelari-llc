@@ -14,6 +14,10 @@ class CouponsController extends Controller
 {
     public function index(Request $request)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            $coupons = Coupon::where('vendor_id', $vid)->orderByDesc('id')->paginate(20);
+            return view('admin.coupons.vendor', compact('coupons'));
+        }
         $coupons = Coupon::orderByDesc('id')->paginate(20);
         $entries = WheelEntry::with('coupon')->orderByDesc('id')->paginate(20, ['*'], 'entries');
         $stats = [
@@ -66,6 +70,7 @@ class CouponsController extends Controller
             'max_discount' => $data['max_discount'] !== null && $data['max_discount'] !== '' ? (float) $data['max_discount'] : null,
             'usage_limit'  => $data['usage_limit'] ?? null,
             'expires_at'   => $data['expires_at'] ?? null,
+            'vendor_id'    => auth()->user()->vendorId(),
             'active'       => true,
             'source'       => 'manual',
         ]);
@@ -81,6 +86,7 @@ class CouponsController extends Controller
 
     public function destroy(Coupon $coupon)
     {
+        if ($vid = auth()->user()->vendorId()) { abort_unless($coupon->vendor_id === $vid, 403); }
         // remove the related wheel entries too, so no orphaned rows are left behind
         $coupon->entries()->delete();
         $coupon->delete();
@@ -147,6 +153,7 @@ class CouponsController extends Controller
 
     public function exportEmails()
     {
+        abort_if(auth()->user()->vendorId(), 403);
         $rows = WheelEntry::orderByDesc('id')->get(['email', 'prize_label', 'created_at']);
         $csv  = "email,prize,date\n";
         foreach ($rows as $r) {

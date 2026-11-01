@@ -39,6 +39,7 @@ $modules = [
     'returns'       => 'Returns & Refunds',
     'reports'       => 'Reports',
     'staff'         => 'Vendor Staff',
+    'store'         => 'Store Settings',
     'automations'   => 'Automations',
     'campaigns'     => 'Campaigns',
     'loyalty'       => 'Loyalty & Referrals',

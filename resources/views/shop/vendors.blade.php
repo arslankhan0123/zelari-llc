@@ -42,7 +42,10 @@
         <img src="{{ $vendor->logo_url }}" alt="{{ $vendor->name }}" class="vcard-logo">
         <div style="min-width:0">
           <h3 class="vcard-name">{{ $vendor->name }}</h3>
-          <p class="vcard-sub"><i class="fa-solid fa-circle-check" style="color:#16a34a"></i> Verified seller @if($vendor->city)· {{ $vendor->city }}@endif</p>
+          <p class="vcard-sub">
+            <i class="fa-solid fa-circle-check" style="color:#16a34a"></i> Verified seller @if($vendor->city)· {{ $vendor->city }}@endif
+            @if($vendor->rating_count)<br><i class="fa-solid fa-star" style="color:#f59e0b"></i> {{ number_format($vendor->rating_avg,1) }} · {{ $vendor->rating_count }} {{ \Illuminate\Support\Str::plural('review', $vendor->rating_count) }}@endif
+          </p>
         </div>
       </div>
       @if($vendor->description)

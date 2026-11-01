@@ -940,6 +940,20 @@
                 @if($pendingPayouts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending payouts">{{ $pendingPayouts }}</span>@endif
             </a>
             @endcan
+@if(auth()->user()->vendorId())
+    @can('store.list')
+            <a href="{{ route('admin.store.index') }}" class="nav-item {{ request()->routeIs('admin.store.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l1.5-3h15L21 7M4 7h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7zM9 11h6"/></svg>
+                <span class="nav-label flex-1">Store Settings</span>
+            </a>
+    @endcan
+    @can('coupons.list')
+            <a href="{{ route('admin.coupons.index') }}" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                <span class="nav-label flex-1">My Coupons</span>
+            </a>
+    @endcan
+@endif
 @can('shipping.list')
             <a href="{{ route('admin.shipping.index') }}" class="nav-item {{ request()->routeIs('admin.shipping.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>

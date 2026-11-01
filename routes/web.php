@@ -408,6 +408,11 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::get('/export/segments', [\App\Http\Controllers\Admin\ReportController::class, 'exportSegments'])->name('export.segments');
     });
 
+    Route::prefix('store')->name('store.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorProfileController::class, 'edit'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\VendorProfileController::class, 'update'])->name('update');
+    });
+
     Route::prefix('staff')->name('staff.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('store');
@@ -474,6 +479,7 @@ Route::prefix('vendor')->name('vendor.')->group(function () {
 // ── Public vendors directory + storefront ──────────────────────────────────
 Route::get('/vendors', [\App\Http\Controllers\Shop\VendorStoreController::class, 'index'])->name('shop.vendors');
 Route::get('/vendor/{slug}', [\App\Http\Controllers\Shop\VendorStoreController::class, 'show'])->name('shop.vendor');
+Route::post('/vendor/{slug}/review', [\App\Http\Controllers\Shop\VendorReviewController::class, 'store'])->name('shop.vendor.review')->middleware('throttle:10,1');
 Route::get('/download/{item}', [\App\Http\Controllers\Shop\DownloadController::class, 'download'])->name('shop.download');
 Route::post('/order/{order}/return', [\App\Http\Controllers\Shop\ReturnRequestController::class, 'store'])->name('shop.return.store');
 
@@ -493,3 +499,5 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
+

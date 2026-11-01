@@ -18,6 +18,7 @@ class Vendor extends Model
         'user_id', 'name', 'slug', 'email', 'phone', 'logo', 'banner',
         'description', 'status', 'commission_rate', 'shipping_flat', 'shipping_free_over', 'address', 'city',
         'country', 'meta', 'admin_notes', 'approved_at', 'plan_id',
+        'return_policy', 'shipping_policy', 'payout_method', 'bank_name', 'account_name', 'account_number',
     ];
 
     protected $casts = [
@@ -55,6 +56,10 @@ class Vendor extends Model
     }
 
     public function plan(): BelongsTo { return $this->belongsTo(SubscriptionPlan::class, 'plan_id'); }
+
+    public function reviews(): HasMany { return $this->hasMany(VendorReview::class); }
+    public function getRatingAvgAttribute(): float { return round((float) $this->reviews()->where('status','approved')->avg('rating'), 1); }
+    public function getRatingCountAttribute(): int { return (int) $this->reviews()->where('status','approved')->count(); }
 
     public function vendorOrders(): HasMany
     {

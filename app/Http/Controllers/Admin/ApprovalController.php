@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Support\VendorNotify;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class ApprovalController extends Controller
@@ -33,6 +35,19 @@ class ApprovalController extends Controller
             'approval_note'   => null,
             'status'          => 'active',   // now visible on storefront
         ]);
+
+        if ($product->vendor) {
+            VendorNotify::send(
+                $product->vendor,
+                'Your product was approved',
+                "Good news! Your product \"{$product->name}\" has been approved and is now live on the store.\n\nYou can manage it from your vendor dashboard."
+            );
+            \App\Support\Automation::fire('product.approved', [
+                'product'   => $product->name,
+                'vendor_id' => $product->vendor_id,
+            ]);
+        }
+
         return back()->with('success', 'Product approved and published.');
     }
 
@@ -44,6 +59,21 @@ class ApprovalController extends Controller
             'approval_note'   => $data['approval_note'] ?? 'Not approved.',
             'status'          => 'draft',
         ]);
+
+        if ($product->vendor) {
+            $note = $product->approval_note ?: 'Not approved.';
+            VendorNotify::send(
+                $product->vendor,
+                'Your product needs changes',
+                "Your product \"{$product->name}\" was not approved.\n\nReason: {$note}\n\nPlease update it in your vendor dashboard and resubmit."
+            );
+            \App\Support\Automation::fire('product.rejected', [
+                'product'   => $product->name,
+                'vendor_id' => $product->vendor_id,
+                'reason'    => $note,
+            ]);
+        }
+
         return back()->with('success', 'Product rejected.');
     }
 }
