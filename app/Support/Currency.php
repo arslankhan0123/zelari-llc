@@ -188,6 +188,14 @@ class Currency
         return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
     }
 
+    /** Format a base-currency amount in the store's base currency (no conversion). */
+    public static function baseMoney($amount): string
+    {
+        $cur = self::all()[self::base()] ?? ['symbol' => '', 'rate' => 1, 'decimals' => 2];
+        $cur['rate'] = 1;
+        return self::format($amount, $cur);
+    }
+
     /** Convert a base-currency amount to the given currency record and format it. */
     public static function format($amount, array $cur): string
     {

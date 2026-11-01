@@ -905,6 +905,18 @@
                 @if($vPending)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending orders">{{ $vPending }}</span>@endif
             </a>
             @endcan
+            @can('earnings.list')
+            <a href="{{ route('admin.earnings.index') }}" class="nav-item {{ request()->routeIs('admin.earnings.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="nav-label">Earnings</span>
+            </a>
+            @endcan
+            @can('payouts.list')
+            <a href="{{ route('admin.payouts.index') }}" class="nav-item {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span class="nav-label">Payouts</span>
+            </a>
+            @endcan
             @endif
 
             {{-- Admin-only menu --}}
@@ -926,6 +938,26 @@
                 <span class="nav-label flex-1">Approvals</span>
                 @php try { $pendingProducts = \App\Models\Product::where('approval_status','pending')->count(); } catch (\Throwable $e) { $pendingProducts = 0; } @endphp
                 @if($pendingProducts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingProducts }}</span>@endif
+            </a>
+            @endcan
+@can('commissions.list')
+            <a href="{{ route('admin.commissions.index') }}" class="nav-item {{ request()->routeIs('admin.commissions.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M12 7v10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                <span class="nav-label flex-1">Commissions</span>
+            </a>
+            @endcan
+@can('earnings.list')
+            <a href="{{ route('admin.earnings.index') }}" class="nav-item {{ request()->routeIs('admin.earnings.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="nav-label flex-1">Earnings</span>
+            </a>
+            @endcan
+@can('payouts.list')
+            <a href="{{ route('admin.payouts.index') }}" class="nav-item {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span class="nav-label flex-1">Payouts</span>
+                @php try { $pendingPayouts = \App\Models\PayoutRequest::where('status','pending')->count(); } catch (\Throwable $e) { $pendingPayouts = 0; } @endphp
+                @if($pendingPayouts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending payouts">{{ $pendingPayouts }}</span>@endif
             </a>
             @endcan
 

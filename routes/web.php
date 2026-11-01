@@ -334,6 +334,25 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::put('/{order}', [OrderController::class, 'update'])->name('update');
         Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy');
     });
+
+    // ── Phase 3: Commissions, Earnings & Payouts ──────────────────────
+    Route::prefix('commissions')->name('commissions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CommissionController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\CommissionController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('earnings')->name('earnings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EarningsController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Admin\EarningsController::class, 'export'])->name('export');
+    });
+
+    Route::prefix('payouts')->name('payouts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PayoutController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\PayoutController::class, 'store'])->name('store');
+        Route::post('/{payout}/approve', [\App\Http\Controllers\Admin\PayoutController::class, 'approve'])->name('approve');
+        Route::post('/{payout}/reject', [\App\Http\Controllers\Admin\PayoutController::class, 'reject'])->name('reject');
+        Route::post('/{payout}/pay', [\App\Http\Controllers\Admin\PayoutController::class, 'pay'])->name('pay');
+    });
 });
 
 

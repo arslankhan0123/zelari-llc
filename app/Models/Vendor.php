@@ -52,6 +52,42 @@ class Vendor extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function vendorOrders(): HasMany
+    {
+        return $this->hasMany(VendorOrder::class);
+    }
+
+    public function payoutRequests(): HasMany
+    {
+        return $this->hasMany(PayoutRequest::class);
+    }
+
+    /**
+     * Earnings snapshot (all amounts in base currency).
+     * earned    = payout on delivered sub-orders (realised)
+     * pending   = payout on active, not-yet-delivered sub-orders
+     * paid      = total already paid out
+     * reserved  = payout tied up in pending/approved payout requests
+     * available = what the vendor can still request
+     */
+    public function earnings(): array
+    {
+        $subs   = $this->vendorOrders()->get(['status', 'subtotal', 'commission_amount', 'payout_amount']);
+        $active = $subs->where('status', '!=', VendorOrder::CANCELLED);
+
+        $gross      = (float) $active->sum('subtotal');
+        $commission = (float) $active->sum('commission_amount');
+        $earned     = (float) $active->where('status', VendorOrder::DELIVERED)->sum('payout_amount');
+        $pending    = (float) $active->whereIn('status', [VendorOrder::PENDING, VendorOrder::PROCESSING, VendorOrder::SHIPPED])->sum('payout_amount');
+
+        $paid     = (float) $this->payoutRequests()->where('status', PayoutRequest::PAID)->sum('amount');
+        $reserved = (float) $this->payoutRequests()->whereIn('status', [PayoutRequest::PENDING, PayoutRequest::APPROVED])->sum('amount');
+
+        $available = max(0, round($earned - $paid - $reserved, 2));
+
+        return compact('gross', 'commission', 'earned', 'pending', 'paid', 'reserved', 'available');
+    }
+
     // ── Scopes & helpers ───────────────────────────────────────
     public function scopeApproved($q) { return $q->where('status', self::APPROVED); }
     public function scopePending($q)  { return $q->where('status', self::PENDING); }

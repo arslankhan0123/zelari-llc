@@ -70,9 +70,9 @@ class VendorOrder extends Model
      */
     public static function splitFromOrder(Order $order): void
     {
-        $order->loadMissing('items.product');
+        $order->loadMissing('items.product.category');
 
-        $byVendor = [];
+        $byVendor = [];   // vendor_id => ['subtotal','commission','vendor']
 
         foreach ($order->items as $item) {
             $vendorId = $item->vendor_id ?: optional($item->product)->vendor_id;
@@ -85,9 +85,14 @@ class VendorOrder extends Model
             }
 
             if (!isset($byVendor[$vendorId])) {
-                $byVendor[$vendorId] = ['subtotal' => 0.0];
+                $byVendor[$vendorId] = ['subtotal' => 0.0, 'commission' => 0.0, 'vendor' => Vendor::find($vendorId)];
             }
-            $byVendor[$vendorId]['subtotal'] += (float) $item->subtotal;
+
+            // Per-line commission: category override -> vendor rate -> global default.
+            $rate    = \App\Support\Commission::rateFor($byVendor[$vendorId]['vendor'], optional($item->product)->category);
+            $lineSub = (float) $item->subtotal;
+            $byVendor[$vendorId]['subtotal']   += $lineSub;
+            $byVendor[$vendorId]['commission'] += $lineSub * $rate / 100;
         }
 
         if (empty($byVendor)) {
@@ -97,17 +102,16 @@ class VendorOrder extends Model
         $seq = 0;
         foreach ($byVendor as $vendorId => $data) {
             $seq++;
-            $vendor = Vendor::find($vendorId);
-            $rate   = (float) ($vendor->commission_rate ?? 0);
-            $sub    = round((float) $data['subtotal'], 2);
-            $comm   = round($sub * $rate / 100, 2);
+            $sub  = round((float) $data['subtotal'], 2);
+            $comm = round((float) $data['commission'], 2);
+            $eff  = $sub > 0 ? round($comm / $sub * 100, 2) : 0;   // effective blended rate for display
 
             static::create([
                 'order_id'          => $order->id,
                 'vendor_id'         => $vendorId,
                 'sub_number'        => $order->order_number . '-V' . $seq,
                 'subtotal'          => $sub,
-                'commission_rate'   => $rate,
+                'commission_rate'   => $eff,
                 'commission_amount' => $comm,
                 'payout_amount'     => round($sub - $comm, 2),
                 'status'            => self::PENDING,
