@@ -413,6 +413,44 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::post('/', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('store');
         Route::delete('/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('destroy');
     });
+
+    // ── Phase 8: Automation, Growth & Security ────────────────────────
+    Route::prefix('automations')->name('automations.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AutomationController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\AutomationController::class, 'store'])->name('store');
+        Route::put('/{automation}', [\App\Http\Controllers\Admin\AutomationController::class, 'update'])->name('update');
+        Route::delete('/{automation}', [\App\Http\Controllers\Admin\AutomationController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CampaignController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\CampaignController::class, 'store'])->name('store');
+        Route::post('/{campaign}/send', [\App\Http\Controllers\Admin\CampaignController::class, 'send'])->name('send');
+    });
+    Route::prefix('loyalty')->name('loyalty.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\LoyaltyController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\LoyaltyController::class, 'update'])->name('update');
+    });
+    Route::prefix('redirects')->name('redirects.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RedirectController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\RedirectController::class, 'store'])->name('store');
+        Route::put('/{redirect}', [\App\Http\Controllers\Admin\RedirectController::class, 'update'])->name('update');
+        Route::delete('/{redirect}', [\App\Http\Controllers\Admin\RedirectController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('blog')->name('blog.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BlogController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\BlogController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\BlogController::class, 'store'])->name('store');
+        Route::get('/{post}/edit', [\App\Http\Controllers\Admin\BlogController::class, 'edit'])->name('edit');
+        Route::put('/{post}', [\App\Http\Controllers\Admin\BlogController::class, 'update'])->name('update');
+        Route::delete('/{post}', [\App\Http\Controllers\Admin\BlogController::class, 'destroy'])->name('destroy');
+    });
+    Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
+    Route::prefix('plans')->name('plans.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PlanController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\PlanController::class, 'store'])->name('store');
+        Route::put('/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'update'])->name('update');
+        Route::delete('/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'destroy'])->name('destroy');
+    });
 });
 
 
@@ -438,5 +476,19 @@ Route::get('/vendors', [\App\Http\Controllers\Shop\VendorStoreController::class,
 Route::get('/vendor/{slug}', [\App\Http\Controllers\Shop\VendorStoreController::class, 'show'])->name('shop.vendor');
 Route::get('/download/{item}', [\App\Http\Controllers\Shop\DownloadController::class, 'download'])->name('shop.download');
 Route::post('/order/{order}/return', [\App\Http\Controllers\Shop\ReturnRequestController::class, 'store'])->name('shop.return.store');
+
+
+// ── Two-factor authentication ───────────────────────────────────────────────
+Route::get('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
+Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('two-factor.verify');
+Route::middleware('auth')->group(function () {
+    Route::get('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'settings'])->name('two-factor.settings');
+    Route::post('/two-factor/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::post('/two-factor/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+});
+
+// ── Public blog ─────────────────────────────────────────────────────────────
+Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])->name('shop.blog');
+Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';

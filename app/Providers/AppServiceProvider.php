@@ -28,6 +28,18 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        // ── Audit logging for key models ──
+        foreach ([
+            \App\Models\Product::class, \App\Models\Order::class, \App\Models\Vendor::class,
+            \App\Models\Category::class, \App\Models\Role::class, \App\Models\User::class,
+            \App\Models\SubscriptionPlan::class, \App\Models\ReturnRequest::class, \App\Models\PayoutRequest::class,
+            \App\Models\ShippingZone::class, \App\Models\AutomationRule::class, \App\Models\BlogPost::class,
+        ] as $auditModel) {
+            if (class_exists($auditModel)) {
+                $auditModel::observe(\App\Observers\AuditObserver::class);
+            }
+        }
+
         // Shared data for the storefront layout: category navigation + cart count
         View::composer('layouts.store', function ($view) {
             $navCategories = Category::whereNull('parent_id')

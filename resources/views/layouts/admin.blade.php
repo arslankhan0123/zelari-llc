@@ -992,6 +992,53 @@
             </a>
             @endcan
 
+            <!-- Growth -->
+            @canany(['automations.list','campaigns.list','loyalty.list','blog.list','redirects.list','plans.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Growth</span></div>
+            @endcanany
+@can('automations.list')
+            <a href="{{ route('admin.automations.index') }}" class="nav-item {{ request()->routeIs('admin.automations.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="nav-label flex-1">Automations</span>
+            </a>
+            @endcan
+@can('campaigns.list')
+            <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                <span class="nav-label flex-1">Campaigns</span>
+            </a>
+            @endcan
+@can('loyalty.list')
+            <a href="{{ route('admin.loyalty.index') }}" class="nav-item {{ request()->routeIs('admin.loyalty.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                <span class="nav-label flex-1">Loyalty</span>
+            </a>
+            @endcan
+@can('blog.list')
+            <a href="{{ route('admin.blog.index') }}" class="nav-item {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                <span class="nav-label flex-1">Blog</span>
+            </a>
+            @endcan
+@can('redirects.list')
+            <a href="{{ route('admin.redirects.index') }}" class="nav-item {{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                <span class="nav-label flex-1">Redirects</span>
+            </a>
+            @endcan
+@can('plans.list')
+            <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                <span class="nav-label flex-1">Plans</span>
+            </a>
+            @endcan
+@can('audit.list')
+            <a href="{{ route('admin.audit.index') }}" class="nav-item {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="nav-label flex-1">Audit Log</span>
+            </a>
+            @endcan
+
             <!-- Catalog group -->
             @canany(['categories.list','manufacturers.list','products.list','sourcing.list','tools.list','seo.list','marketing.list','chats.list','messages.list','reviews.list'])
             <div class="nav-label px-5 mb-0 mt-1.5">
@@ -1431,6 +1478,11 @@
                 <a href="{{ route('profile.edit') }}" class="acct-item {{ request()->routeIs('profile.edit') ? 'on' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     My Profile
+                </a>
+
+                <a href="{{ route('two-factor.settings') }}" class="acct-item {{ request()->routeIs('two-factor.settings') ? 'on' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Two-Factor Auth
                 </a>
 
                 

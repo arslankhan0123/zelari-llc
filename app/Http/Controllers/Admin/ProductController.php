@@ -57,6 +57,14 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Subscription plan listing limit (Phase 8)
+        if ($v = $this->vendorScope()) {
+            $limit = optional($v->plan)->product_limit;
+            if ($limit !== null && $v->products()->count() >= $limit) {
+                return back()->withInput()->with('error', "Your plan allows up to {$limit} products. Upgrade your plan to add more.");
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // slug auto-generated server-side

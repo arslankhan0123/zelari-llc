@@ -17,7 +17,7 @@ class Vendor extends Model
     protected $fillable = [
         'user_id', 'name', 'slug', 'email', 'phone', 'logo', 'banner',
         'description', 'status', 'commission_rate', 'shipping_flat', 'shipping_free_over', 'address', 'city',
-        'country', 'meta', 'admin_notes', 'approved_at',
+        'country', 'meta', 'admin_notes', 'approved_at', 'plan_id',
     ];
 
     protected $casts = [
@@ -53,6 +53,8 @@ class Vendor extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function plan(): BelongsTo { return $this->belongsTo(SubscriptionPlan::class, 'plan_id'); }
 
     public function vendorOrders(): HasMany
     {

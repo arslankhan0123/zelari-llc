@@ -280,6 +280,25 @@ class CheckoutController extends Controller
                     $couponModel->increment('used_count');
                 }
 
+                // ── Loyalty points (Phase 8) — never break checkout ──
+                try {
+                    if ((string) \App\Models\Setting::get('loyalty_enabled', '0') === '1' && $customer) {
+                        $rate = (float) \App\Models\Setting::get('loyalty_earn_rate', '1');
+                        $earned = (int) floor((float) $subtotal * $rate); // points proportional to spend
+                        if ($earned > 0) {
+                            $customer->increment('points_balance', $earned);
+                        }
+                    }
+                } catch (\Throwable $e) {}
+
+                // ── Automation hook (Phase 8) ──
+                \App\Support\Automation::fire('order.created', [
+                    'order_number' => $order->order_number,
+                    'email'        => $order->customer_email,
+                    'total'        => (float) $order->total,
+                    'status'       => $order->status,
+                ]);
+
                 return $order;
             });
 

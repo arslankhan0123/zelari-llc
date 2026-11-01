@@ -50,6 +50,10 @@ class RegistrationController extends Controller
         ]);
         $user->forceFill(['vendor_id' => $vendor->id])->save();
 
+        \App\Support\Automation::fire('vendor.registered', [
+            'name' => $vendor->name, 'email' => $vendor->email, 'status' => $vendor->status,
+        ]);
+
         Auth::login($user);
 
         return redirect()->route('admin.dashboard')
