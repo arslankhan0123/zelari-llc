@@ -1458,20 +1458,76 @@
             @endif
           </div><!-- /ECOMMERCE MENU -->
 
-          <!-- HRM MENU (placeholder) -->
+          <!-- HRM MENU -->
           <div x-show="activeModule==='hrm'" x-cloak>
             <div class="nav-label px-5 mb-0 mt-1"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">HRM</span></div>
-            <a href="{{ route('admin.hrm.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.*') ? 'active' : '' }}">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            <a href="{{ route('admin.hrm.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.index') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM9 8h6M9 12h6M9 16h3"/></svg>
                 <span class="nav-label">Overview</span>
             </a>
-            @foreach(['Employees','Attendance','Payroll','Leave','Departments','Reports'] as $hi)
-            <span class="nav-item" style="opacity:.45;cursor:default">
-                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <span class="nav-label flex-1 text-left">{{ $hi }}</span>
-                <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white/55">SOON</span>
-            </span>
-            @endforeach
+            @unless(auth()->user()->isMasterAdmin())
+            <a href="{{ route('admin.hrm.clock.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.clock.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">My Attendance</span>
+            </a>
+            @endunless
+            @can('hrm.employees.list')
+            <a href="{{ route('admin.hrm.employees.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.employees.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
+                <span class="nav-label">Employees</span>
+            </a>
+            @endcan
+            @can('hrm.departments.list')
+            <a href="{{ route('admin.hrm.departments.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.departments.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m6-14h6m-6 4h6m-6 4h6"/></svg>
+                <span class="nav-label">Departments</span>
+            </a>
+            @endcan
+            @can('hrm.attendance.list')
+            <a href="{{ route('admin.hrm.attendance.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.attendance.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">Attendance</span>
+            </a>
+            @endcan
+            @can('hrm.leave.list')
+            <a href="{{ route('admin.hrm.leave.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.leave.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="nav-label">Leave</span>
+            </a>
+            @endcan
+            @can('hrm.payroll.list')
+            <a href="{{ route('admin.hrm.payroll.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.payroll.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">Payroll</span>
+            </a>
+            @endcan
+            @can('hrm.reports.list')
+            <a href="{{ route('admin.hrm.reports.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.reports.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span class="nav-label">Reports</span>
+            </a>
+            @endcan
+            @canany(['hrm.roles.list','hrm.users.list','hrm.settings.list'])
+            <div class="nav-label px-5 mb-0 mt-3"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">HR Admin</span></div>
+            @endcanany
+            @can('hrm.roles.list')
+            <a href="{{ route('admin.hrm.roles.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.roles.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span class="nav-label">HR Roles</span>
+            </a>
+            @endcan
+            @can('hrm.users.list')
+            <a href="{{ route('admin.hrm.users.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.users.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span class="nav-label">HR Users</span>
+            </a>
+            @endcan
+            @can('hrm.settings.list')
+            <a href="{{ route('admin.hrm.settings.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.settings.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="nav-label">HR Settings</span>
+            </a>
+            @endcan
           </div><!-- /HRM MENU -->
 
         </nav>

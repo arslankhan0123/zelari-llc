@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 
-#[Fillable(['name', 'email', 'password', 'role_id', 'vendor_id', 'real_password', 'two_factor_enabled', 'two_factor_code', 'two_factor_expires_at'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'vendor_id', 'hrm_role_id', 'real_password', 'two_factor_enabled', 'two_factor_code', 'two_factor_expires_at'])]
 #[Hidden(['password', 'remember_token', 'real_password'])]
 class User extends Authenticatable
 {
@@ -36,6 +36,24 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    // ── HRM access (separate RBAC from the ecommerce role) ──
+    public function hrmRole(): BelongsTo
+    {
+        return $this->belongsTo(HrmRole::class, 'hrm_role_id');
+    }
+
+    /** Can this account enter the HRM module at all? */
+    public function hasHrmAccess(): bool
+    {
+        return $this->isMasterAdmin() || (bool) $this->hrm_role_id;
+    }
+
+    public function hasHrmPermission(string $perm): bool
+    {
+        if ($this->isMasterAdmin()) return true;
+        return $this->hrm_role_id && $this->hrmRole && $this->hrmRole->hasPermission($perm);
     }
 
     // ── Role helpers ────────────────────────────────────────────────────

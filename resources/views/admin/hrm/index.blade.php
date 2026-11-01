@@ -1,45 +1,72 @@
 @extends('layouts.admin')
-@section('title', 'HRM')
+@section('title', 'HR Overview')
 @section('breadcrumb', 'Human Resource Management')
 
 @section('content')
-<div class="max-w-6xl">
+@php $cur = \App\Models\HrmSetting::get('hrm_currency', 'PKR'); @endphp
+<div class="w-full">
 
-  <div class="bg-white rounded-2xl shadow-sm p-8 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 opacity-[0.07]" style="background:radial-gradient(circle at 20% 20%,#6366f1,transparent 40%),radial-gradient(circle at 80% 60%,#ec4899,transparent 45%)"></div>
+  <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-[0.07]" style="background:radial-gradient(circle at 20% 20%,#6366f1,transparent 40%),radial-gradient(circle at 80% 60%,#8b5cf6,transparent 45%)"></div>
     <div class="relative flex items-center gap-4">
-      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
-        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 00-3-3.87"/></svg>
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">HRM Module</h1>
-        <p class="text-gray-500 mt-1">Employee management, attendance, payroll &amp; more — coming soon.</p>
+        <h1 class="text-xl font-bold text-gray-800">{{ \App\Models\HrmSetting::get('hrm_company_name', 'Company') }} — HR Overview</h1>
+        <p class="text-gray-500 text-sm mt-0.5">Employees, attendance, leave, payroll and reports.</p>
       </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    @php
-      $modules = [
-        ['Employees','Directory, profiles &amp; roles','M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z','#6366f1'],
-        ['Attendance','Check-in / out &amp; shifts','M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z','#0ea5e9'],
-        ['Payroll','Salaries, slips &amp; payouts','M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2','#16a34a'],
-        ['Leave','Requests &amp; approvals','M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z','#d97706'],
-        ['Departments','Teams &amp; hierarchy','M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-14h2m-2 4h2m-2 4h2m6-8h2m-2 4h2','#8b5cf6'],
-        ['Reports','HR analytics &amp; exports','M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z','#ec4899'],
-      ];
-    @endphp
-    @foreach($modules as [$name,$desc,$icon,$color])
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative">
-        <span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">SOON</span>
-        <div class="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style="background:{{ $color }}18;color:{{ $color }}">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/></svg>
-        </div>
-        <h3 class="font-semibold text-gray-800">{{ $name }}</h3>
-        <p class="text-sm text-gray-500 mt-1">{!! $desc !!}</p>
-      </div>
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    @foreach([
+      ['Employees', $stats['employees'], 'admin.hrm.employees.index', false],
+      ['Active', $stats['active'], null, false],
+      ['Departments', $stats['departments'], 'admin.hrm.departments.index', false],
+      ['Present today', $stats['present_today'], 'admin.hrm.attendance.index', false],
+      ['Pending leave', $stats['pending_leave'], 'admin.hrm.leave.index', false],
+      ['Payroll (month)', $stats['payroll_month'], 'admin.hrm.payroll.index', true],
+    ] as [$label, $val, $route, $money])
+      <a @if($route) href="{{ route($route) }}" @endif class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 block {{ $route ? 'hover:border-indigo-300 transition' : '' }}">
+        <div class="text-lg font-extrabold text-gray-800">{{ $money ? $cur.' '.number_format($val) : number_format($val) }}</div>
+        <div class="text-[11px] font-semibold text-gray-500 mt-0.5">{{ $label }}</div>
+      </a>
     @endforeach
   </div>
 
+  <div class="grid lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100 font-bold text-gray-800 flex items-center justify-between">
+        Recent leave requests
+        <a href="{{ route('admin.hrm.leave.index') }}" class="text-xs font-semibold text-indigo-600">View all</a>
+      </div>
+      @forelse($recentLeaves as $lv)
+        <div class="px-5 py-3 border-b border-gray-50 flex items-center justify-between text-sm">
+          <div>
+            <span class="font-semibold text-gray-800">{{ optional($lv->employee)->name ?? 'Employee' }}</span>
+            <span class="text-gray-400 text-xs ml-1">{{ optional($lv->type)->name }}</span>
+            <div class="text-[11px] text-gray-400">{{ $lv->from_date->format('d M') }} – {{ $lv->to_date->format('d M') }} · {{ $lv->days }}d</div>
+          </div>
+          <span class="text-xs font-semibold capitalize px-2.5 py-1 rounded-full
+            {{ $lv->status==='approved' ? 'bg-green-50 text-green-700 border border-green-100' : ($lv->status==='rejected' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-amber-50 text-amber-700 border border-amber-100') }}">{{ $lv->status }}</span>
+        </div>
+      @empty
+        <div class="px-5 py-10 text-center text-sm text-gray-400">No leave requests yet.</div>
+      @endforelse
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100 font-bold text-gray-800">Headcount by department</div>
+      @forelse($byDept as $d)
+        <div class="px-5 py-3 border-b border-gray-50 flex items-center justify-between text-sm">
+          <span class="font-semibold text-gray-700">{{ $d->name }}</span>
+          <span class="text-gray-500">{{ $d->employees_count }} {{ \Illuminate\Support\Str::plural('person', $d->employees_count) }}</span>
+        </div>
+      @empty
+        <div class="px-5 py-10 text-center text-sm text-gray-400">No departments yet.</div>
+      @endforelse
+    </div>
+  </div>
 </div>
 @endsection

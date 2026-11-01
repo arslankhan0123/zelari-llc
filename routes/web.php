@@ -468,9 +468,81 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
 });
 
 
-// HRM module (placeholder shell)
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/hrm')->name('admin.hrm.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Admin\HrmController::class, 'index'])->name('index');
+// HRM module — self-contained RBAC (hrmperm), separate from the ecommerce panel
+Route::middleware(['auth', 'verified', 'hrmperm'])->prefix('admin/hrm')->name('admin.hrm.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\Hrm\DashboardController::class, 'index'])->name('index');
+
+    Route::prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\EmployeeController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\EmployeeController::class, 'store'])->name('store');
+        Route::get('/{employee}/edit', [\App\Http\Controllers\Admin\Hrm\EmployeeController::class, 'edit'])->name('edit');
+        Route::put('/{employee}', [\App\Http\Controllers\Admin\Hrm\EmployeeController::class, 'update'])->name('update');
+        Route::delete('/{employee}', [\App\Http\Controllers\Admin\Hrm\EmployeeController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('departments')->name('departments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\DepartmentController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\DepartmentController::class, 'store'])->name('store');
+        Route::put('/{department}', [\App\Http\Controllers\Admin\Hrm\DepartmentController::class, 'update'])->name('update');
+        Route::delete('/{department}', [\App\Http\Controllers\Admin\Hrm\DepartmentController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\AttendanceController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\AttendanceController::class, 'save'])->name('save');
+    });
+
+    Route::prefix('clock')->name('clock.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\ClockController::class, 'index'])->name('index');
+        Route::post('/in', [\App\Http\Controllers\Admin\Hrm\ClockController::class, 'clockIn'])->name('in');
+        Route::post('/out', [\App\Http\Controllers\Admin\Hrm\ClockController::class, 'clockOut'])->name('out');
+        Route::post('/break/start', [\App\Http\Controllers\Admin\Hrm\ClockController::class, 'breakStart'])->name('breakstart');
+        Route::post('/break/end', [\App\Http\Controllers\Admin\Hrm\ClockController::class, 'breakEnd'])->name('breakend');
+    });
+
+    Route::prefix('leave')->name('leave.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\LeaveController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\LeaveController::class, 'store'])->name('store');
+        Route::post('/{leave}/approve', [\App\Http\Controllers\Admin\Hrm\LeaveController::class, 'approve'])->name('approve');
+        Route::post('/{leave}/reject', [\App\Http\Controllers\Admin\Hrm\LeaveController::class, 'reject'])->name('reject');
+        Route::delete('/{leave}', [\App\Http\Controllers\Admin\Hrm\LeaveController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('payroll')->name('payroll.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\PayrollController::class, 'index'])->name('index');
+        Route::post('/generate', [\App\Http\Controllers\Admin\Hrm\PayrollController::class, 'generate'])->name('generate');
+        Route::put('/{payslip}', [\App\Http\Controllers\Admin\Hrm\PayrollController::class, 'update'])->name('update');
+        Route::post('/{payslip}/paid', [\App\Http\Controllers\Admin\Hrm\PayrollController::class, 'markPaid'])->name('paid');
+        Route::delete('/{payslip}', [\App\Http\Controllers\Admin\Hrm\PayrollController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\ReportController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Admin\Hrm\ReportController::class, 'export'])->name('export');
+    });
+
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'store'])->name('store');
+        Route::get('/{role}/edit', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [\App\Http\Controllers\Admin\Hrm\HrmRoleController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\HrmUserController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\Hrm\HrmUserController::class, 'store'])->name('store');
+        Route::put('/{user}', [\App\Http\Controllers\Admin\Hrm\HrmUserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [\App\Http\Controllers\Admin\Hrm\HrmUserController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Hrm\SettingController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\Hrm\SettingController::class, 'update'])->name('update');
+        Route::post('/leave-type', [\App\Http\Controllers\Admin\Hrm\SettingController::class, 'storeLeaveType'])->name('leavetype.store');
+        Route::delete('/leave-type/{leaveType}', [\App\Http\Controllers\Admin\Hrm\SettingController::class, 'destroyLeaveType'])->name('leavetype.destroy');
+    });
 });
 
 // ── Vendor panel ──────────────────────────────────────────────────────────
@@ -508,6 +580,9 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
+
+
 
 
 

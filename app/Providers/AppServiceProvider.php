@@ -37,6 +37,14 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        // ── HRM RBAC gates (separate matrix: hrm.<module>.<action>) ──
+        foreach (array_keys(config('hrm_permissions', [])) as $hmodule) {
+            foreach (config("hrm_permissions.$hmodule.actions", []) as $haction) {
+                $hperm = "hrm.$hmodule.$haction";
+                Gate::define($hperm, fn ($user) => $user->hasHrmPermission($hperm));
+            }
+        }
+
         // ── Audit logging for key models ──
         foreach ([
             \App\Models\Product::class, \App\Models\Order::class, \App\Models\Vendor::class,
