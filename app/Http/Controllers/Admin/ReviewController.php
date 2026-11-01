@@ -10,7 +10,9 @@ class ReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Review::with(['product', 'user', 'order'])->latest();
+        $vid = auth()->user()->vendorId();
+        $scope = fn ($q) => $vid ? $q->whereHas('product', fn ($p) => $p->where('vendor_id', $vid)) : $q;
+        $query = $scope(Review::with(['product', 'user', 'order'])->latest());
 
         if ($request->filled('search')) {
             $s = trim($request->search);
@@ -30,10 +32,10 @@ class ReviewController extends Controller
         $reviews = $query->paginate(10)->withQueryString();
 
         $stats = [
-            'pending'  => Review::where('status', Review::PENDING)->count(),
-            'approved' => Review::where('status', Review::APPROVED)->count(),
-            'rejected' => Review::where('status', Review::REJECTED)->count(),
-            'average'  => round((float) Review::where('status', Review::APPROVED)->avg('rating'), 1),
+            'pending'  => $scope(Review::where('status', Review::PENDING))->count(),
+            'approved' => $scope(Review::where('status', Review::APPROVED))->count(),
+            'rejected' => $scope(Review::where('status', Review::REJECTED))->count(),
+            'average'  => round((float) $scope(Review::where('status', Review::APPROVED))->avg('rating'), 1),
         ];
 
         return view('admin.reviews.index', compact('reviews', 'stats'));
@@ -42,6 +44,9 @@ class ReviewController extends Controller
     /** Approve → the review becomes visible on the product page. */
     public function approve(Request $request, Review $review)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($review->product)->vendor_id === $vid, 403);
+        }
         $review->update([
             'status'      => Review::APPROVED,
             'approved_at' => now(),
@@ -55,6 +60,9 @@ class ReviewController extends Controller
     /** Reject → stays hidden; the note is for staff only. */
     public function reject(Request $request, Review $review)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($review->product)->vendor_id === $vid, 403);
+        }
         $data = $request->validate(['admin_note' => 'nullable|string|max:255']);
 
         $review->update([
@@ -77,6 +85,9 @@ class ReviewController extends Controller
 
     public function destroy(Review $review)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($review->product)->vendor_id === $vid, 403);
+        }
         $review->delete();
 
         return back()->with('success', 'Review deleted.');

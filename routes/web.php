@@ -483,6 +483,7 @@ Route::get('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorControl
 Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('two-factor.verify');
 Route::middleware('auth')->group(function () {
     Route::get('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'settings'])->name('two-factor.settings');
+    Route::get('/admin/two-factor', fn () => redirect()->route('two-factor.settings'));
     Route::post('/two-factor/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('two-factor.enable');
     Route::post('/two-factor/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('two-factor.disable');
 });
