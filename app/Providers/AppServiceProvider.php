@@ -19,6 +19,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::defaultView('vendor.pagination.shopnest');
 
+        // Always drive mail from Admin → Settings → Email (DB), for every outgoing email.
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                \App\Models\Setting::applyMailConfig();
+            }
+        } catch (\Throwable $e) {
+            // never block boot over mail config
+        }
+
         // ── RBAC gates: master admin passes everything; others by role permissions ──
         Gate::before(fn ($user) => (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? true : null);
         foreach (array_keys(config('permissions', [])) as $module) {
