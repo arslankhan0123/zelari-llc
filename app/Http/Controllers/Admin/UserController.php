@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-/** Admin → Users: panel accounts and their roles. SuperAdmin only. */
+/** Admin → Users: panel accounts and their roles. Master Admin only. */
 class UserController extends Controller
 {
     public function index(Request $request)
@@ -33,6 +33,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8|max:72',
             'role_id'  => 'required|exists:roles,id',
         ]);
+        if ($block = $this->blockMasterEscalation($data['role_id'])) return $block;
         User::create([
             'name'          => $data['name'],
             'email'         => strtolower($data['email']),
@@ -53,10 +54,11 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|max:72',
         ]);
         // Never let the last SuperAdmin demote themselves
-        $superId = Role::idFor(Role::SUPER_ADMIN);
+        $superId = Role::idFor(Role::MASTER_ADMIN);
         if ($user->role_id === $superId && (int) $data['role_id'] !== $superId && User::where('role_id', $superId)->count() <= 1) {
-            return back()->with('error', 'There must be at least one SuperAdmin.');
+            return back()->with('error', 'There must be at least one Master Admin.');
         }
+        if ($block = $this->blockMasterEscalation($data['role_id'])) return $block;
         $user->name    = $data['name'];
         $user->email   = strtolower($data['email']);
         $user->role_id = $data['role_id'];
@@ -68,13 +70,23 @@ class UserController extends Controller
         return back()->with('success', 'Account updated.');
     }
 
+    /** Only a Master Admin may grant the Master Admin role. */
+    protected function blockMasterEscalation($roleId)
+    {
+        $masterId = Role::idFor(Role::MASTER_ADMIN);
+        if ((int) $roleId === (int) $masterId && !auth()->user()->isMasterAdmin()) {
+            return back()->with('error', 'Only a Master Admin can assign the Master Admin role.');
+        }
+        return null;
+    }
+
     public function destroy(Request $request, User $user)
     {
         if ($user->id === $request->user()->id) {
             return back()->with('error', "You can't delete your own account.");
         }
-        if ($user->isSuperAdmin() && User::where('role_id', $user->role_id)->count() <= 1) {
-            return back()->with('error', 'There must be at least one SuperAdmin.');
+        if ($user->isMasterAdmin() && User::where('role_id', $user->role_id)->count() <= 1) {
+            return back()->with('error', 'There must be at least one Master Admin.');
         }
         $user->delete();
         return back()->with('success', 'Account deleted.');

@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 
-#[Fillable(['name', 'email', 'password', 'role_id', 'real_password'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'vendor_id', 'real_password', 'two_factor_enabled', 'two_factor_code', 'two_factor_expires_at'])]
 #[Hidden(['password', 'remember_token', 'real_password'])]
 class User extends Authenticatable
 {
@@ -43,8 +44,30 @@ class User extends Authenticatable
         return $this->role && in_array($this->role->slug, $slugs, true);
     }
 
-    public function isSuperAdmin(): bool { return $this->hasRole(Role::SUPER_ADMIN); }
-    public function isAdmin(): bool      { return $this->hasRole(Role::SUPER_ADMIN, Role::ADMIN); }
+    public function isMasterAdmin(): bool { return $this->hasRole(Role::MASTER_ADMIN); }
+    public function isSuperAdmin(): bool  { return $this->isMasterAdmin(); } // BC alias
+    public function isAdmin(): bool       { return $this->hasRole(Role::MASTER_ADMIN, Role::ADMIN); }
+    public function isVendor(): bool     { return $this->hasRole(Role::VENDOR, Role::VENDOR_STAFF); }
+    public function isVendorOwner(): bool { return $this->hasRole(Role::VENDOR); }
+    public function isVendorStaff(): bool { return $this->hasRole(Role::VENDOR_STAFF); }
+
+    /** The vendor this user belongs to (owner or staff), or null. Drives all vendor data scoping. */
+    public function vendorId(): ?int
+    {
+        return $this->isVendor() ? ($this->vendor_id ?: optional($this->getRelationValue('vendor'))->id) : null;
+    }
+
+    /** Permission check: master admin has everything; others go by their role. */
+    public function hasPermission(string $perm): bool
+    {
+        if ($this->isMasterAdmin()) return true;
+        return $this->role && $this->role->hasPermission($perm);
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
 
     public function getRoleNameAttribute(): string
     {

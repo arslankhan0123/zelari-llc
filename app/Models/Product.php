@@ -10,15 +10,19 @@ use Illuminate\Support\Str;
 class Product extends Model
 {
     protected $fillable = [
-        'category_id', 'manufacturer_id', 'name', 'slug', 'sku',
+        'vendor_id', 'supplier_id', 'category_id', 'manufacturer_id', 'name', 'slug', 'sku',
         'feature_image', 'purchase_price', 'sale_price',
         'quantity', 'short_description', 'description', 'status',
+        'approval_status', 'approval_note', 'submitted_at',
+        'type', 'variant_attributes', 'download_file',
     ];
 
     protected $casts = [
         'purchase_price' => 'decimal:2',
         'sale_price'     => 'decimal:2',
         'quantity'       => 'integer',
+        'submitted_at'   => 'datetime',
+        'variant_attributes' => 'array',
     ];
 
     protected static function boot()
@@ -35,10 +39,55 @@ class Product extends Model
         });
     }
 
+    public function supplier(): BelongsTo { return $this->belongsTo(Supplier::class); }
+
+    public function variations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProductVariation::class)->orderBy('sort');
+    }
+
+    public function bundleItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProductBundleItem::class, 'bundle_id');
+    }
+
+    public function hasVariations(): bool
+    {
+        return $this->variations()->exists();
+    }
+
+    public function isDigital(): bool
+    {
+        return in_array($this->type, ['digital', 'downloadable'], true);
+    }
+
+    public function isBundle(): bool
+    {
+        return $this->type === 'bundled';
+    }
+
+    /** Physical goods (and bundles) ship; digital/downloadable do not. */
+    public function needsShipping(): bool
+    {
+        return !$this->isDigital();
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
+    // ── Approval ───────────────────────────────────────────────
+    public function scopePending($q)  { return $q->where('approval_status', 'pending'); }
+    public function scopeApproved($q) { return $q->where('approval_status', 'approved'); }
+    public function isApproved(): bool { return $this->approval_status === 'approved'; }
+    public function isPending(): bool  { return $this->approval_status === 'pending'; }
+    public function isRejected(): bool { return $this->approval_status === 'rejected'; }
 
     public function manufacturer(): BelongsTo
     {

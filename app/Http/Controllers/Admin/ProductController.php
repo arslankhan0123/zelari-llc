@@ -12,9 +12,24 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    /** Returns the vendor model if the logged-in user is a vendor, else null. */
+    protected function vendorScope()
+    {
+        $u = auth()->user();
+        return $u->isVendor() ? $u->vendor : null;
+    }
+
+    protected function guardOwned(Product $product): void
+    {
+        if ($v = $this->vendorScope()) {
+            abort_unless($product->vendor_id === $v->id, 403);
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'images'])->latest();
+        if ($v = $this->vendorScope()) { $query->where('vendor_id', $v->id); }
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -42,10 +57,18 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Subscription plan listing limit (Phase 8)
+        if ($v = $this->vendorScope()) {
+            $limit = optional($v->plan)->product_limit;
+            if ($limit !== null && $v->products()->count() >= $limit) {
+                return back()->withInput()->with('error', "Your plan allows up to {$limit} products. Upgrade your plan to add more.");
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku|max:100',
             'purchase_price' => 'required|numeric|min:0',
@@ -54,6 +77,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,draft',
+            'type' => 'nullable|in:physical,digital,downloadable,bundled',
             'feature_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -73,6 +97,13 @@ class ProductController extends Controller
                 ->store('products/feature', 'public');
         }
 
+        if ($v = $this->vendorScope()) {
+            $validated['vendor_id']       = $v->id;
+            $validated['status']          = 'draft';
+            $validated['approval_status'] = 'pending';
+            $validated['submitted_at']    = now();
+        }
+
         $product = Product::create($validated);
 
         // Gallery images
@@ -87,19 +118,75 @@ class ProductController extends Controller
             }
         }
 
+        $this->syncCatalogDepth($product, $request);
+
         return redirect()->route('admin.products.index')
             ->with('success', "Product \"{$product->name}\" created successfully!");
     }
 
+    /** Persist product type, download file, variations, bundle items and the derived attribute set. */
+    protected function syncCatalogDepth(Product $product, Request $request): void
+    {
+        if ($request->hasFile('download_file')) {
+            $product->download_file = $request->file('download_file')->store('products/downloads', 'public');
+        }
+
+        // Variations (editing replaces the set)
+        $rows = json_decode((string) $request->input('variations_json', '[]'), true) ?: [];
+        $product->variations()->delete();
+        $attrs = [];
+        foreach ($rows as $r) {
+            $optStr = trim((string) ($r['options'] ?? ''));
+            if ($optStr === '') continue;
+            $options = [];
+            foreach (explode(',', $optStr) as $pair) {
+                $pp = explode(':', $pair, 2);
+                if (count($pp) === 2) {
+                    $k = trim($pp[0]); $val = trim($pp[1]);
+                    if ($k !== '' && $val !== '') { $options[$k] = $val; $attrs[$k][$val] = true; }
+                }
+            }
+            if (empty($options)) continue;
+            $product->variations()->create([
+                'options'    => $options,
+                'price'      => (float) ($r['price'] ?? 0),
+                'sale_price' => (($r['sale_price'] ?? '') === '' || ($r['sale_price'] ?? null) === null) ? null : (float) $r['sale_price'],
+                'quantity'   => (int) ($r['quantity'] ?? 0),
+                'sku'        => ($r['sku'] ?? null) ?: null,
+                'enabled'    => true,
+            ]);
+        }
+        $product->variant_attributes = empty($attrs) ? null : array_map(fn ($vals) => array_keys($vals), $attrs);
+
+        // Bundle items
+        $product->bundleItems()->delete();
+        if ($product->type === 'bundled') {
+            foreach (preg_split('/\r\n|\r|\n/', (string) $request->input('bundle_skus', '')) as $line) {
+                $line = trim($line);
+                if ($line === '') continue;
+                $qty = 1;
+                if (preg_match('/^(.*?)\s*x\s*(\d+)$/i', $line, $m)) { $line = trim($m[1]); $qty = max(1, (int) $m[2]); }
+                $comp = Product::where('sku', $line)->first();
+                if ($comp && $comp->id !== $product->id) {
+                    $product->bundleItems()->create(['product_id' => $comp->id, 'quantity' => $qty]);
+                }
+            }
+        }
+
+        $product->save();
+    }
+
     public function show(Product $product)
     {
+        $this->guardOwned($product);
         $product->load('category', 'images');
         return view('admin.products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
-        $product->load('images');
+        $this->guardOwned($product);
+        $product->load('images', 'variations', 'bundleItems.component');
         $categories    = Category::treeOrdered();
         $manufacturers = \App\Models\Manufacturer::active()->ordered()->get();
         return view('admin.products.edit', compact('product', 'categories', 'manufacturers'));
@@ -107,10 +194,11 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->guardOwned($product);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // slug auto-generated server-side
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'manufacturer_id' => 'nullable|exists:manufacturers,id',
             'sku' => 'nullable|string|unique:products,sku,' . $product->id . '|max:100',
             'purchase_price' => 'required|numeric|min:0',
@@ -119,6 +207,7 @@ class ProductController extends Controller
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,draft',
+            'type' => 'nullable|in:physical,digital,downloadable,bundled',
             'feature_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -150,6 +239,13 @@ class ProductController extends Controller
             unset($validated['feature_image']);
         }
 
+        if ($this->vendorScope()) {
+            // vendor edits go back through approval
+            $validated['status']          = 'draft';
+            $validated['approval_status'] = 'pending';
+            $validated['submitted_at']    = now();
+        }
+
         $product->update($validated);
 
         // Remove selected gallery images
@@ -176,12 +272,15 @@ class ProductController extends Controller
             }
         }
 
+        $this->syncCatalogDepth($product, $request);
+
         return redirect()->route('admin.products.index')
             ->with('success', "Product \"{$product->name}\" updated successfully!");
     }
 
     public function destroy(Product $product)
     {
+        $this->guardOwned($product);
         // Delete images from storage
         if ($product->feature_image) {
             Storage::disk('public')->delete($product->feature_image);

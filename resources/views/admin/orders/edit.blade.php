@@ -10,7 +10,7 @@
         </a>
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Update Order</h1>
-            <p class="text-sm text-gray-400 font-mono mt-0.5">{{ $order->order_number }}</p>
+            <p class="text-sm text-gray-400 font-mono mt-0.5">{{ ($vendorOrder ?? null) ? $vendorOrder->sub_number : $order->order_number }}</p>
         </div>
     </div>
 
@@ -20,6 +20,47 @@
     </div>
     @endif
 
+@if(($vendorOrder ?? null))
+    {{-- Vendor: update only the status of their own sub-order --}}
+    <form method="POST" action="{{ route('admin.orders.update', $order) }}">
+        @csrf @method('PUT')
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 space-y-5">
+                <div class="bg-white rounded-2xl p-6 space-y-5" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+                    <h2 class="font-semibold text-gray-700 border-b border-gray-100 pb-3">Fulfilment Status</h2>
+                    <div x-data="{ status: '{{ old('status', $vendorOrder->status) }}' }">
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Status for your items</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            @foreach(['pending'=>'Pending','processing'=>'Processing','shipped'=>'Shipped','delivered'=>'Delivered','cancelled'=>'Cancelled'] as $val=>$label)
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="status" value="{{ $val }}" x-model="status" class="sr-only">
+                                <div :class="status==='{{ $val }}' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-indigo-200'"
+                                     class="border-2 rounded-xl px-3 py-2.5 text-sm font-medium text-center transition-all">{{ $label }}</div>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1.5">Note (optional)</label>
+                        <textarea name="note" rows="4" class="form-input w-full resize-none" placeholder="e.g. shipped via courier, tracking #…">{{ old('note', $vendorOrder->note) }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-white rounded-2xl p-5 space-y-2" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
+                    <h3 class="font-semibold text-gray-700 mb-3">Your Earnings</h3>
+                    <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>{{ $order->money($vendorOrder->subtotal) }}</span></div>
+                    <div class="flex justify-between text-sm text-gray-500"><span>Commission ({{ rtrim(rtrim(number_format($vendorOrder->commission_rate,2),'0'),'.') }}%)</span><span>- {{ $order->money($vendorOrder->commission_amount) }}</span></div>
+                    <div class="flex justify-between font-bold text-emerald-600 pt-2 border-t border-gray-100"><span>Payout</span><span>{{ $order->money($vendorOrder->payout_amount) }}</span></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button type="submit" class="btn-primary w-full text-center">Save Status</button>
+                    <a href="{{ route('admin.orders.show', $order) }}" class="block text-center py-2.5 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+    @else
     <form method="POST" action="{{ route('admin.orders.update', $order) }}" id="orderEditForm">
         @csrf @method('PUT')
 
@@ -86,6 +127,7 @@
                     <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>{{ $order->money($order->subtotal) }}</span></div>
                     @if($order->discount > 0)<div class="flex justify-between text-sm text-emerald-600"><span>Discount</span><span>− {{ $order->money($order->discount) }}</span></div>@endif
                     @if($order->shipping_fee > 0)<div class="flex justify-between text-sm text-gray-500"><span>Shipping</span><span>{{ $order->money($order->shipping_fee) }}</span></div>@endif
+                    @if($order->tax > 0)<div class="flex justify-between text-sm text-gray-500"><span>Tax</span><span>{{ $order->money($order->tax) }}</span></div>@endif
                     <div class="flex justify-between font-bold text-gray-800 pt-2 border-t border-gray-100"><span>Total</span><span>{{ $order->money($order->total) }}</span></div>
                 </div>
 
@@ -97,5 +139,6 @@
             </div>
         </div>
     </form>
+    @endif
 </div>
 @endsection

@@ -12,10 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ApplyRedirects::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\DetectCurrency::class,
         ]);
-        $middleware->alias(['admin' => \App\Http\Middleware\EnsureAdmin::class]);
+        $middleware->alias(['admin' => \App\Http\Middleware\EnsureAdmin::class, 'vendor' => \App\Http\Middleware\EnsureVendor::class, 'panelperm' => \App\Http\Middleware\PanelPermission::class]);
         $middleware->validateCsrfTokens(except: ['webhooks/stripe']);
         // Behind ngrok / a load balancer / Cloudflare: honour X-Forwarded-Proto so URLs are https
         $middleware->trustProxies(at: '*');

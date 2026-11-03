@@ -157,28 +157,44 @@ class CheckoutController extends Controller
                     if (!$product || $product->status !== 'active') {
                         throw new \Exception("\"{$item['name']}\" is no longer available.");
                     }
-                    if ($product->quantity < $item['quantity']) {
-                        throw new \Exception("Only {$product->quantity} unit(s) of \"{$product->name}\" are in stock.");
+
+                    $variation = null;
+                    if (!empty($item['variation_id'])) {
+                        $variation = \App\Models\ProductVariation::lockForUpdate()
+                            ->where('id', $item['variation_id'])->where('product_id', $product->id)->first();
+                        if (!$variation) {
+                            throw new \Exception("\"{$item['name']}\" is no longer available.");
+                        }
                     }
 
-                    $unitPrice = (float) ($product->sale_price ?? $product->purchase_price);
+                    $stock = $variation ? (int) $variation->quantity : (int) $product->quantity;
+                    if ($stock < $item['quantity']) {
+                        throw new \Exception("Only {$stock} unit(s) of \"{$item['name']}\" are in stock.");
+                    }
+
+                    $unitPrice = $variation ? $variation->effectivePrice() : (float) ($product->sale_price ?? $product->purchase_price);
                     $lineSub   = $unitPrice * $item['quantity'];
                     $subtotal += $lineSub;
 
                     $lineItems[] = [
                         'product_id'   => $product->id,
-                        'product_name' => $product->name,
-                        'product_sku'  => $product->sku,
+                        'vendor_id'    => $product->vendor_id,
+                        'product_name' => $item['name'] ?? $product->name,
+                        'product_sku'  => $variation ? ($variation->sku ?: $product->sku) : $product->sku,
                         'unit_price'   => $unitPrice,
                         'quantity'     => $item['quantity'],
                         'subtotal'     => $lineSub,
                     ];
 
-                    // Decrement stock
-                    $product->decrement('quantity', $item['quantity']);
+                    if ($variation) {
+                        $variation->decrement('quantity', $item['quantity']);
+                    } else {
+                        $product->decrement('quantity', $item['quantity']);
+                    }
                 }
 
-                $shippingFee = zshipping((float) $subtotal); // from Admin → Settings → Shipping
+                // Shipping engine: per-vendor rate -> zone method -> global flat (Phase 5)
+                $shippingFee = \App\Support\Shipping::total($lineItems, $geo['country_code'] ?? null);
 
                 // ── Coupon (re-validated server-side) ────────────────────
                 $discount    = 0.0;
@@ -197,6 +213,16 @@ class CheckoutController extends Controller
                                     $shippingFee = 0.0; // free shipping — nothing taken off the subtotal
                                 } else {
                                     $discount = \App\Support\Marketing::discountBase($cRes, (float) $subtotal);
+                                    // Vendor-specific coupon: cap discount to that vendor's slice of the cart
+                                    if ($couponModel->vendor_id) {
+                                        $vendorSub = 0.0;
+                                        foreach ($lineItems as $li) {
+                                            if ((int) ($li['vendor_id'] ?? 0) === (int) $couponModel->vendor_id) {
+                                                $vendorSub += (float) $li['subtotal'];
+                                            }
+                                        }
+                                        $discount = min($discount, round($vendorSub, 2));
+                                    }
                                 }
                             } else {
                                 $couponModel = null;
@@ -207,7 +233,11 @@ class CheckoutController extends Controller
                     }
                 }
 
-                $total = max(0, $subtotal - $discount) + $shippingFee;
+                // Tax engine (Phase 5): exclusive adds on top, inclusive is already inside prices
+                $taxCalc = \App\Support\Tax::compute($lineItems);
+                $tax     = (float) $taxCalc['amount'];
+
+                $total = max(0, $subtotal - $discount) + $shippingFee + ($taxCalc['inclusive'] ? 0 : $tax);
 
                 // ── Find or create customer ──────────────────────────────
                 $customer = Customer::firstOrCreate(
@@ -221,10 +251,21 @@ class CheckoutController extends Controller
                     ]
                 );
 
+                // ── Sales agent attribution (referral code) ──────────────
+                $salesAgent = null; $agentCommission = 0.0;
+                if ($agentCode = strtoupper(trim((string) $request->input('agent_code')))) {
+                    $salesAgent = \App\Models\SalesAgent::where('code', $agentCode)->where('active', true)->first();
+                    if ($salesAgent) {
+                        $agentCommission = round((float) $subtotal * (float) $salesAgent->commission_rate / 100, 2);
+                    }
+                }
+
                 // ── Create the order ─────────────────────────────────────
                 $order = Order::create([
                     'order_number'     => 'ORD-' . strtoupper(Str::random(8)),
                     'customer_id'      => $customer->id,
+                    'sales_agent_id'   => $salesAgent?->id,
+                    'agent_commission' => $agentCommission,
                     'user_id'          => $request->user()?->id, // logged-in account, if any (guests stay null)
                     'customer_email'   => $request->email,
                     'status'           => 'pending',
@@ -234,6 +275,7 @@ class CheckoutController extends Controller
                     'subtotal'         => $subtotal,
                     'discount'         => round($discount, 2),
                     'shipping_fee'     => $shippingFee,
+                    'tax'              => $tax,
                     'total'            => $total,
                     'shipping_name'    => $request->name,
                     'shipping_phone'   => $request->phone,
@@ -253,11 +295,31 @@ class CheckoutController extends Controller
                 ]);
 
                 $order->items()->createMany($lineItems);
+                \App\Models\VendorOrder::splitFromOrder($order);
                 Payments::openAttempt($order);
 
                 if ($couponModel) {
                     $couponModel->increment('used_count');
                 }
+
+                // ── Loyalty points (Phase 8) — never break checkout ──
+                try {
+                    if ((string) \App\Models\Setting::get('loyalty_enabled', '0') === '1' && $customer) {
+                        $rate = (float) \App\Models\Setting::get('loyalty_earn_rate', '1');
+                        $earned = (int) floor((float) $subtotal * $rate); // points proportional to spend
+                        if ($earned > 0) {
+                            $customer->increment('points_balance', $earned);
+                        }
+                    }
+                } catch (\Throwable $e) {}
+
+                // ── Automation hook (Phase 8) ──
+                \App\Support\Automation::fire('order.created', [
+                    'order_number' => $order->order_number,
+                    'email'        => $order->customer_email,
+                    'total'        => (float) $order->total,
+                    'status'       => $order->status,
+                ]);
 
                 return $order;
             });
@@ -532,6 +594,25 @@ class CheckoutController extends Controller
             if ($admin = Setting::get('mail_admin_address')) {
                 Mail::to($admin)->send(new OrderPlaced($order, true));
             }
+
+            // Notify each vendor who has items in this order (uses Settings SMTP).
+            try {
+                $order->loadMissing('vendorOrders.vendor');
+                foreach ($order->vendorOrders as $vo) {
+                    if (!$vo->vendor) continue;
+                    $count = $vo->items()->count();
+                    \App\Support\VendorNotify::send(
+                        $vo->vendor,
+                        'You have a new order',
+                        "You have a new order on " . Setting::get('site_name', 'Zelari') . ".\n\n"
+                        . "Order: {$vo->sub_number}\n"
+                        . "Items: {$count}\n"
+                        . "Your subtotal: " . number_format((float) $vo->subtotal, 2) . "\n\n"
+                        . "Open your vendor dashboard to fulfil it."
+                    );
+                }
+            } catch (\Throwable $e) { report($e); }
+
             Setting::recordMailResult(null);
         } catch (\Throwable $e) {
             report($e);

@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 class CustomerController extends Controller {
 
     public function index(Request $request) {
-        $query = Customer::withCount('orders')->latest();
+        $vid = auth()->user()->vendorId();
+        $query = Customer::withCount('orders')->latest()
+            ->when($vid, fn ($q) => $q->whereHas('orders.items', fn ($i) => $i->where('vendor_id', $vid)));
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -38,6 +40,9 @@ class CustomerController extends Controller {
     }
 
     public function show(Customer $customer) {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless($customer->orders()->whereHas('items', fn ($i) => $i->where('vendor_id', $vid))->exists(), 403);
+        }
         $customer->load('orders');
         return view('admin.customers.show', compact('customer'));
     }

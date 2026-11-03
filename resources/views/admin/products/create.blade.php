@@ -75,12 +75,12 @@
 
                     <!-- Category -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Category <span class="text-red-500">*</span></label>
                         @include('admin.partials.category-select', [
                             'items' => $categories,
                             'name' => 'category_id',
                             'selected' => old('category_id'),
-                            'placeholder' => '— No Category —',
+                            'placeholder' => '— Select a category —',
                             'triggerClass' => 'w-full px-3.5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500',
                         ])
                     </div>
@@ -250,7 +250,10 @@
                 <!-- Status -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-3">
                     <h2 class="font-semibold text-gray-900 dark:text-white text-base">Status</h2>
-                    @foreach(['draft' => ['Draft', 'yellow', 'Saved but not visible'], 'active' => ['Active', 'green', 'Visible on storefront'], 'inactive' => ['Inactive', 'red', 'Hidden from storefront']] as $val => $info)
+                    @php $statusOpts = auth()->user()?->isVendor()
+                        ? ['draft' => ['Draft', 'yellow', 'Will be submitted for approval']]
+                        : ['draft' => ['Draft', 'yellow', 'Saved but not visible'], 'active' => ['Active', 'green', 'Visible on storefront'], 'inactive' => ['Inactive', 'red', 'Hidden from storefront']]; @endphp
+                    @foreach($statusOpts as $val => $info)
                     <label class="flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors
                         {{ old('status', 'draft') === $val ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}">
                         <input type="radio" name="status" value="{{ $val }}" {{ old('status', 'draft') === $val ? 'checked' : '' }}
@@ -261,6 +264,51 @@
                         </div>
                     </label>
                     @endforeach
+                </div>
+
+                <!-- Product type -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-3" x-data="{ t: '{{ old('type','physical') }}' }">
+                    <h2 class="font-semibold text-gray-900 dark:text-white text-base">Product type</h2>
+                    <select name="type" x-model="t" class="form-input w-full text-sm">
+                        <option value="physical">Physical</option>
+                        <option value="digital">Digital</option>
+                        <option value="downloadable">Downloadable</option>
+                        <option value="bundled">Bundle</option>
+                    </select>
+                    <div x-show="t==='digital' || t==='downloadable'" x-cloak>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Download file</label>
+                        <input type="file" name="download_file" class="form-input w-full text-sm">
+                        <p class="text-[11px] text-gray-400 mt-1">Delivered to the buyer after a paid order. No shipping is charged.</p>
+                    </div>
+                    <div x-show="t==='bundled'" x-cloak>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Bundle items (one SKU per line, optional "x2")</label>
+                        <textarea name="bundle_skus" rows="3" class="form-input w-full text-sm" placeholder="SKU-001 x2&#10;SKU-045">{{ old('bundle_skus') }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Variations -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-3"
+                     x-data="{ rows: {{ old('variations_json', '[]') }} }">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-semibold text-gray-900 dark:text-white text-base">Variations</h2>
+                        <button type="button" @click="rows.push({options:'',price:'',sale_price:'',quantity:0,sku:''})" class="text-xs font-semibold text-indigo-600 hover:underline">+ Add</button>
+                    </div>
+                    <p class="text-[11px] text-gray-400">Optional. For products sold in options (size/color). Leave empty for a simple product.</p>
+                    <template x-for="(r,i) in rows" :key="i">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <input x-model="r.options" placeholder="Size: M, Color: Red" class="form-input w-full text-xs">
+                                <button type="button" @click="rows.splice(i,1)" class="text-red-500 text-sm px-1">&times;</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" step="0.01" x-model="r.price" placeholder="Price" class="form-input text-xs">
+                                <input type="number" step="0.01" x-model="r.sale_price" placeholder="Sale" class="form-input text-xs">
+                                <input type="number" x-model="r.quantity" placeholder="Qty" class="form-input text-xs">
+                                <input x-model="r.sku" placeholder="SKU" class="form-input text-xs">
+                            </div>
+                        </div>
+                    </template>
+                    <input type="hidden" name="variations_json" :value="JSON.stringify(rows)">
                 </div>
 
                 <!-- Actions -->

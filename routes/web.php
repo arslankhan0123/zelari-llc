@@ -80,7 +80,7 @@ Route::get('/wishlist', [\App\Http\Controllers\Shop\WishlistController::class, '
 Route::post('/wishlist/toggle', [\App\Http\Controllers\Shop\WishlistController::class, 'toggle'])->name('wishlist.toggle')->middleware('throttle:60,1');
 Route::post('/wishlist/clear', [\App\Http\Controllers\Shop\WishlistController::class, 'clear'])->name('wishlist.clear');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::get('/cart/remove/{productId}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/cart/remove/{productId}', [CartController::class, 'remove'])->where('productId', '[0-9:]+')->name('cart.remove');
 Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
 // ── Checkout ────────────────────────────────────────────────────────────────
@@ -103,7 +103,8 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 });
 
 // ── Dashboard ───────────────────────────────────────────────────────────────
-Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+Route::post('/dashboard/task/{task}/toggle', [\App\Http\Controllers\Admin\HomeController::class, 'toggleTask'])->middleware(['auth', 'verified', 'admin:staff'])->name('dashboard.task.toggle');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -112,7 +113,10 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Admin Routes ────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')->name('admin.')->group(function () {
+
+    // Ecommerce dashboard (the detailed store dashboard)
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
@@ -242,6 +246,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::delete('/{manufacturer}', [ManufacturerController::class, 'destroy'])->name('destroy');
     });
 
+
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
@@ -267,7 +272,35 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('admin:super')->prefix('users')->name('users.')->group(function () {
+    // Marketplace vendors
+    Route::prefix('vendors')->name('vendors.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorController::class, 'index'])->name('index');
+        Route::get('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'show'])->name('show');
+        Route::put('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'update'])->name('update');
+        Route::post('/{vendor}/approve', [\App\Http\Controllers\Admin\VendorController::class, 'approve'])->name('approve');
+        Route::post('/{vendor}/suspend', [\App\Http\Controllers\Admin\VendorController::class, 'suspend'])->name('suspend');
+        Route::post('/{vendor}/reject', [\App\Http\Controllers\Admin\VendorController::class, 'reject'])->name('reject');
+        Route::post('/{vendor}/reactivate', [\App\Http\Controllers\Admin\VendorController::class, 'reactivate'])->name('reactivate');
+        Route::delete('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'destroy'])->name('destroy');
+    });
+
+    // Vendor product approvals
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ApprovalController::class, 'index'])->name('index');
+        Route::post('/{product}/approve', [\App\Http\Controllers\Admin\ApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{product}/reject', [\App\Http\Controllers\Admin\ApprovalController::class, 'reject'])->name('reject');
+    });
+
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('store');
+        Route::get('/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
@@ -291,6 +324,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::post('/{payment}/sync', [PaymentController::class, 'sync'])->name('sync');
     });
 
+
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/create', [OrderController::class, 'create'])->name('create');
@@ -300,6 +334,182 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::put('/{order}', [OrderController::class, 'update'])->name('update');
         Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy');
     });
+
+    // ── Phase 3: Commissions, Earnings & Payouts ──────────────────────
+    Route::prefix('commissions')->name('commissions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CommissionController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\CommissionController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('earnings')->name('earnings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EarningsController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Admin\EarningsController::class, 'export'])->name('export');
+    });
+
+    Route::prefix('payouts')->name('payouts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PayoutController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\PayoutController::class, 'store'])->name('store');
+        Route::post('/{payout}/approve', [\App\Http\Controllers\Admin\PayoutController::class, 'approve'])->name('approve');
+        Route::post('/{payout}/reject', [\App\Http\Controllers\Admin\PayoutController::class, 'reject'])->name('reject');
+        Route::post('/{payout}/pay', [\App\Http\Controllers\Admin\PayoutController::class, 'pay'])->name('pay');
+    });
+
+    // ── Phase 5: Shipping & Tax ───────────────────────────────────────
+    Route::prefix('shipping')->name('shipping.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ShippingController::class, 'index'])->name('index');
+        Route::post('/zones', [\App\Http\Controllers\Admin\ShippingController::class, 'storeZone'])->name('zones.store');
+        Route::put('/zones/{zone}', [\App\Http\Controllers\Admin\ShippingController::class, 'updateZone'])->name('zones.update');
+        Route::delete('/zones/{zone}', [\App\Http\Controllers\Admin\ShippingController::class, 'destroyZone'])->name('zones.destroy');
+        Route::post('/zones/{zone}/methods', [\App\Http\Controllers\Admin\ShippingController::class, 'storeMethod'])->name('methods.store');
+        Route::put('/methods/{method}', [\App\Http\Controllers\Admin\ShippingController::class, 'updateMethod'])->name('methods.update');
+        Route::delete('/methods/{method}', [\App\Http\Controllers\Admin\ShippingController::class, 'destroyMethod'])->name('methods.destroy');
+    });
+
+    Route::prefix('tax')->name('tax.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TaxController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\TaxController::class, 'update'])->name('update');
+    });
+
+    // ── Phase 7: Operations ───────────────────────────────────────────
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SupplierController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SupplierController::class, 'store'])->name('store');
+        Route::put('/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'update'])->name('update');
+        Route::delete('/{supplier}', [\App\Http\Controllers\Admin\SupplierController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('index');
+        Route::post('/adjust', [\App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('adjust');
+    });
+
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TicketController::class, 'index'])->name('index');
+        Route::get('/canned', [\App\Http\Controllers\Admin\CannedReplyController::class, 'index'])->name('canned');
+        Route::post('/canned', [\App\Http\Controllers\Admin\CannedReplyController::class, 'store'])->name('canned.store');
+        Route::put('/canned/{canned}', [\App\Http\Controllers\Admin\CannedReplyController::class, 'update'])->name('canned.update');
+        Route::delete('/canned/{canned}', [\App\Http\Controllers\Admin\CannedReplyController::class, 'destroy'])->name('canned.destroy');
+        Route::get('/create', [\App\Http\Controllers\Admin\TicketController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\TicketController::class, 'store'])->name('store');
+        Route::get('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply', [\App\Http\Controllers\Admin\TicketController::class, 'reply'])->name('reply');
+        Route::put('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('returns')->name('returns.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReturnController::class, 'index'])->name('index');
+        Route::get('/{return}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('show');
+        Route::put('/{return}', [\App\Http\Controllers\Admin\ReturnController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+        Route::get('/export/sales', [\App\Http\Controllers\Admin\ReportController::class, 'exportSales'])->name('export.sales');
+        Route::get('/export/segments', [\App\Http\Controllers\Admin\ReportController::class, 'exportSegments'])->name('export.segments');
+    });
+
+    Route::prefix('store')->name('store.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorProfileController::class, 'edit'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\VendorProfileController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('agents')->name('agents.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SalesAgentController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SalesAgentController::class, 'store'])->name('store');
+        Route::get('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'show'])->name('show');
+        Route::put('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'update'])->name('update');
+        Route::delete('/{agent}', [\App\Http\Controllers\Admin\SalesAgentController::class, 'destroy'])->name('destroy');
+        Route::post('/{agent}/payout', [\App\Http\Controllers\Admin\SalesAgentController::class, 'payout'])->name('payout');
+    });
+
+    Route::prefix('staff')->name('staff.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('store');
+        Route::delete('/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('destroy');
+    });
+
+    // ── Phase 8: Automation, Growth & Security ────────────────────────
+    Route::prefix('automations')->name('automations.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AutomationController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\AutomationController::class, 'store'])->name('store');
+        Route::put('/{automation}', [\App\Http\Controllers\Admin\AutomationController::class, 'update'])->name('update');
+        Route::delete('/{automation}', [\App\Http\Controllers\Admin\AutomationController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\CampaignController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\CampaignController::class, 'store'])->name('store');
+        Route::post('/{campaign}/send', [\App\Http\Controllers\Admin\CampaignController::class, 'send'])->name('send');
+    });
+    Route::prefix('loyalty')->name('loyalty.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\LoyaltyController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\LoyaltyController::class, 'update'])->name('update');
+    });
+    Route::prefix('redirects')->name('redirects.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RedirectController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\RedirectController::class, 'store'])->name('store');
+        Route::put('/{redirect}', [\App\Http\Controllers\Admin\RedirectController::class, 'update'])->name('update');
+        Route::delete('/{redirect}', [\App\Http\Controllers\Admin\RedirectController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('blog')->name('blog.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BlogController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\BlogController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\BlogController::class, 'store'])->name('store');
+        Route::get('/{post}/edit', [\App\Http\Controllers\Admin\BlogController::class, 'edit'])->name('edit');
+        Route::put('/{post}', [\App\Http\Controllers\Admin\BlogController::class, 'update'])->name('update');
+        Route::delete('/{post}', [\App\Http\Controllers\Admin\BlogController::class, 'destroy'])->name('destroy');
+    });
+    Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
+    Route::prefix('plans')->name('plans.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PlanController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\PlanController::class, 'store'])->name('store');
+        Route::put('/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'update'])->name('update');
+        Route::delete('/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'destroy'])->name('destroy');
+    });
 });
 
+
+// HRM module (placeholder shell)
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin/hrm')->name('admin.hrm.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\HrmController::class, 'index'])->name('index');
+});
+
+// ── Vendor panel ──────────────────────────────────────────────────────────
+Route::prefix('vendor')->name('vendor.')->group(function () {
+    // Public application
+    Route::get('/register', [\App\Http\Controllers\Vendor\RegistrationController::class, 'show'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Vendor\RegistrationController::class, 'register'])->name('register.submit');
+
+    // Authenticated vendor area → unified admin panel (permission-scoped)
+    Route::middleware(['auth', 'vendor'])->group(function () {
+        Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('dashboard');
+    });
+});
+
+// ── Public vendors directory + storefront ──────────────────────────────────
+Route::get('/vendors', [\App\Http\Controllers\Shop\VendorStoreController::class, 'index'])->name('shop.vendors');
+Route::get('/vendor/{slug}', [\App\Http\Controllers\Shop\VendorStoreController::class, 'show'])->name('shop.vendor');
+Route::post('/vendor/{slug}/review', [\App\Http\Controllers\Shop\VendorReviewController::class, 'store'])->name('shop.vendor.review')->middleware('throttle:10,1');
+Route::get('/download/{item}', [\App\Http\Controllers\Shop\DownloadController::class, 'download'])->name('shop.download');
+Route::post('/order/{order}/return', [\App\Http\Controllers\Shop\ReturnRequestController::class, 'store'])->name('shop.return.store');
+
+
+// ── Two-factor authentication ───────────────────────────────────────────────
+Route::get('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
+Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('two-factor.verify');
+Route::middleware('auth')->group(function () {
+    Route::get('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'settings'])->name('two-factor.settings');
+    Route::get('/admin/two-factor', fn () => redirect()->route('two-factor.settings'));
+    Route::post('/two-factor/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::post('/two-factor/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+});
+
+// ── Public blog ─────────────────────────────────────────────────────────────
+Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])->name('shop.blog');
+Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
+
 require __DIR__ . '/auth.php';
+
+
+
+
+

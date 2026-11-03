@@ -188,6 +188,12 @@
             <a href="{{ route('login') }}" class="coupon-login"><i class="fa-solid fa-ticket"></i> Have a coupon? <b>Log in to apply it</b></a>
             @endauth
           </div>
+          @php $zRef = old('agent_code', request('ref')); @endphp
+          <div class="co-ref" style="margin:10px 0 2px">
+            <input type="text" name="agent_code" value="{{ $zRef }}" placeholder="Referral / agent code (optional)" maxlength="40" autocomplete="off"
+                   style="width:100%;border:1.5px solid var(--line-2);border-radius:11px;padding:0 14px;height:46px;outline:0;font-size:14px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;background:#fff">
+            <div style="font-size:11.5px;color:var(--muted);margin-top:5px">Have a salesperson's code? Enter it so they get credit for this order.</div>
+          </div>
           <hr>
           <div class="row2"><span>Subtotal</span><b id="sumSub">{{ zprice($subtotal) }}</b></div>
           <div class="row2"><span>Shipping</span><b id="sumShip" style="color:{{ $zShip>0 ? 'var(--ink)' : 'var(--ok)' }}">{{ $zShip>0 ? zprice($zShip) : 'Free' }}</b></div>

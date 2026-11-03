@@ -4,13 +4,32 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\Vendor;
+use App\Models\VendorOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller {
 
     public function index(Request $request) {
+        $user     = auth()->user();
+        $isVendor = (bool) $user?->isVendor();
+        $vid      = $isVendor ? optional($user->vendor)->id : null;
+
         $query = Order::with('customer', 'user')->latest();
+
+        if ($isVendor) {
+            // Only orders that contain this vendor's products; show their own sub-order + item count.
+            $query->whereHas('vendorOrders', fn($q) => $q->where('vendor_id', $vid))
+                  ->with(['vendorOrders' => fn($q) => $q->where('vendor_id', $vid)])
+                  ->withCount(['items' => fn($q) => $q->where('vendor_id', $vid)]);
+        } else {
+            $query->withCount('items')->with('vendorOrders.vendor');
+            if ($request->filled('vendor')) {
+                $query->whereHas('vendorOrders', fn($q) => $q->where('vendor_id', $request->vendor));
+            }
+        }
+
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(fn($q) =>
@@ -18,10 +37,23 @@ class OrderController extends Controller {
                   ->orWhereHas('customer', fn($c) => $c->where('name','like',"%$s%"))
             );
         }
-        if ($request->filled('status'))         $query->where('status', $request->status);
-        if ($request->filled('payment_status')) $query->where('payment_status', $request->payment_status);
-        $orders = $query->paginate(10)->withQueryString();
-        return view('admin.orders.index', compact('orders'));
+
+        if ($request->filled('status')) {
+            if ($isVendor) {
+                $query->whereHas('vendorOrders', fn($q) => $q->where('vendor_id', $vid)->where('status', $request->status));
+            } else {
+                $query->where('status', $request->status);
+            }
+        }
+
+        if (!$isVendor && $request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        $orders  = $query->paginate(10)->withQueryString();
+        $vendors = $isVendor ? collect() : Vendor::orderBy('name')->get(['id','name']);
+
+        return view('admin.orders.index', compact('orders','isVendor','vendors','vid'));
     }
 
     public function create() {
@@ -109,6 +141,7 @@ class OrderController extends Controller {
         ]);
 
         $order->items()->createMany($lineItems);
+        \App\Models\VendorOrder::splitFromOrder($order);
         $pay = \App\Support\Payments::openAttempt($order);
         if ($order->payment_status === 'paid') {
             $order->forceFill(['paid_at' => now()])->save();
@@ -118,23 +151,66 @@ class OrderController extends Controller {
     }
 
     public function show(Order $order) {
-        $order->load('customer','user','items','payments');
-        return view('admin.orders.show', compact('order'));
+        $user = auth()->user();
+        $vendorOrder = null;
+
+        if ($user?->isVendor()) {
+            $vid = optional($user->vendor)->id;
+            $vendorOrder = $order->vendorOrders()->where('vendor_id', $vid)->first();
+            abort_unless($vendorOrder, 403, 'This order does not include any of your products.');
+            // Only the vendor's own line items are shown to them.
+            $order->setRelation('items', $order->items()->where('vendor_id', $vid)->get());
+            $order->load('customer','user');
+        } else {
+            $order->load('customer','user','items.vendor','payments','vendorOrders.vendor');
+        }
+
+        return view('admin.orders.show', compact('order','vendorOrder'));
     }
 
     public function edit(Order $order) {
-        return view('admin.orders.edit', compact('order'));
+        $user = auth()->user();
+        $vendorOrder = null;
+        if ($user?->isVendor()) {
+            $vid = optional($user->vendor)->id;
+            $vendorOrder = $order->vendorOrders()->where('vendor_id', $vid)->first();
+            abort_unless($vendorOrder, 403, 'This order does not include any of your products.');
+        }
+        return view('admin.orders.edit', compact('order','vendorOrder'));
     }
 
     public function update(Request $request, Order $order) {
+        $user = auth()->user();
+
+        // Vendors may only change the status of their own sub-order, nothing else.
+        if ($user?->isVendor()) {
+            $vid = optional($user->vendor)->id;
+            $vendorOrder = $order->vendorOrders()->where('vendor_id', $vid)->first();
+            abort_unless($vendorOrder, 403, 'This order does not include any of your products.');
+            $request->validate([
+                'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+                'note'   => 'nullable|string',
+            ]);
+            $vendorOrder->update($request->only('status','note'));
+            // Reflect the vendor's change on the parent order (and admin view).
+            VendorOrder::rollUpToOrder($order->fresh());
+            return redirect()->route('admin.orders.show', $order)->with('success', 'Order status updated.');
+        }
+
         $request->validate([
             'status'         => 'required|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'required|in:unpaid,paid,refunded',
             'payment_method' => 'required|in:cash_on_delivery,bank_transfer,card,paypal,other',
             'notes'          => 'nullable|string',
         ]);
-        $wasPaid = $order->payment_status === 'paid';
+        $wasPaid    = $order->payment_status === 'paid';
+        $oldStatus  = $order->status;
         $order->update($request->only('status','payment_status','payment_method','notes'));
+
+        // When the admin moves the whole order, carry every vendor sub-order to the same status.
+        if ($order->status !== $oldStatus) {
+            VendorOrder::syncStatusFromOrder($order);
+        }
 
         // Keep the payments ledger in step with manual changes (e.g. COD collected, refund issued)
         $pay = \App\Support\Payments::attemptFor($order);

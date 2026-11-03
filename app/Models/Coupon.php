@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Coupon extends Model
 {
     protected $fillable = [
-        'code', 'type', 'value', 'min_spend', 'max_discount',
+        'vendor_id', 'code', 'type', 'value', 'min_spend', 'max_discount',
         'usage_limit', 'used_count', 'expires_at', 'active', 'source', 'email', 'user_id',
     ];
 
@@ -18,6 +18,11 @@ class Coupon extends Model
         'active'       => 'boolean',
         'expires_at'   => 'datetime',
     ];
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
 
     public function user()
     {

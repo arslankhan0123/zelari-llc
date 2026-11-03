@@ -21,7 +21,7 @@
         }
 
         :root {
-            --sidebar-w: 260px;
+            --sidebar-w: 288px;
             /* Aliases → config/theme.php via partials/theme-vars */
             --indigo: var(--brand);
             --indigo-dark: var(--brand-dark);
@@ -31,6 +31,7 @@
         /* ── Sidebar ─────────────────────────── */
         #sidebar {
             width: var(--sidebar-w);
+            display: flex;
             background: linear-gradient(160deg, #0f0c29 0%, #1a1750 50%, #24243e 100%);
             transition: width .3s cubic-bezier(.4, 0, .2, 1);
             position: fixed;
@@ -43,8 +44,9 @@
         }
 
         #sidebar.collapsed {
-            width: 72px;
+            width: 64px;
         }
+        #sidebar.collapsed .side-menu { display: none; }
 
         #sidebar.collapsed .nav-label,
         #sidebar.collapsed .brand-text,
@@ -54,7 +56,10 @@
 
         #sidebar.collapsed .nav-item {
             justify-content: center;
-            padding: 12px;
+            padding: 9px 0;
+            margin: 0;
+            width: 100%;
+            border-left: 0 !important;
         }
 
         #sidebar.collapsed .submenu {
@@ -62,8 +67,48 @@
         }
 
         #sidebar.collapsed .collapse-arrow {
-            display: none;
+            display: block !important;
+            margin: 0 auto;
         }
+        #sidebar.collapsed .brand-row {
+            flex-direction: column;
+            padding: 14px 0 10px;
+            gap: 10px;
+        }
+        #sidebar.collapsed .brand-row .brand-logo { margin: 0 auto; }
+        #sidebar.collapsed .nav-item.active {
+            border-left: 0;
+            padding: 9px 0;
+        }
+        #sidebar.collapsed .nav-item.active .nav-icon { color: #fff !important; filter: drop-shadow(0 0 6px rgba(255,255,255,.55)); }
+
+        [x-cloak] { display: none !important; }
+        /* Module switcher (Dashboard / Ecommerce / HRM) */
+        .module-switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 5px; margin: 2px 10px 6px; border-radius: 12px; background: rgba(255,255,255,.055); }
+        .ms-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 2px; border-radius: 9px; color: rgba(255,255,255,.6); font-size: 10.5px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all .18s ease; border: 0; background: transparent; }
+        .ms-tab:hover { color: #fff; background: rgba(255,255,255,.07); }
+        .ms-tab.ms-on { color: #fff; background: linear-gradient(135deg, rgba(99,102,241,.45), rgba(139,92,246,.22)); box-shadow: 0 2px 10px -3px rgba(99,102,241,.6); }
+        .ms-ico { width: 19px; height: 19px; }
+        #sidebar.collapsed .module-switch { grid-template-columns: 1fr; margin: 2px 8px 6px; gap: 2px; }
+        #sidebar.collapsed .ms-lbl { display: none; }
+        #sidebar.collapsed .ms-tab { padding: 8px 2px; }
+
+        /* ── Module rail + menu (two-tier) ── */
+        .side-rail { width: 64px; flex: none; height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 82px; background: rgba(0,0,0,.22); border-right: 1px solid rgba(255,255,255,.06); }
+        .rail-logo { width: 40px; height: 40px; border-radius: 12px; background: #fff; padding: 5px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.3); flex: none; }
+        .rail-item { width: 52px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 12px; color: rgba(255,255,255,.6); font-size: 9.5px; font-weight: 600; text-decoration: none; cursor: pointer; border: 0; background: transparent; transition: all .18s ease; flex: none; }
+        .rail-item svg { width: 21px; height: 21px; }
+        .rail-item:hover { color: #fff; background: rgba(255,255,255,.08); }
+        .rail-item.on { color: #fff; background: linear-gradient(135deg, rgba(99,102,241,.5), rgba(139,92,246,.28)); box-shadow: 0 3px 12px -3px rgba(99,102,241,.7); }
+        .rail-lbl { line-height: 1; }
+        .side-menu { flex: 1; min-width: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .rail-acct { position: relative; flex: none; }
+        .rail-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 0; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.35); }
+        .rail-acct-pop { position: fixed; left: 70px; bottom: 14px; width: 214px; background: #1a1750; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; box-shadow: 0 14px 44px rgba(0,0,0,.55); padding: 6px; z-index: 80; }
+        .rail-acct-head { padding: 8px 12px 10px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 4px; }
+        .rail-acct-pop a, .rail-acct-pop button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border-radius: 8px; color: rgba(255,255,255,.8); font-size: 13px; font-weight: 500; text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; transition: background .15s; }
+        .rail-acct-pop a:hover, .rail-acct-pop button:hover { background: rgba(255,255,255,.08); color: #fff; }
+        .rail-acct-pop svg { width: 16px; height: 16px; flex: none; }
 
         /* Sidebar brand logo glow */
         .brand-logo {
@@ -88,12 +133,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 13px;
-            margin: 1px 8px;
+            padding: 7px 12px;
+            margin: 0 8px;
             border-radius: 9px;
             cursor: pointer;
             color: rgba(255, 255, 255, .65);
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 500;
             text-decoration: none;
             transition: all .22s ease;
@@ -120,8 +165,8 @@
         }
 
         .nav-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             flex-shrink: 0;
         }
 
@@ -142,8 +187,8 @@
             display: flex;
             align-items: center;
             gap: 9px;
-            padding: 6px 14px 6px 44px;
-            margin: 1px 8px;
+            padding: 6px 14px 6px 42px;
+            margin: 0 8px;
             border-radius: 8px;
             color: rgba(255, 255, 255, .5);
             font-size: 12.5px;
@@ -164,10 +209,17 @@
 
         /* Sidebar user bottom */
         .sidebar-user {
-            border-top: 1px solid rgba(255, 255, 255, .07);
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-top: 1px solid rgba(255, 255, 255, .08);
             padding: 10px 12px;
-            position: relative;
+            background: rgba(13, 10, 34, .94);
+            backdrop-filter: blur(6px);
+            z-index: 45;
         }
+        #sidebar.collapsed .acct-menu { left: 70px; right: auto; width: 224px; }
 
         .brand-text { min-width: 0; }
 
@@ -230,7 +282,7 @@
             border-radius: 9px;
             background: none;
             color: rgba(255, 255, 255, .72);
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 600;
             font-family: inherit;
             text-align: left;
@@ -265,7 +317,7 @@
         }
 
         #main-wrap.sidebar-collapsed {
-            margin-left: 72px;
+            margin-left: 64px;
         }
 
         /* ── Header ──────────────────────────── */
@@ -523,7 +575,7 @@
         .zl-dd-opt {
             width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
             padding: 9px 12px; border: 0; background: none; border-radius: 8px;
-            font-size: 13.5px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
+            font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; font-family: inherit; text-align: left; white-space: nowrap;
         }
         .zl-dd-opt:hover { background: #f1f5f9; }
         .zl-dd-opt.on { background: var(--brand-grad); color: #fff; }
@@ -760,25 +812,28 @@
         notifOpen: false,
         acctOpen: false,
         catOpen: @yield('cat_open', 'false'),
-        toolsOpen: {{ (request()->routeIs('admin.pdftools.*') || request()->routeIs('admin.calcs.*') || request()->routeIs('admin.imgtools.*') || request()->routeIs('admin.coupons.*')) ? 'true' : 'false' }},
+        toolsOpen: {{ request()->routeIs('admin.pdftools.*','admin.calcs.*','admin.imgtools.*','admin.texttools.*','admin.devtools.*','admin.qrtools.*','admin.colortools.*','admin.randomtools.*','admin.sellertools.*','admin.coupons.*') ? 'true' : 'false' }},
         manuOpen: @yield('manu_open', 'false'),
         prodOpen: @yield('prod_open', 'false'),
         orderOpen: @yield('order_open', 'false'),
-        custOpen: @yield('cust_open', 'false')
+        custOpen: @yield('cust_open', 'false'),
+        activeModule: 'ecommerce'
       }" @resize.window="sidebarOpen = window.innerWidth > 768">
 
     <!-- Mobile overlay -->
     <div class="mobile-overlay" :class="{ 'block': sidebarMobile }" @click="sidebarMobile=false"></div>
 
     <!-- ════════ SIDEBAR ════════ -->
-    <aside id="sidebar" :class="{ 'collapsed': !sidebarOpen && window.innerWidth > 768, 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
+    <aside id="sidebar" :class="{ 'mobile-open': sidebarMobile, 'acct-open': acctOpen }">
+
+        <div class="side-menu">
 
         <!-- Aurora blobs -->
         <div class="sb-blob sb-blob-1"></div>
         <div class="sb-blob sb-blob-2"></div>
 
         <!-- Brand -->
-        <div class="flex items-center gap-3 px-4 py-4 relative">
+        <div class="brand-row flex items-center gap-3 px-4 py-2.5 relative">
             <div class="brand-logo w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
                 <img src="{{ zbrand('icon') }}" alt="" class="w-full h-full object-contain">
             </div>
@@ -786,38 +841,199 @@
                 <div class="text-white font-bold text-lg leading-tight truncate max-w-[150px]">{{ zstore('name', 'Zelari') }}</div>
                 <div class="text-indigo-300 text-xs font-medium">Admin Panel</div>
             </div>
-            <!-- Collapse toggle (desktop) -->
-            <button class="collapse-arrow ml-auto text-white/40 hover:text-white/80 transition-colors hidden md:block"
-                @click="sidebarOpen = !sidebarOpen">
-                <svg :class="{ 'rotate-180': !sidebarOpen }" class="w-5 h-5 transition-transform" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Nav label -->
-        <div class="nav-label px-5 mb-0.5 mt-1.5">
-            <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Main</span>
         </div>
 
         <!-- Navigation -->
-        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 180px);overflow-x:hidden">
+        <nav class="px-2 space-y-0.5 overflow-y-auto" style="height:calc(100vh - 150px);overflow-x:hidden">
 
-            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+          <!-- ECOMMERCE MENU -->
+          <div x-show="activeModule==='ecommerce'" x-cloak>
+
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span class="nav-label">Dashboard</span>
             </a>
+            {{-- Unified, permission-based menu (vendors see only what they're granted; unapproved vendors see only the dashboard) --}}
+            @php $menuUser = auth()->user(); $menuOk = $menuUser && (!$menuUser->isVendor() || optional($menuUser->vendor)->isApproved()); @endphp
+            @if($menuOk)
+            @can('staff.list')
+            <a href="{{ route('admin.staff.index') }}" class="nav-item {{ request()->routeIs('admin.staff.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="nav-label">Staff</span>
+            </a>
+            @endcan
+
+
+            <!-- Marketplace -->
+            @canany(['vendors.list','approvals.list','commissions.list','earnings.list','payouts.list','shipping.list','tax.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Marketplace</span></div>
+            @endcanany
+@can('vendors.list')
+            <a href="{{ route('admin.vendors.index') }}" class="nav-item {{ request()->routeIs('admin.vendors.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="nav-label flex-1">Vendors</span>
+                @php try { $pendingVendors = \App\Models\Vendor::where('status','pending')->count(); } catch (\Throwable $e) { $pendingVendors = 0; } @endphp
+                @if($pendingVendors)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingVendors }}</span>@endif
+            </a>
+            @endcan
+@can('approvals.list')
+            <a href="{{ route('admin.approvals.index') }}" class="nav-item {{ request()->routeIs('admin.approvals.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label flex-1">Approvals</span>
+                @php try { $pendingProducts = \App\Models\Product::where('approval_status','pending')->count(); } catch (\Throwable $e) { $pendingProducts = 0; } @endphp
+                @if($pendingProducts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingProducts }}</span>@endif
+            </a>
+            @endcan
+@can('commissions.list')
+            <a href="{{ route('admin.commissions.index') }}" class="nav-item {{ request()->routeIs('admin.commissions.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M12 7v10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                <span class="nav-label flex-1">Commissions</span>
+            </a>
+            @endcan
+@can('earnings.list')
+            <a href="{{ route('admin.earnings.index') }}" class="nav-item {{ request()->routeIs('admin.earnings.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="nav-label flex-1">Earnings</span>
+            </a>
+            @endcan
+@can('payouts.list')
+            <a href="{{ route('admin.payouts.index') }}" class="nav-item {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span class="nav-label flex-1">Payouts</span>
+                @php try { $pendingPayouts = \App\Models\PayoutRequest::where('status','pending')->count(); } catch (\Throwable $e) { $pendingPayouts = 0; } @endphp
+                @if($pendingPayouts)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="pending payouts">{{ $pendingPayouts }}</span>@endif
+            </a>
+            @endcan
+@can('agents.list')
+            <a href="{{ route('admin.agents.index') }}" class="nav-item {{ request()->routeIs('admin.agents.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a3 3 0 10-2.83-4"/></svg>
+                <span class="nav-label flex-1">Sales Agents</span>
+            </a>
+            @endcan
+@if(auth()->user()->vendorId())
+    @can('store.list')
+            <a href="{{ route('admin.store.index') }}" class="nav-item {{ request()->routeIs('admin.store.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l1.5-3h15L21 7M4 7h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7zM9 11h6"/></svg>
+                <span class="nav-label flex-1">Store Settings</span>
+            </a>
+    @endcan
+    @can('coupons.list')
+            <a href="{{ route('admin.coupons.index') }}" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                <span class="nav-label flex-1">My Coupons</span>
+            </a>
+    @endcan
+@endif
+@can('shipping.list')
+            <a href="{{ route('admin.shipping.index') }}" class="nav-item {{ request()->routeIs('admin.shipping.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+                <span class="nav-label flex-1">Shipping</span>
+            </a>
+            @endcan
+@can('tax.list')
+            <a href="{{ route('admin.tax.index') }}" class="nav-item {{ request()->routeIs('admin.tax.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                <span class="nav-label flex-1">Tax</span>
+            </a>
+            @endcan
+
+            <!-- Operations -->
+            @canany(['inventory.list','suppliers.list','tickets.list','returns.list','reports.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Operations</span></div>
+            @endcanany
+@can('inventory.list')
+            <a href="{{ route('admin.inventory.index') }}" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <span class="nav-label flex-1">Inventory</span>
+            </a>
+            @endcan
+@can('suppliers.list')
+            <a href="{{ route('admin.suppliers.index') }}" class="nav-item {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-4m-6 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"/></svg>
+                <span class="nav-label flex-1">Suppliers</span>
+            </a>
+            @endcan
+@can('tickets.list')
+            <a href="{{ route('admin.tickets.index') }}" class="nav-item {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                <span class="nav-label flex-1">Support Tickets</span>
+                @php try { $sbVid = auth()->user()->vendorId(); $openTickets = \App\Models\SupportTicket::where('status','open')->when($sbVid, fn($q)=>$q->whereHas('order.items', fn($i)=>$i->where('vendor_id',$sbVid)))->count(); } catch (\Throwable $e) { $openTickets = 0; } @endphp
+                @if($openTickets)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openTickets }}</span>@endif
+            </a>
+            @endcan
+@can('returns.list')
+            <a href="{{ route('admin.returns.index') }}" class="nav-item {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"/></svg>
+                <span class="nav-label flex-1">Returns</span>
+                @php try { $sbVid = auth()->user()->vendorId(); $openReturns = \App\Models\ReturnRequest::where('status','requested')->when($sbVid, fn($q)=>$q->whereHas('order.items', fn($i)=>$i->where('vendor_id',$sbVid)))->count(); } catch (\Throwable $e) { $openReturns = 0; } @endphp
+                @if($openReturns)<span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $openReturns }}</span>@endif
+            </a>
+            @endcan
+@can('reports.list')
+            <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span class="nav-label flex-1">Reports</span>
+            </a>
+            @endcan
+
+            <!-- Growth -->
+            @canany(['automations.list','campaigns.list','loyalty.list','blog.list','redirects.list','plans.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Growth</span></div>
+            @endcanany
+@can('automations.list')
+            <a href="{{ route('admin.automations.index') }}" class="nav-item {{ request()->routeIs('admin.automations.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="nav-label flex-1">Automations</span>
+            </a>
+            @endcan
+@can('campaigns.list')
+            <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                <span class="nav-label flex-1">Campaigns</span>
+            </a>
+            @endcan
+@can('loyalty.list')
+            <a href="{{ route('admin.loyalty.index') }}" class="nav-item {{ request()->routeIs('admin.loyalty.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                <span class="nav-label flex-1">Loyalty</span>
+            </a>
+            @endcan
+@can('blog.list')
+            <a href="{{ route('admin.blog.index') }}" class="nav-item {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                <span class="nav-label flex-1">Blog</span>
+            </a>
+            @endcan
+@can('redirects.list')
+            <a href="{{ route('admin.redirects.index') }}" class="nav-item {{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                <span class="nav-label flex-1">Redirects</span>
+            </a>
+            @endcan
+@can('plans.list')
+            <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                <span class="nav-label flex-1">Plans</span>
+            </a>
+            @endcan
+@can('audit.list')
+            <a href="{{ route('admin.audit.index') }}" class="nav-item {{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="nav-label flex-1">Audit Log</span>
+            </a>
+            @endcan
 
             <!-- Catalog group -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            @canany(['categories.list','manufacturers.list','products.list','sourcing.list','tools.list','seo.list','marketing.list','chats.list','messages.list','reviews.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Catalog</span>
             </div>
+            @endcanany
 
+            @can('categories.list')
             <!-- Categories -->
             <div>
                 <button @click="catOpen = !catOpen"
@@ -845,7 +1061,9 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
+            @can('manufacturers.list')
             <!-- Manufacturers -->
             <div>
                 <button @click="manuOpen = !manuOpen"
@@ -873,7 +1091,9 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
+            @can('products.list')
             <!-- Products -->
             <div>
                 <button @click="prodOpen = !prodOpen"
@@ -901,12 +1121,14 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             <!-- Reviews -->
             @php
                 try { $newSourcing = \App\Models\SourcingRequest::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $newSourcing = 0; }
             @endphp
+@can('sourcing.list')
             <a href="{{ route('admin.sourcing.index') }}" class="nav-item {{ request()->routeIs('admin.sourcing.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -915,7 +1137,9 @@
                 <span class="nav-label flex-1 text-left">Sourcing</span>
                 <span data-badge="sourcing_new" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$newSourcing) style="display:none" @endif>{{ $newSourcing }}</span>
             </a>
+            @endcan
 
+            @can('tools.list')
             <!-- Tools -->
             <div>
                 <button @click="toolsOpen = !toolsOpen"
@@ -983,39 +1207,47 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             @php
                 try { \App\Models\ChatMessage::ensureTable(); $unreadChats = \App\Models\ChatMessage::where('sender', 'user')->where('read_by_agent', false)->count(); }
                 catch (\Throwable $e) { $unreadChats = 0; }
             @endphp
             <!-- SEO -->
+@can('seo.list')
             <a href="{{ route('admin.seo.index') }}" class="nav-item {{ request()->routeIs('admin.seo.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">SEO</span>
             </a>
+            @endcan
 
             <!-- Marketing -->
+@can('marketing.list')
             <a href="{{ route('admin.marketing.index') }}" class="nav-item {{ request()->routeIs('admin.marketing.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">Marketing</span>
             </a>
+            @endcan
 
+@can('chats.list')
             <a href="{{ route('admin.chats.index') }}" class="nav-item {{ request()->routeIs('admin.chats.*') ? 'active' : '' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <span class="nav-label flex-1 text-left">Live Chat</span>
                 <span data-badge="chats" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$unreadChats) style="display:none" @endif>{{ $unreadChats }}</span>
             </a>
+            @endcan
 
             @php
                 try { $unreadMessages = \App\Models\ContactMessage::where('status', 'new')->count(); }
                 catch (\Throwable $e) { $unreadMessages = 0; }
             @endphp
+@can('messages.list')
             <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1024,11 +1256,13 @@
                 <span class="nav-label flex-1 text-left">Messages</span>
                 <span data-badge="messages" class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" @if(!$unreadMessages) style="display:none" @endif>{{ $unreadMessages }}</span>
             </a>
+            @endcan
 
             @php
                 try { $pendingReviews = \App\Models\Review::where('status', 'pending')->count(); }
                 catch (\Throwable $e) { $pendingReviews = 0; }
             @endphp
+@can('reviews.list')
             <a href="{{ route('admin.reviews.index') }}" class="nav-item {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
                 <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1039,15 +1273,24 @@
                     <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950">{{ $pendingReviews }}</span>
                 @endif
             </a>
+            @endcan
 
             <!-- Orders group -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            @canany(['orders.list','customers.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Commerce</span>
             </div>
+            @endcanany
 
+            @can('orders.list')
             <!-- Orders -->
             @php
-                try { $pendingOrders = \App\Models\Order::where('status', 'pending')->count(); }
+                try {
+                    $sbVid = auth()->user()->vendorId();
+                    $pendingOrders = $sbVid
+                        ? \App\Models\VendorOrder::where('vendor_id', $sbVid)->where('status', 'pending')->count()
+                        : \App\Models\Order::where('status', 'pending')->count();
+                }
                 catch (\Throwable $e) { $pendingOrders = 0; }
             @endphp
             <div>
@@ -1073,14 +1316,18 @@
                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950" title="{{ $pendingOrders }} pending orders">{{ $pendingOrders }}</span>
                         @endif
                     </a>
+                    @can('orders.create')
                     <a href="{{ route('admin.orders.create') }}"
                         class="sub-item {{ request()->routeIs('admin.orders.create') ? 'active' : '' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
                         New Order
                     </a>
+                    @endcan
                 </div>
             </div>
+            @endcan
 
+            @can('customers.list')
             <!-- Customers -->
             <div>
                 <button @click="custOpen = !custOpen"
@@ -1108,9 +1355,11 @@
                     </a>
                 </div>
             </div>
+            @endcan
 
             <!-- Website -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            @can('content.list')
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Website</span>
             </div>
             <a href="{{ route('admin.content.index') }}"
@@ -1121,9 +1370,11 @@
                 </svg>
                 <span class="nav-label">Website Content</span>
             </a>
+            @endcan
 
             <!-- Payments -->
-            <div class="nav-label px-5 mb-1 mt-4">
+            @can('payments.list')
+            <div class="nav-label px-5 mb-0 mt-1.5">
                 <span class="text-white/30 text-xs font-semibold uppercase tracking-widest">Payments</span>
             </div>
             <a href="{{ route('admin.payments.index') }}"
@@ -1134,10 +1385,68 @@
                 </svg>
                 <span class="nav-label">All Payments</span>
             </a>
+            @endcan
+
+            <!-- System -->
+            @canany(['settings.list','users.list'])
+            <div class="nav-label px-5 mb-0 mt-1.5"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">System</span></div>
+            @endcanany
+
+            @can('users.list')
+            <a href="{{ route('admin.roles.index') }}" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="nav-label">Roles</span>
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span class="nav-label">Users &amp; Roles</span>
+            </a>
+            @endcan
+
+            @can('settings.list')
+            @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
+            <div x-data="{ setOpen: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
+                <button type="button" @click="setOpen=!setOpen" class="nav-item w-full {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="nav-label flex-1 text-left">Settings</span>
+                    <svg :class="{ 'rotate-180': setOpen }" class="nav-label w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="submenu" :style="setOpen ? 'max-height:240px' : 'max-height:0'">
+                    @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
+                    <a href="{{ route('admin.settings.show', $sk) }}" class="sub-item {{ $curSec === $sk ? 'active' : '' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+                        {{ $sl }}
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endcan
+
+            @endif
+          </div><!-- /ECOMMERCE MENU -->
+
+          <!-- HRM MENU (placeholder) -->
+          <div x-show="activeModule==='hrm'" x-cloak>
+            <div class="nav-label px-5 mb-0 mt-1"><span class="text-white/30 text-xs font-semibold uppercase tracking-widest">HRM</span></div>
+            <a href="{{ route('admin.hrm.index') }}" class="nav-item {{ request()->routeIs('admin.hrm.*') ? 'active' : '' }}">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                <span class="nav-label">Overview</span>
+            </a>
+            @foreach(['Employees','Attendance','Payroll','Leave','Departments','Reports'] as $hi)
+            <span class="nav-item" style="opacity:.45;cursor:default">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span class="nav-label flex-1 text-left">{{ $hi }}</span>
+                <span class="nav-label text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/10 text-white/55">SOON</span>
+            </span>
+            @endforeach
+          </div><!-- /HRM MENU -->
 
         </nav>
 
         <!-- Sidebar bottom user + account menu -->
+        
+        </div><!-- /side-menu -->
+
         <div class="sidebar-user" @keydown.escape.window="acctOpen = false">
 
             <!-- Menu (opens above the trigger) -->
@@ -1158,29 +1467,12 @@
                     My Profile
                 </a>
 
-                @if(auth()->user()?->isSuperAdmin())
-                <a href="{{ route('admin.users.index') }}" class="acct-item {{ request()->routeIs('admin.users.*') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    Users &amp; Roles
+                <a href="{{ route('two-factor.settings') }}" class="acct-item {{ request()->routeIs('two-factor.settings') ? 'on' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Two-Factor Auth
                 </a>
-                @endif
 
-                @php $curSec = request()->route('section') ?? (request()->routeIs('admin.settings.index') ? 'branding' : null); @endphp
-                <div x-data="{ sub: {{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }} }">
-                    <button type="button" @click="sub = !sub" class="acct-item {{ request()->routeIs('admin.settings.*') ? 'on' : '' }}" style="width:100%">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span style="flex:1;text-align:left">Settings</span>
-                        <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': sub }" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div x-show="sub" x-cloak>
-                        @foreach(['branding'=>'Branding','email'=>'Email (SMTP)','store'=>'Store Details','payments'=>'Payment Methods'] as $sk => $sl)
-                        <a href="{{ route('admin.settings.show', $sk) }}" class="acct-item {{ $curSec === $sk ? 'on' : '' }}" style="padding-left:30px;font-size:13px">
-                            <span class="rounded-full bg-current" style="width:6px;height:6px;flex:none;opacity:.5"></span>
-                            {{ $sl }}
-                        </a>
-                        @endforeach
-                    </div>
-                </div>
+                
 
                 <a href="{{ route('home') }}" target="_blank" rel="noopener" class="acct-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 010 18 15 15 0 010-18z"/></svg>
@@ -1215,7 +1507,7 @@
     </aside>
 
     <!-- ════════ MAIN WRAPPER ════════ -->
-    <div id="main-wrap" :class="{ 'sidebar-collapsed': !sidebarOpen && window.innerWidth > 768 }">
+    <div id="main-wrap">
 
         <!-- ── TOP BAR ── -->
         <header id="topbar">
@@ -1396,7 +1688,7 @@
     <script>
     (function(){
       const URL_COUNTS='{{ route('admin.chats.notify') }}';
-      const LINKS={chats:'{{ route('admin.chats.index') }}',messages:'{{ route('admin.messages.index') }}',orders:'{{ \Illuminate\Support\Facades\Route::has('admin.orders.index') ? route('admin.orders.index') : url('/admin/orders') }}',sourcing:'{{ \Illuminate\Support\Facades\Route::has('admin.sourcing.index') ? route('admin.sourcing.index') : url('/admin/sourcing') }}'};
+      const LINKS={chats:'{{ route('admin.chats.index') }}',messages:'{{ route('admin.messages.index') }}',orders:'{{ route('admin.orders.index') }}',sourcing:'{{ route('admin.sourcing.index') }}'};
       const META={chats:['💬','New live chat message','A visitor is waiting in Live Chat'],messages:['✉️','New contact message','Someone sent a message'],orders:['🛒','New order received!','Open Orders to process it'],sourcing:['📦','New sourcing request','Open Sourcing to review it']};
 
       /* ── sound: WebAudio chime; if the browser hasn't been clicked yet, the
@@ -1488,12 +1780,14 @@
       }
 
       /* poll from a Web Worker so background-tab timer throttling can't stop it */
+      @unless(auth()->user()->vendorId())
       tick();
       try{
         const blob=new Blob(['setInterval(function(){postMessage(1)},10000)'],{type:'text/javascript'});
         const w=new Worker(URL.createObjectURL(blob));
         w.onmessage=tick;
       }catch(_){ setInterval(tick,10000); }
+      @endunless
     })();
     </script>
 

@@ -8,7 +8,10 @@
             <h1 class="text-2xl font-bold text-gray-800">Users &amp; Roles</h1>
             <p class="text-sm text-gray-400 mt-0.5">Admin panel accounts. Passwords set here are stored encrypted and can be revealed by a SuperAdmin.</p>
         </div>
-        <button @click="create=true" class="btn-primary flex items-center gap-2"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New account</button>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Manage roles</a>
+            <button @click="create=true" class="btn-primary flex items-center gap-2"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New account</button>
+        </div>
     </div>
 
     @if(session('success'))<div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-700 text-sm">{{ session('success') }}</div>@endif
@@ -19,7 +22,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @foreach($roles as $r)
         <div class="bg-white rounded-2xl p-4 flex items-start gap-3" style="box-shadow:0 2px 16px rgba(0,0,0,.06)">
-            <span class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold {{ ['super_admin'=>'bg-brand-grad','admin'=>'bg-brand','user'=>'bg-gray-400'][$r->slug] ?? 'bg-gray-400' }}">{{ substr($r->name,0,1) }}</span>
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold {{ ['master_admin'=>'bg-brand-grad','admin'=>'bg-brand','user'=>'bg-gray-400'][$r->slug] ?? 'bg-gray-400' }}">{{ substr($r->name,0,1) }}</span>
             <div><p class="font-semibold text-gray-800 text-sm">{{ $r->name }} <span class="text-gray-400 font-normal">· {{ $r->users_count ?? $r->users()->count() }}</span></p><p class="text-xs text-gray-500">{{ $r->description }}</p></div>
         </div>
         @endforeach
@@ -45,7 +48,7 @@
                             <div><p class="text-sm font-semibold text-gray-800">{{ $u->name }} @if($u->id === auth()->id())<span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">you</span>@endif</p><p class="text-xs text-gray-400">{{ $u->email }}</p></div>
                         </div>
                     </td>
-                    <td><span class="badge-{{ ['super_admin'=>'indigo','admin'=>'blue','user'=>'gray'][$u->role->slug ?? 'user'] ?? 'gray' }}">{{ $u->role_name }}</span></td>
+                    <td><span class="badge-{{ ['master_admin'=>'indigo','admin'=>'blue','user'=>'gray'][$u->role->slug ?? 'user'] ?? 'gray' }}">{{ $u->role_name }}</span></td>
                     <td>
                         @if($u->real_password)
                             <div class="flex items-center gap-2">

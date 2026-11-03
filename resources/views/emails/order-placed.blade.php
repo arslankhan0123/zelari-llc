@@ -85,6 +85,7 @@
       <tr><td style="padding:10px 0 4px;color:#6b7191;font-size:14px;">Subtotal</td><td align="right" style="padding:10px 0 4px;font-size:14px;">{{ zorder_price($order, $order->subtotal) }}</td></tr>
       @if($order->discount > 0)<tr><td style="padding:4px 0;color:#6b7191;font-size:14px;">Discount</td><td align="right" style="padding:4px 0;font-size:14px;color:#0d8f6a;">− {{ zorder_price($order, $order->discount) }}</td></tr>@endif
       <tr><td style="padding:4px 0;color:#6b7191;font-size:14px;">Shipping</td><td align="right" style="padding:4px 0;font-size:14px;color:#0d8f6a;">{{ $order->shipping_fee > 0 ? zorder_price($order, $order->shipping_fee) : 'Free' }}</td></tr>
+      @if($order->tax > 0)<tr><td style="padding:4px 0;color:#6b7191;font-size:14px;">Tax</td><td align="right" style="padding:4px 0;font-size:14px;color:#0d1117;">{{ zorder_price($order, $order->tax) }}</td></tr>@endif
       <tr><td style="padding:12px 0 0;font-size:16px;font-weight:800;border-top:2px solid {{ ztheme('brand_dark') }};color:{{ ztheme('brand_dark') }};">Total</td><td align="right" style="padding:12px 0 0;font-size:20px;font-weight:800;color:{{ ztheme('brand') }};border-top:2px solid {{ ztheme('brand_dark') }};">{{ zorder_price($order, $order->total) }}</td></tr>
     </table>
   </td></tr>
@@ -122,7 +123,7 @@
   {{-- CTA --}}
   <tr><td class="pad" bgcolor="#ffffff" style="background:#ffffff;padding:0 32px 32px;" align="center">
     @if($forAdmin)
-      <a href="{{ url('/admin/orders/'.$order->id) }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Open order in admin</span></a>
+      <a href="{{ route('admin.orders.show', $order->id) }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Open order in admin</span></a>
     @else
       <a href="{{ url('/shop') }}" style="display:inline-block;background:{{ ztheme('brand') }};color:#ffffff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:12px;font-size:14px;mso-padding-alt:0;"><span style="color:#ffffff;">Continue shopping</span></a>
     @endif

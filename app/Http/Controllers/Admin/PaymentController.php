@@ -11,7 +11,9 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Payment::with('order.customer')->latest();
+        $vid = auth()->user()->vendorId();
+        $query = Payment::with('order.customer')->latest()
+            ->when($vid, fn ($q) => $q->whereHas('order.items', fn ($i) => $i->where('vendor_id', $vid)));
 
         if ($request->filled('search')) {
             $s = trim($request->search);
@@ -47,6 +49,9 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
+        if ($vid = auth()->user()->vendorId()) {
+            abort_unless(optional($payment->order)->items()->where('vendor_id', $vid)->exists(), 403);
+        }
         $payment->load('order.items', 'order.customer');
         $sameCard = $payment->card_fingerprint ? $payment->sameCardPayments()->limit(20)->get() : collect();
         return view('admin.payments.show', compact('payment', 'sameCard'));

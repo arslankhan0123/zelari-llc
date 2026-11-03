@@ -574,11 +574,11 @@ body.drawer-open .drawer{transform:none}
 
       <ul class="nav-main">
         <li class="nav-item"><a href="{{ route('home') }}" class="{{ request()->routeIs('home')?'active':'' }}">Home</a></li>
-        <li class="nav-item"><a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}">Shop</a></li>
+        <li class="nav-item"><a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}">Shop</a></li>
         {{-- Shop mega-dropdown (categories + Weekend Deals promo) — disabled for now.
              To bring it back: delete the plain <li> above and remove this comment wrapper.
         <li class="nav-item">
-          <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}">Shop <i class="fa-solid fa-chevron-down"></i></a>
+          <a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}">Shop <i class="fa-solid fa-chevron-down"></i></a>
           <div class="dd shop-dd">
             @if(($navCategories ?? collect())->isNotEmpty())
               @include('shop.partials.cat-menu', ['items' => $navCategories, 'depth' => 0])
@@ -595,6 +595,8 @@ body.drawer-open .drawer{transform:none}
         </li>
         --}}
         <li class="nav-item"><a href="{{ route('brands') }}" class="{{ request()->routeIs('brands')?'active':'' }}"><span class="nav-flow">Brands</span></a></li>
+        <li class="nav-item"><a href="{{ route('shop.vendors') }}" class="{{ request()->routeIs('shop.vendors') || request()->routeIs('shop.vendor') ?'active':'' }}"><span class="nav-flow">Vendors</span></a></li>
+        <li class="nav-item"><a href="{{ route('shop.blog') }}" class="{{ request()->routeIs('shop.blog*') ?'active':'' }}"><span class="nav-flow">Blog</span></a></li>
         <li class="nav-item"><a href="{{ route('sourcing') }}" class="{{ request()->routeIs('sourcing')?'active':'' }}"><span class="nav-flow">Sourcing</span></a></li>
         <li class="nav-item"><a href="{{ route('about') }}" class="{{ request()->routeIs('about')?'active':'' }}">About</a></li>
         <li class="nav-item"><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}">Contact</a></li>
@@ -660,6 +662,8 @@ body.drawer-open .drawer{transform:none}
     <a href="{{ route('shop.index') }}"><i class="fa-solid fa-bag-shopping"></i> Shop</a>
     <a href="{{ route('shop.index',['on_sale'=>1]) }}"><i class="fa-solid fa-bolt"></i> Deal Today</a>
     <a href="{{ route('brands') }}"><i class="fa-solid fa-award"></i> <span class="nav-flow">Brands</span></a>
+    <a href="{{ route('shop.vendors') }}"><i class="fa-solid fa-store"></i> <span class="nav-flow">Vendors</span></a>
+    <a href="{{ route('shop.blog') }}"><i class="fa-solid fa-newspaper"></i> <span class="nav-flow">Blog</span></a>
     <a href="{{ route('sourcing') }}"><i class="fa-solid fa-boxes-packing"></i> <span class="nav-flow">Sourcing</span></a>
     <a href="{{ route('about') }}"><i class="fa-solid fa-circle-info"></i> About</a>
     <a href="{{ route('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
@@ -836,7 +840,7 @@ body.drawer-open .drawer{transform:none}
 {{-- ═════════════ MOBILE BOTTOM NAV ═════════════ --}}
 <nav class="mnav">
   <a href="{{ route('home') }}" class="{{ request()->routeIs('home')?'active':'' }}"><i class="fa-solid fa-house"></i>Home</a>
-  <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.*')?'active':'' }}"><i class="fa-solid fa-bag-shopping"></i>Shop</a>
+  <a href="{{ route('shop.index') }}" class="{{ (request()->routeIs('shop.index') || request()->routeIs('shop.show'))?'active':'' }}"><i class="fa-solid fa-bag-shopping"></i>Shop</a>
   <a href="{{ route('cart.index') }}" class="{{ request()->routeIs('cart.*')?'active':'' }}"><i class="fa-solid fa-cart-shopping"></i>Cart<b class="cnt js-cart-count">{{ $cartCount ?? 0 }}</b></a>
   <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact')?'active':'' }}"><i class="fa-regular fa-comment-dots"></i>Help</a>
 </nav>
