@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\EmailOtp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,10 +18,34 @@ class TwoFactorController extends Controller
         return view('auth.two-factor-settings', ['user' => auth()->user()]);
     }
 
+    /** Step 1: email a one-time code and show the confirmation input. */
     public function enable(Request $request)
     {
-        $request->user()->forceFill(['two_factor_enabled' => true])->save();
-        return back()->with('success', 'Two-factor authentication enabled. You will be emailed a code at each login.');
+        $u = $request->user();
+        EmailOtp::send($u->email, '2fa_enable', [], 'Your two-factor setup code');
+        session(['2fa_enable_pending' => true]);
+        return back()->with('success', 'We emailed a 6-digit code to ' . $u->email . '. Enter it below to turn on two-factor.');
+    }
+
+    /** Step 2: verify the emailed code, then actually enable two-factor. */
+    public function confirm(Request $request)
+    {
+        $request->validate(['code' => 'required|string']);
+        $u = $request->user();
+        if (!EmailOtp::verify($u->email, '2fa_enable', $request->code)) {
+            return back()->withErrors(['code' => 'Invalid or expired code. Please try again.']);
+        }
+        $u->forceFill(['two_factor_enabled' => true])->save();
+        session()->forget('2fa_enable_pending');
+        return back()->with('success', 'Two-factor authentication is now enabled. A code will be emailed at each login.');
+    }
+
+    /** Abandon a pending setup. */
+    public function cancel(Request $request)
+    {
+        EmailOtp::clear($request->user()->email, '2fa_enable');
+        session()->forget('2fa_enable_pending');
+        return back()->with('success', 'Two-factor setup cancelled.');
     }
 
     public function disable(Request $request)
@@ -42,7 +67,12 @@ class TwoFactorController extends Controller
         Log::info("2FA code for {$user->email}: {$code}");
         try {
             if (Setting::applyMailConfig()) {
-                Mail::raw("Your login code is: {$code}\n\nIt expires in 10 minutes.", fn ($m) => $m->to($user->email)->subject('Your login code'));
+                Mail::send('emails.otp', [
+                    'code'    => $code,
+                    'heading' => 'Sign-in verification',
+                    'intro'   => 'Enter this code to finish signing in to your account.',
+                    'minutes' => 10,
+                ], fn ($m) => $m->to($user->email)->subject('Your login code'));
             }
         } catch (\Throwable $e) { /* code is still in the log */ }
     }

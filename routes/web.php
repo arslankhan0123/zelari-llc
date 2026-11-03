@@ -501,6 +501,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/two-factor', fn () => redirect()->route('two-factor.settings'));
     Route::post('/two-factor/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('two-factor.enable');
     Route::post('/two-factor/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+    Route::post('/two-factor/confirm', [\App\Http\Controllers\Auth\TwoFactorController::class, 'confirm'])->name('two-factor.confirm');
+    Route::post('/two-factor/cancel', [\App\Http\Controllers\Auth\TwoFactorController::class, 'cancel'])->name('two-factor.cancel');
 });
 
 // ── Public blog ─────────────────────────────────────────────────────────────
@@ -508,6 +510,8 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
+
 
 
 
