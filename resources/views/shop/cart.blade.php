@@ -214,7 +214,6 @@
       else { input.value=j.quantity; input.dataset.prev=j.quantity; const l=row.querySelector('.js-line'); l.textContent=fmt(j.line_total); bump(l); }
       document.getElementById('sumCount').textContent=j.count;
       document.getElementById('sumSub').textContent=fmt(j.total);
-      const t=document.getElementById('sumTotal'); t.textContent=fmt(j.total); bump(t);
       document.querySelectorAll('#cartCount,.js-cart-count').forEach(el=>el.textContent=j.count);
       const ht=document.getElementById('cartTotalTxt'); if(ht) ht.textContent=fmt(j.total);
       const bar=document.getElementById('shipBar'); const ship=document.getElementById('sumShip');
@@ -222,6 +221,11 @@
         if(j.total>=free){ bar.querySelector('.ship-msg').innerHTML='<i class="fa-solid fa-circle-check" style="color:var(--ok)"></i> You\'ve unlocked <b>free delivery</b>!'; ship.textContent='Free'; ship.style.color='var(--ok)'; }
         else { bar.querySelector('.ship-msg').innerHTML='<i class="fa-solid fa-truck-fast" style="color:var(--p)"></i> Add <b>'+fmt(free-j.total)+'</b> more for free delivery'; ship.textContent=fee>0?fmt(fee):'Free'; ship.style.color=fee>0?'var(--ink)':'var(--ok)'; }
         bar.querySelector('.bar i').style.width=Math.min(100,Math.round(j.total/free*100))+'%'; }
+      const sb=document.getElementById('shipBar'); let shipFee=0;
+      if(sb){ const fr=+sb.dataset.free, fe=+sb.dataset.fee||0; shipFee=(fe>0 && (fr<=0 || j.total<fr))?fe:0; }
+      let zdisc=0; const zdr=document.getElementById('sumDiscRow');
+      if(zdr && zdr.style.display!=='none'){ zdisc=parseFloat((document.getElementById('sumDisc').textContent||'').replace(/[^0-9.]/g,''))||0; }
+      const zt=document.getElementById('sumTotal'); zt.textContent=fmt(Math.max(0,j.total-zdisc)+shipFee); bump(zt);
       if(j.empty){ setTimeout(()=>location.reload(),350); }
     }catch(e){ zToast('Network error — please try again','err'); }
     finally{ form.classList.remove('loading'); busy=false; }
