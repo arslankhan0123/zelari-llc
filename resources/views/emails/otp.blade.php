@@ -4,6 +4,13 @@
   $intro   = $intro ?? 'Use the code below to continue.';
   $minutes = $minutes ?? 10;
   $preview = $preview ?? ('Your code is '.$code.' — expires in '.$minutes.' minutes.');
+  // Branding logo (print logo is PNG/JPG, made for emails/invoices). Embed it for
+  // reliable rendering in real email clients; fall back to a URL in preview, then text.
+  $logoSrc = null;
+  try {
+      if (isset($message)) { $logoSrc = $message->embed(zbrand_path('print')); }
+      else { $logoSrc = zbrand('print'); }
+  } catch (\Throwable $e) { $logoSrc = null; }
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -20,16 +27,23 @@
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(31,27,80,.10);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
-          <!-- Header -->
+          <!-- Brand accent strip -->
+          <tr><td style="height:5px;background-color:#4f46e5;background-image:linear-gradient(90deg,#4f46e5 0%,#7c3aed 55%,#8b5cf6 100%);font-size:0;line-height:0;">&nbsp;</td></tr>
+
+          <!-- Logo band -->
           <tr>
-            <td style="background-color:#4f46e5;background-image:linear-gradient(135deg,#4f46e5 0%,#7c3aed 55%,#8b5cf6 100%);padding:30px 32px;text-align:center;">
-              <span style="display:inline-block;font-size:24px;font-weight:800;letter-spacing:-.5px;color:#ffffff;">{{ $store }}</span>
+            <td style="padding:26px 32px 22px;text-align:center;border-bottom:1px solid #eef0f6;">
+              @if($logoSrc)
+                <img src="{{ $logoSrc }}" alt="{{ $store }}" style="max-height:46px;max-width:240px;display:inline-block;border:0;outline:none;text-decoration:none;">
+              @else
+                <span style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#1f2937;">{{ $store }}</span>
+              @endif
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="padding:36px 36px 8px;">
+            <td style="padding:34px 36px 8px;">
               <h1 style="margin:0 0 10px;font-size:21px;line-height:1.3;font-weight:800;color:#111827;">{{ $heading }}</h1>
               <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6b7280;">{{ $intro }}</p>
 
@@ -56,7 +70,7 @@
           <tr>
             <td style="padding:16px 36px 32px;">
               <p style="margin:0;font-size:12.5px;line-height:1.6;color:#9ca3af;">
-                If you didn't request this, you can safely ignore this email — your account is still secure.
+                If you didn't request this, you can safely ignore this email &mdash; your account is still secure.
               </p>
             </td>
           </tr>
