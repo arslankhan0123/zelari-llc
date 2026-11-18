@@ -168,6 +168,29 @@ class OrderController extends Controller {
         return view('admin.orders.show', compact('order','vendorOrder'));
     }
 
+    /** Download the order invoice (same branded design as the storefront). */
+    public function invoice(Order $order) {
+        $user = auth()->user();
+        if ($user?->isVendor()) {
+            $vid = optional($user->vendor)->id;
+            abort_unless($order->vendorOrders()->where('vendor_id', $vid)->exists(), 403, 'This order does not include any of your products.');
+            $order->setRelation('items', $order->items()->where('vendor_id', $vid)->get());
+        } else {
+            $order->load('items');
+        }
+        $store = [
+            'name'    => \App\Models\Setting::get('store_name', 'Zelari'),
+            'phone'   => \App\Models\Setting::get('store_phone', ''),
+            'address' => \App\Models\Setting::get('store_address', ''),
+            'email'   => \App\Models\Setting::get('store_email', \App\Models\Setting::get('mail_from_address', '')),
+        ];
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            return \Barryvdh\DomPDF\Facade\Pdf::loadView('shop.invoice', ['order' => $order, 'pdf' => true, 'store' => $store])
+                ->setPaper('a4')->download('Invoice-' . $order->order_number . '.pdf');
+        }
+        return view('shop.invoice', ['order' => $order, 'pdf' => false, 'store' => $store]);
+    }
+
     public function edit(Order $order) {
         $user = auth()->user();
         $vendorOrder = null;

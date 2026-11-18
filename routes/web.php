@@ -329,6 +329,7 @@ Route::middleware(['auth', 'verified', 'panelperm'])->prefix('admin/ecommerce')-
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/create', [OrderController::class, 'create'])->name('create');
         Route::post('/', [OrderController::class, 'store'])->name('store');
+        Route::get('/{order}/invoice', [OrderController::class, 'invoice'])->name('invoice');
         Route::get('/{order}', [OrderController::class, 'show'])->name('show');
         Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit');
         Route::put('/{order}', [OrderController::class, 'update'])->name('update');
@@ -510,6 +511,7 @@ Route::get('/blog', [\App\Http\Controllers\Shop\BlogController::class, 'index'])
 Route::get('/blog/{slug}', [\App\Http\Controllers\Shop\BlogController::class, 'show'])->name('shop.blog.show');
 
 require __DIR__ . '/auth.php';
+
 
 
 
