@@ -111,17 +111,17 @@
         <div class="lbl">From</div>
         <div class="pname">{{ $store['name'] }}</div>
         <div class="psub">
-          @if($store['address']){{ $store['address'] }}<br>@endif
-          @if($store['email']){{ $store['email'] }}@endif@if($store['phone']) &middot; {{ $store['phone'] }}@endif
+          {!! $store['address'] ? e($store['address']).'<br>' : '' !!}
+          {{ trim(($store['email'] ?? '').((($store['email'] ?? '') && ($store['phone'] ?? '')) ? ' · ' : '').($store['phone'] ?? '')) }}
         </div>
       </td>
       <td>
         <div class="lbl">Bill To</div>
         <div class="pname">{{ $order->shipping_name }}</div>
         <div class="psub">
-          @if($order->shipping_address){{ $order->shipping_address }}<br>@endif
-          @if($order->shipping_city){{ $order->shipping_city }}<br>@endif
-          @if($order->shipping_phone){{ $order->shipping_phone }}@endif
+          {!! $order->shipping_address ? e($order->shipping_address).'<br>' : '' !!}
+          {!! $order->shipping_city ? e($order->shipping_city).'<br>' : '' !!}
+          {{ $order->shipping_phone }}
         </div>
       </td>
     </tr>
@@ -167,7 +167,11 @@
           <p>Thank you for your business. This invoice has been paid in full &mdash; no further action is required.</p>
           <div class="pay-line">Paid via <b>{{ $method }}</b> on <b>{{ $payDate }}</b>.</div>
         @else
-          <p>Thank you for your order. @if($order->payment_method === 'cash_on_delivery')Please keep <b>{{ zorder_price($order, $order->total) }}</b> ready for payment on delivery.@else Payment is due for this order.@endif</p>
+          @if($order->payment_method === 'cash_on_delivery')
+            <p>Thank you for your order. Please keep <b>{{ zorder_price($order, $order->total) }}</b> ready for payment on delivery.</p>
+          @else
+            <p>Thank you for your order. Payment is due for this order.</p>
+          @endif
         @endif
         @if($order->notes)<p style="margin-top:10px"><b style="color:#151537">Order notes:</b> {{ $order->notes }}</p>@endif
       </td>
@@ -190,8 +194,8 @@
   <div class="thanks">
     <div class="big">Thank you for choosing {{ $store['name'] }}</div>
     <div class="sm">
-      Questions about this invoice? Contact us@if($store['email']) at {{ $store['email'] }}@endif@if($store['phone']) or {{ $store['phone'] }}@endif.<br>
-      {{ $store['name'] }}@if($store['address']) &middot; {{ $store['address'] }}@endif
+      Questions about this invoice? Contact us{{ ($store['email'] ?? '') ? ' at '.$store['email'] : '' }}{{ ($store['phone'] ?? '') ? ' or '.$store['phone'] : '' }}.<br>
+      {{ $store['name'] }}{{ ($store['address'] ?? '') ? ' · '.$store['address'] : '' }}
     </div>
   </div>
 
