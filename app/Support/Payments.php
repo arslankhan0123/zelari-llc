@@ -312,8 +312,9 @@ class Payments
         $pay->forceFill(array_filter($data, fn ($v) => $v !== null))->save();
     }
 
-    /** Cancel an unpaid order and put its stock back. */
-    public static function cancelAndRestock(Order $order): void
+    /** Cancel an unpaid order and put its stock back. Pass $cancelIntent=false to keep the
+     *  Stripe PaymentIntent alive (e.g. when the next attempt will reuse the same one). */
+    public static function cancelAndRestock(Order $order, bool $cancelIntent = true): void
     {
         if ($order->status === 'cancelled') return;
         $order->loadMissing('items');
@@ -327,7 +328,7 @@ class Payments
         if ($pay && $pay->status === 'pending') {
             $pay->forceFill(['status' => 'cancelled'])->save();
         }
-        if ($order->payment_method === self::STRIPE && $order->payment_intent_id) {
+        if ($cancelIntent && $order->payment_method === self::STRIPE && $order->payment_intent_id) {
             self::cancelIntent($order->payment_intent_id);
         }
     }

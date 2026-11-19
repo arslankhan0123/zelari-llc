@@ -298,7 +298,10 @@
       const fd=new FormData(form);
       const r=await fetch(form.action,{method:'POST',headers:{'X-CSRF-TOKEN':token,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:fd});
       const j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.ok){ throw new Error(j.message||Object.values(j.errors||{}).flat()[0]||'Could not place the order.'); }
+      if(!r.ok||!j.ok){
+        if(j.reload){ showErr(j.message||'Please reload and try again.'); setBusy(false); setTimeout(()=>location.reload(),2500); return; }
+        throw new Error(j.message||Object.values(j.errors||{}).flat()[0]||'Could not place the order.');
+      }
       if(j.redirect){ location.href=j.redirect; return; }
       // 3) hand off to Stripe — redirects to return_url when the bank needs 3-D Secure
       setBusy(true,'Confirming payment…');
