@@ -47,17 +47,17 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
-        $total    = array_sum(array_map(fn ($i) => $i['price'] * $i['quantity'], $cart));
-        $currency = Currency::current();
-        $amount   = Payments::minorUnits((float) $total, $currency['code'], (float) $currency['rate']);
-        if ($amount < 50) { // Stripe minimum is ~0.50 USD
-            return response()->json(['message' => 'Order total is below the card payment minimum.'], 422);
+        $baseTotal = array_sum(array_map(fn ($i) => $i['price'] * $i['quantity'], $cart));
+        $charge    = Payments::cardCurrency();                       // always USD (settlement currency)
+        $amount    = Payments::minorUnits((float) $baseTotal, $charge, 1.0);
+        if ($amount < 50) { // Stripe minimum is ~US$0.50
+            return response()->json(['message' => 'Order total is below the card payment minimum (about US$0.50).'], 422);
         }
 
         try {
             $existing = session('stripe_intent');
             $pi = null;
-            if ($existing && !empty($existing['id']) && ($existing['currency'] ?? '') === $currency['code']) {
+            if ($existing && !empty($existing['id']) && ($existing['currency'] ?? '') === $charge) {
                 try {
                     $pi = Payments::updateIntent($existing['id'], ['amount' => $amount]);
                 } catch (\RuntimeException $e) {
@@ -66,15 +66,15 @@ class CheckoutController extends Controller
                 }
             }
             if (!$pi) {
-                $pi = Payments::createIntent($amount, $currency['code'], ['session' => substr(session()->getId(), 0, 40)]);
+                $pi = Payments::createIntent($amount, $charge, ['session' => substr(session()->getId(), 0, 40)]);
             }
         } catch (\RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        session(['stripe_intent' => ['id' => $pi['id'], 'currency' => $currency['code'], 'amount' => $amount]]);
+        session(['stripe_intent' => ['id' => $pi['id'], 'currency' => $charge, 'amount' => $amount]]);
 
-        return response()->json(['clientSecret' => $pi['client_secret'], 'amount' => $amount, 'currency' => $currency['code']]);
+        return response()->json(['clientSecret' => $pi['client_secret'], 'amount' => $amount, 'currency' => $charge]);
     }
 
     /** POST /checkout */
@@ -341,7 +341,7 @@ class CheckoutController extends Controller
 
             if ($isCard) {
                 // Sync the final server-side total onto the intent, then let the browser confirm the card.
-                $amount = Payments::minorUnits((float) $order->total, $order->currency_code, (float) $order->exchange_rate);
+                $amount = Payments::minorUnits((float) $order->total, Payments::cardCurrency(), 1.0); // charge in USD
                 try {
                     Payments::updateIntent($intent['id'], [
                         'amount'                 => $amount,

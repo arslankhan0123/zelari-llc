@@ -131,6 +131,16 @@ class Payments
         return $json;
     }
 
+    /**
+     * The currency Stripe actually charges cards in. This US account settles in USD, and some
+     * display currencies (e.g. PKR) aren't chargeable by Stripe at all — so cards are always
+     * processed in the base/settlement currency, whatever currency the shopper is browsing in.
+     */
+    public static function cardCurrency(): string
+    {
+        return strtoupper(\App\Support\Currency::base());
+    }
+
     public static function createIntent(int $amount, string $currency, array $metadata = [], ?string $receiptEmail = null): array
     {
         $params = [

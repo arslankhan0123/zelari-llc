@@ -137,7 +137,7 @@
                     <div id="paymentElement"></div>
                   </div>
                   <div class="pe-err" id="peErr"></div>
-                  <div class="pe-note"><i class="fa-solid fa-lock" style="color:var(--ok)"></i> Encrypted by <b>Stripe</b> — your card number never reaches our servers. You'll be charged <b id="peAmount">{{ zprice(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cart))) }}</b>.</div>
+                  <div class="pe-note"><i class="fa-solid fa-lock" style="color:var(--ok)"></i> Encrypted by <b>Stripe</b> — your card number never reaches our servers. You'll be charged <b id="peAmount">US$ {{ number_format(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cart)), 2) }}@if(strtoupper(zcur()['code'])!=='USD') (&#8776; {{ zprice(array_sum(array_map(fn($i)=>$i['price']*$i['quantity'],$cart))) }})@endif</b>. Card payments are processed in US dollars.</div>
                 </div>
               @endif
             @empty
@@ -325,7 +325,8 @@
   const setMsg=(t,c)=>{ msg.textContent=t||''; msg.className='cpn-msg'+(c?' '+c:''); };
   function showShip(v){ if(v<=0){shipEl.textContent='Free';shipEl.style.color='var(--ok)';}else{shipEl.textContent=fmt(v);shipEl.style.color='var(--ink)';} }
   function showDisc(v){ if(v>0){discRow.style.display='';discEl.innerHTML='&minus; '+fmt(v);}else{discRow.style.display='none';} }
-  function setTotal(v){ totEl.textContent=fmt(v); if(peA)peA.textContent=fmt(v); if(ppA)ppA.textContent=fmt(v); }
+  const peUsd=v=>'US$ '+Number(v).toFixed(2)+((window.ZCUR&&ZCUR.code!=='USD')?' (\u2248 '+fmt(v)+')':'');
+  function setTotal(v){ totEl.textContent=fmt(v); if(peA)peA.textContent=peUsd(v); if(ppA)ppA.textContent=fmt(v); }
   async function applyCoupon(){
     const code=(inp.value||'').trim(); if(!code){setMsg('Enter a coupon code.','err');return;}
     btn.disabled=true; setMsg('');
