@@ -56,9 +56,16 @@ class CheckoutController extends Controller
 
         try {
             $existing = session('stripe_intent');
-            if ($existing && ($existing['currency'] ?? '') === $currency['code']) {
-                $pi = Payments::updateIntent($existing['id'], ['amount' => $amount]);
-            } else {
+            $pi = null;
+            if ($existing && !empty($existing['id']) && ($existing['currency'] ?? '') === $currency['code']) {
+                try {
+                    $pi = Payments::updateIntent($existing['id'], ['amount' => $amount]);
+                } catch (\RuntimeException $e) {
+                    // canceled / succeeded / not found → fall through and start a fresh intent
+                    $pi = null;
+                }
+            }
+            if (!$pi) {
                 $pi = Payments::createIntent($amount, $currency['code'], ['session' => substr(session()->getId(), 0, 40)]);
             }
         } catch (\RuntimeException $e) {
@@ -122,10 +129,15 @@ class CheckoutController extends Controller
             }
         }
 
-        // Any earlier card attempt that was never paid is stale by now — release its stock
+        // Any earlier card attempt that was never paid is stale by now — release its stock.
         if (($prevId = session('last_order_id')) && ($prev = Order::find($prevId))
             && Payments::isOnline($prev->payment_method) && $prev->payment_status !== 'paid' && $prev->status !== 'cancelled') {
-            Payments::cancelAndRestock($prev);
+            // If this new attempt will reuse the same PaymentIntent, keep it alive (just restock);
+            // cancelling it here is what left the shared intent in a "canceled" state.
+            $sessIntentId = data_get(session('stripe_intent'), 'id');
+            $keepIntent   = $prev->payment_method === Payments::STRIPE
+                            && $prev->payment_intent_id && $prev->payment_intent_id === $sessIntentId;
+            Payments::cancelAndRestock($prev, !$keepIntent);
         }
 
         // Card payments need a PaymentIntent prepared by the checkout page
@@ -339,8 +351,14 @@ class CheckoutController extends Controller
                         'description'            => Setting::get('store_name', 'Zelari') . ' order ' . $order->order_number,
                     ]);
                 } catch (\RuntimeException $e) {
+                    // The prepared card session is stale/canceled — never confirm a wrong intent.
                     Payments::cancelAndRestock($order);
-                    throw $e;
+                    session()->forget('stripe_intent');
+                    report($e);
+                    $msg = 'Your secure card session expired. Please reload the page and try again — you were not charged.';
+                    return $wantsJson
+                        ? response()->json(['message' => $msg, 'reload' => true], 422)
+                        : back()->withInput()->with('checkout_error', $msg);
                 }
                 $return = route('checkout.stripe.return', $order->order_number);
                 return $wantsJson
