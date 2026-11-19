@@ -108,10 +108,10 @@
                         </td>
                         <td class="px-5 py-4 text-right">
                             @if($product->sale_price)
-                            <p class="font-semibold text-gray-900 dark:text-white">{{ config('currencies.base') }} {{ number_format($product->sale_price, 0) }}</p>
-                            <p class="text-xs text-gray-400 line-through">{{ config('currencies.base') }} {{ number_format($product->purchase_price, 0) }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-white">{{ config('currencies.base') }} {{ number_format($product->sale_price, (int) config('currencies.currencies.'.config('currencies.base').'.decimals', 2)) }}</p>
+                            <p class="text-xs text-gray-400 line-through">{{ config('currencies.base') }} {{ number_format($product->purchase_price, (int) config('currencies.currencies.'.config('currencies.base').'.decimals', 2)) }}</p>
                             @else
-                            <p class="font-semibold text-gray-900 dark:text-white">{{ config('currencies.base') }} {{ number_format($product->purchase_price, 0) }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-white">{{ config('currencies.base') }} {{ number_format($product->purchase_price, (int) config('currencies.currencies.'.config('currencies.base').'.decimals', 2)) }}</p>
                             @endif
                         </td>
                         <td class="px-5 py-4 text-center hidden sm:table-cell">

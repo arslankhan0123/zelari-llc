@@ -67,12 +67,12 @@
                 </div>
                 <div>
                     <dt class="text-xs text-gray-400 mb-0.5">Purchase Price</dt>
-                    <dd class="text-sm font-semibold text-gray-700">{{ config('currencies.base') }} {{ number_format($product->purchase_price, 0) }}</dd>
+                    <dd class="text-sm font-semibold text-gray-700">{{ config('currencies.base') }} {{ number_format($product->purchase_price, (int) config('currencies.currencies.'.config('currencies.base').'.decimals', 2)) }}</dd>
                 </div>
                 <div>
                     <dt class="text-xs text-gray-400 mb-0.5">Sale Price</dt>
                     <dd class="text-sm font-semibold text-indigo-600">
-                        {{ $product->sale_price ? config('currencies.base').' '.number_format($product->sale_price, 0) : '—' }}
+                        {{ $product->sale_price ? config('currencies.base').' '.number_format($product->sale_price, (int) config('currencies.currencies.'.config('currencies.base').'.decimals', 2)) : '—' }}
                         @if($product->sale_price && $product->purchase_price > $product->sale_price)
                             <span class="ml-1 text-xs bg-red-50 text-red-500 px-1.5 py-0.5 rounded-full font-normal">
                                 -{{ round((($product->purchase_price - $product->sale_price) / $product->purchase_price) * 100) }}%

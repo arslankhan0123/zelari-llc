@@ -49,6 +49,17 @@
           @error($k) <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
         </div>
         @endforeach
+
+        <div class="md:col-span-2">
+          @php $curSel = old('default_currency', $s['default_currency'] ?? config('currencies.default', 'USD')); @endphp
+          <label class="form-label">Default storefront currency</label>
+          <select name="default_currency" class="form-input">
+            @foreach(\App\Support\Currency::all() as $code => $c)
+              <option value="{{ $code }}" @selected(strtoupper($curSel) === $code)>{{ $code }} — {{ $c['name'] }} ({{ $c['symbol'] }})</option>
+            @endforeach
+          </select>
+          <p class="text-gray-500 text-xs mt-1.5">The currency a new visitor sees by default. Visitors from other countries are auto-switched to their local currency, and anyone can change it from the header. Prices are stored in {{ config('currencies.base') }} (the base currency) and converted using the rates in config.</p>
+        </div>
       </div>
 
       <button type="submit" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-brand-grad" style="box-shadow:0 8px 24px rgba(var(--shadow-rgb),.35)">
