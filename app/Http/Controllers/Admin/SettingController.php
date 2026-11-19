@@ -61,6 +61,7 @@ class SettingController extends Controller
             'store_instagram' => 'nullable|url|max:255',
             'store_twitter'   => 'nullable|url|max:255',
             'store_pinterest' => 'nullable|url|max:255',
+            'default_currency' => ['nullable','string', \Illuminate\Validation\Rule::in(array_keys(\App\Support\Currency::all()))],
         ]);
 
         Setting::setMany($data);

@@ -4,7 +4,7 @@
 |--------------------------------------------------------------------------
 | Currencies & locations
 |--------------------------------------------------------------------------
-| Product prices in the database are stored in the BASE currency (PKR).
+| Product prices in the database are stored in the BASE currency (USD).
 | `rate` = how many units of that currency 1 unit of the base currency buys
 | (display price = stored price × rate). Rates are approximate and can be
 | overridden from .env (e.g. CURRENCY_RATE_USD=0.0036).
@@ -14,42 +14,55 @@
 
 return [
 
-    'base'    => 'PKR',
+    'base'    => 'USD',
     'default' => env('CURRENCY_DEFAULT', 'USD'),
 
+    /*
+    | Live exchange rates. When enabled, rates are fetched from a free FX API
+    | (base = the 'base' currency above) and cached for 'ttl' seconds. Each
+    | currency's hard-coded 'rate' below is used only as a fallback when the
+    | API is unreachable, so the store never breaks.
+    */
+    'live_rates' => [
+        'enabled'  => env('CURRENCY_LIVE_RATES', true),
+        'provider' => env('CURRENCY_RATES_PROVIDER', 'https://open.er-api.com/v6/latest'),
+        'ttl'      => (int) env('CURRENCY_RATES_TTL', 21600),
+        'timeout'  => (int) env('CURRENCY_RATES_TIMEOUT', 4),
+    ],
+
     'currencies' => [
-        'USD' => ['symbol' => '$', 'name' => 'US Dollar', 'rate' => (float) env('CURRENCY_RATE_USD', 0.003571), 'decimals' => 2],
-        'PKR' => ['symbol' => 'Rs', 'name' => 'Pakistani Rupee', 'rate' => 1.0, 'decimals' => 0],
-        'GBP' => ['symbol' => '£', 'name' => 'British Pound', 'rate' => (float) env('CURRENCY_RATE_GBP', 0.002817), 'decimals' => 2],
-        'EUR' => ['symbol' => '€', 'name' => 'Euro', 'rate' => (float) env('CURRENCY_RATE_EUR', 0.003333), 'decimals' => 2],
-        'AED' => ['symbol' => 'AED', 'name' => 'UAE Dirham', 'rate' => (float) env('CURRENCY_RATE_AED', 0.013123), 'decimals' => 2],
-        'SAR' => ['symbol' => 'SAR', 'name' => 'Saudi Riyal', 'rate' => (float) env('CURRENCY_RATE_SAR', 0.013405), 'decimals' => 2],
-        'QAR' => ['symbol' => 'QAR', 'name' => 'Qatari Riyal', 'rate' => (float) env('CURRENCY_RATE_QAR', 0.013004), 'decimals' => 2],
-        'KWD' => ['symbol' => 'KWD', 'name' => 'Kuwaiti Dinar', 'rate' => (float) env('CURRENCY_RATE_KWD', 0.001099), 'decimals' => 3],
-        'BHD' => ['symbol' => 'BHD', 'name' => 'Bahraini Dinar', 'rate' => (float) env('CURRENCY_RATE_BHD', 0.001346), 'decimals' => 3],
-        'OMR' => ['symbol' => 'OMR', 'name' => 'Omani Rial', 'rate' => (float) env('CURRENCY_RATE_OMR', 0.001376), 'decimals' => 3],
-        'CAD' => ['symbol' => 'C$', 'name' => 'Canadian Dollar', 'rate' => (float) env('CURRENCY_RATE_CAD', 0.004878), 'decimals' => 2],
-        'AUD' => ['symbol' => 'A$', 'name' => 'Australian Dollar', 'rate' => (float) env('CURRENCY_RATE_AUD', 0.005405), 'decimals' => 2],
-        'NZD' => ['symbol' => 'NZ$', 'name' => 'New Zealand Dollar', 'rate' => (float) env('CURRENCY_RATE_NZD', 0.005952), 'decimals' => 2],
-        'INR' => ['symbol' => '₹', 'name' => 'Indian Rupee', 'rate' => (float) env('CURRENCY_RATE_INR', 0.298507), 'decimals' => 0],
-        'BDT' => ['symbol' => '৳', 'name' => 'Bangladeshi Taka', 'rate' => (float) env('CURRENCY_RATE_BDT', 0.425532), 'decimals' => 0],
-        'JPY' => ['symbol' => '¥', 'name' => 'Japanese Yen', 'rate' => (float) env('CURRENCY_RATE_JPY', 0.540541), 'decimals' => 0],
-        'CNY' => ['symbol' => 'CN¥', 'name' => 'Chinese Yuan', 'rate' => (float) env('CURRENCY_RATE_CNY', 0.025974), 'decimals' => 2],
-        'SGD' => ['symbol' => 'S$', 'name' => 'Singapore Dollar', 'rate' => (float) env('CURRENCY_RATE_SGD', 0.004762), 'decimals' => 2],
-        'MYR' => ['symbol' => 'RM', 'name' => 'Malaysian Ringgit', 'rate' => (float) env('CURRENCY_RATE_MYR', 0.015873), 'decimals' => 2],
-        'TRY' => ['symbol' => '₺', 'name' => 'Turkish Lira', 'rate' => (float) env('CURRENCY_RATE_TRY', 0.121951), 'decimals' => 2],
-        'EGP' => ['symbol' => 'E£', 'name' => 'Egyptian Pound', 'rate' => (float) env('CURRENCY_RATE_EGP', 0.175439), 'decimals' => 2],
-        'ZAR' => ['symbol' => 'R', 'name' => 'South African Rand', 'rate' => (float) env('CURRENCY_RATE_ZAR', 0.064516), 'decimals' => 2],
-        'NGN' => ['symbol' => '₦', 'name' => 'Nigerian Naira', 'rate' => (float) env('CURRENCY_RATE_NGN', 5.555556), 'decimals' => 0],
-        'CHF' => ['symbol' => 'CHF', 'name' => 'Swiss Franc', 'rate' => (float) env('CURRENCY_RATE_CHF', 0.003125), 'decimals' => 2],
-        'SEK' => ['symbol' => 'kr', 'name' => 'Swedish Krona', 'rate' => (float) env('CURRENCY_RATE_SEK', 0.037037), 'decimals' => 2],
-        'NOK' => ['symbol' => 'kr', 'name' => 'Norwegian Krone', 'rate' => (float) env('CURRENCY_RATE_NOK', 0.037736), 'decimals' => 2],
-        'DKK' => ['symbol' => 'kr', 'name' => 'Danish Krone', 'rate' => (float) env('CURRENCY_RATE_DKK', 0.025), 'decimals' => 2],
-        'PLN' => ['symbol' => 'zł', 'name' => 'Polish Zloty', 'rate' => (float) env('CURRENCY_RATE_PLN', 0.014286), 'decimals' => 2],
-        'HKD' => ['symbol' => 'HK$', 'name' => 'Hong Kong Dollar', 'rate' => (float) env('CURRENCY_RATE_HKD', 0.027778), 'decimals' => 2],
-        'IDR' => ['symbol' => 'Rp', 'name' => 'Indonesian Rupiah', 'rate' => (float) env('CURRENCY_RATE_IDR', 58.139535), 'decimals' => 0],
-        'THB' => ['symbol' => '฿', 'name' => 'Thai Baht', 'rate' => (float) env('CURRENCY_RATE_THB', 0.123457), 'decimals' => 2],
-        'PHP' => ['symbol' => '₱', 'name' => 'Philippine Peso', 'rate' => (float) env('CURRENCY_RATE_PHP', 0.204082), 'decimals' => 2],
+        'USD' => ['symbol' => '$', 'name' => 'US Dollar', 'rate' => (float) env('CURRENCY_RATE_USD', 1.0), 'decimals' => 2],
+        'PKR' => ['symbol' => 'Rs', 'name' => 'Pakistani Rupee', 'rate' => (float) env('CURRENCY_RATE_PKR', 280.0), 'decimals' => 0],
+        'GBP' => ['symbol' => '£', 'name' => 'British Pound', 'rate' => (float) env('CURRENCY_RATE_GBP', 0.7889), 'decimals' => 2],
+        'EUR' => ['symbol' => '€', 'name' => 'Euro', 'rate' => (float) env('CURRENCY_RATE_EUR', 0.9334), 'decimals' => 2],
+        'AED' => ['symbol' => 'AED', 'name' => 'UAE Dirham', 'rate' => (float) env('CURRENCY_RATE_AED', 3.6749), 'decimals' => 2],
+        'SAR' => ['symbol' => 'SAR', 'name' => 'Saudi Riyal', 'rate' => (float) env('CURRENCY_RATE_SAR', 3.7539), 'decimals' => 2],
+        'QAR' => ['symbol' => 'QAR', 'name' => 'Qatari Riyal', 'rate' => (float) env('CURRENCY_RATE_QAR', 3.6416), 'decimals' => 2],
+        'KWD' => ['symbol' => 'KWD', 'name' => 'Kuwaiti Dinar', 'rate' => (float) env('CURRENCY_RATE_KWD', 0.3078), 'decimals' => 3],
+        'BHD' => ['symbol' => 'BHD', 'name' => 'Bahraini Dinar', 'rate' => (float) env('CURRENCY_RATE_BHD', 0.3769), 'decimals' => 3],
+        'OMR' => ['symbol' => 'OMR', 'name' => 'Omani Rial', 'rate' => (float) env('CURRENCY_RATE_OMR', 0.3853), 'decimals' => 3],
+        'CAD' => ['symbol' => 'C$', 'name' => 'Canadian Dollar', 'rate' => (float) env('CURRENCY_RATE_CAD', 1.366), 'decimals' => 2],
+        'AUD' => ['symbol' => 'A$', 'name' => 'Australian Dollar', 'rate' => (float) env('CURRENCY_RATE_AUD', 1.5136), 'decimals' => 2],
+        'NZD' => ['symbol' => 'NZ$', 'name' => 'New Zealand Dollar', 'rate' => (float) env('CURRENCY_RATE_NZD', 1.6668), 'decimals' => 2],
+        'INR' => ['symbol' => '₹', 'name' => 'Indian Rupee', 'rate' => (float) env('CURRENCY_RATE_INR', 83.592), 'decimals' => 0],
+        'BDT' => ['symbol' => '৳', 'name' => 'Bangladeshi Taka', 'rate' => (float) env('CURRENCY_RATE_BDT', 119.1633), 'decimals' => 0],
+        'JPY' => ['symbol' => '¥', 'name' => 'Japanese Yen', 'rate' => (float) env('CURRENCY_RATE_JPY', 151.3696), 'decimals' => 0],
+        'CNY' => ['symbol' => 'CN¥', 'name' => 'Chinese Yuan', 'rate' => (float) env('CURRENCY_RATE_CNY', 7.2736), 'decimals' => 2],
+        'SGD' => ['symbol' => 'S$', 'name' => 'Singapore Dollar', 'rate' => (float) env('CURRENCY_RATE_SGD', 1.3335), 'decimals' => 2],
+        'MYR' => ['symbol' => 'RM', 'name' => 'Malaysian Ringgit', 'rate' => (float) env('CURRENCY_RATE_MYR', 4.445), 'decimals' => 2],
+        'TRY' => ['symbol' => '₺', 'name' => 'Turkish Lira', 'rate' => (float) env('CURRENCY_RATE_TRY', 34.1504), 'decimals' => 2],
+        'EGP' => ['symbol' => 'E£', 'name' => 'Egyptian Pound', 'rate' => (float) env('CURRENCY_RATE_EGP', 49.1288), 'decimals' => 2],
+        'ZAR' => ['symbol' => 'R', 'name' => 'South African Rand', 'rate' => (float) env('CURRENCY_RATE_ZAR', 18.0666), 'decimals' => 2],
+        'NGN' => ['symbol' => '₦', 'name' => 'Nigerian Naira', 'rate' => (float) env('CURRENCY_RATE_NGN', 1555.7424), 'decimals' => 0],
+        'CHF' => ['symbol' => 'CHF', 'name' => 'Swiss Franc', 'rate' => (float) env('CURRENCY_RATE_CHF', 0.8751), 'decimals' => 2],
+        'SEK' => ['symbol' => 'kr', 'name' => 'Swedish Krona', 'rate' => (float) env('CURRENCY_RATE_SEK', 10.3716), 'decimals' => 2],
+        'NOK' => ['symbol' => 'kr', 'name' => 'Norwegian Krone', 'rate' => (float) env('CURRENCY_RATE_NOK', 10.5673), 'decimals' => 2],
+        'DKK' => ['symbol' => 'kr', 'name' => 'Danish Krone', 'rate' => (float) env('CURRENCY_RATE_DKK', 7.0008), 'decimals' => 2],
+        'PLN' => ['symbol' => 'zł', 'name' => 'Polish Zloty', 'rate' => (float) env('CURRENCY_RATE_PLN', 4.0006), 'decimals' => 2],
+        'HKD' => ['symbol' => 'HK$', 'name' => 'Hong Kong Dollar', 'rate' => (float) env('CURRENCY_RATE_HKD', 7.7788), 'decimals' => 2],
+        'IDR' => ['symbol' => 'Rp', 'name' => 'Indonesian Rupiah', 'rate' => (float) env('CURRENCY_RATE_IDR', 16281.0235), 'decimals' => 0],
+        'THB' => ['symbol' => '฿', 'name' => 'Thai Baht', 'rate' => (float) env('CURRENCY_RATE_THB', 34.5721), 'decimals' => 2],
+        'PHP' => ['symbol' => '₱', 'name' => 'Philippine Peso', 'rate' => (float) env('CURRENCY_RATE_PHP', 57.1498), 'decimals' => 2],
     ],
 
     /*

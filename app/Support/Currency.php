@@ -17,9 +17,60 @@ use Illuminate\Support\Str;
  */
 class Currency
 {
+    /** Per-request memo so one HTTP fetch serves the whole request. */
+    private static ?array $liveMemo = null;
+
     public static function all(): array
     {
-        return config('currencies.currencies', []);
+        $defs = config('currencies.currencies', []);
+        $live = self::liveRates();
+        if ($live) {
+            foreach ($defs as $code => $c) {
+                if (isset($live[$code])) {
+                    $defs[$code]['rate'] = $live[$code];
+                }
+            }
+        }
+        return $defs;
+    }
+
+    /**
+     * Live rates relative to the base currency, as [CODE => rate], or [] when
+     * unavailable (callers then fall back to the config rates). Successful
+     * fetches are cached for config('currencies.live_rates.ttl') seconds;
+     * failures are not cached, so the next request retries.
+     */
+    public static function liveRates(): array
+    {
+        if (self::$liveMemo !== null) return self::$liveMemo;
+        if (!config('currencies.live_rates.enabled', true)) return self::$liveMemo = [];
+
+        $base = strtoupper((string) config('currencies.base', 'USD'));
+        $key  = 'fx:rates:' . $base;
+
+        try {
+            $cached = Cache::get($key);
+            if (is_array($cached) && $cached) return self::$liveMemo = $cached;
+
+            $url = rtrim((string) config('currencies.live_rates.provider', 'https://open.er-api.com/v6/latest'), '/') . '/' . $base;
+            $timeout = (int) config('currencies.live_rates.timeout', 4);
+            $r = Http::timeout($timeout)->acceptJson()->get($url);
+
+            if ($r->ok()) {
+                $rates = $r->json('rates');
+                if (is_array($rates) && $rates) {
+                    $out = [];
+                    foreach ($rates as $code => $v) {
+                        if (is_numeric($v)) $out[strtoupper((string) $code)] = (float) $v;
+                    }
+                    $out[$base] = 1.0; // base is always exactly 1
+                    Cache::put($key, $out, (int) config('currencies.live_rates.ttl', 21600));
+                    return self::$liveMemo = $out;
+                }
+            }
+        } catch (\Throwable) {}
+
+        return self::$liveMemo = [];
     }
 
     public static function countries(): array
@@ -34,7 +85,12 @@ class Currency
 
     public static function default(): string
     {
-        $d = strtoupper((string) config('currencies.default', 'USD'));
+        try {
+            $set = \App\Models\Setting::get('default_currency');
+        } catch (\Throwable) {
+            $set = null;
+        }
+        $d = strtoupper((string) ($set ?: config('currencies.default', 'USD')));
         return isset(self::all()[$d]) ? $d : 'USD';
     }
 
